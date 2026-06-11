@@ -1,25 +1,34 @@
 import { formatMoney, ResolvedAbility } from '../sim/sim';
 import type { IWorld } from '../world_api';
 import { Renderer } from '../render/renderer';
-import { ABILITIES, CLASSES, DUNGEON_X_THRESHOLD, ITEMS, MOBS, NPCS, QUESTS, TOWN_RADIUS, ZONE_NAME } from '../sim/data';
+import {
+  ABILITIES, CLASSES, DUNGEON_LIST, DUNGEON_X_THRESHOLD, ITEMS, MOBS, NPCS, QUESTS,
+  WORLD_MAX_X, WORLD_MAX_Z, WORLD_MIN_X, WORLD_MIN_Z, ZONES, dungeonAt, zoneAt,
+} from '../sim/data';
+import type { ZoneDef } from '../sim/data';
 import type { InvSlot } from '../sim/types';
-import { AbilityEffect, Entity, GCD, ItemDef, SimEvent, dist2d, xpForLevel, MAX_LEVEL, MELEE_RANGE } from '../sim/types';
+import { AbilityEffect, CONSUME_DURATION, Entity, GCD, ItemDef, SimEvent, dist2d, xpForLevel, MAX_LEVEL, MELEE_RANGE } from '../sim/types';
 import { terrainHeight, WATER_LEVEL, roadDistance } from '../sim/world';
 import { audio } from '../game/audio';
 import { music } from '../game/music';
+import { iconDataUrl, QUALITY_COLOR } from './icons';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string): T => document.querySelector(sel) as T;
 
 const FAMILY_GLYPH: Record<string, string> = {
   beast: '🐾', humanoid: '🗡️', murloc: '🐟', spider: '🕷️', kobold: '⛏️', undead: '💀',
+  troll: '🦴', ogre: '👊', elemental: '🌀', dragonkin: '🐉',
 };
 const CLASS_GLYPH: Record<string, string> = {
   warrior: '⚔️', paladin: '🔨', hunter: '🏹', rogue: '🗡️', priest: '✝️',
   shaman: '🌩️', mage: '🔮', warlock: '🕯️', druid: '🐻',
 };
 
+// yards past a zone boundary before the crossing banner/welcome commits
+const ZONE_BANNER_DEADBAND = 5;
+
 export class Hud {
-  private abilityButtons: { btn: HTMLButtonElement; label: HTMLSpanElement; cdOverlay: HTMLDivElement; cdText: HTMLDivElement }[] = [];
+  private abilityButtons: { btn: HTMLButtonElement; label: HTMLSpanElement; cdOverlay: HTMLDivElement; cdText: HTMLDivElement; lastIcon: string }[] = [];
   private logEl = $('#combatlog');
   private errorEl = $('#error-msg');
   private bannerEl = $('#banner');
@@ -40,6 +49,8 @@ export class Hud {
   private lastTradeSig = '';
   private lastPartySig = '';
   private lastCombatEventAt = 0;
+  private lastZoneId = '';
+  private mapZoneId = ''; // zone the cached map-window canvas was rendered for
 
   constructor(private sim: IWorld, private renderer: Renderer) {
     this.buildActionBar();
@@ -48,7 +59,7 @@ export class Hud {
     this.drawPortrait($('#pf-portrait') as unknown as HTMLCanvasElement, CLASS_GLYPH[sim.cfg.playerClass], CLASSES[sim.cfg.playerClass].color);
     const mm = $('#minimap') as unknown as HTMLCanvasElement;
     this.minimapCtx = mm.getContext('2d')!;
-    this.minimapBg = this.renderTerrainCanvas(140);
+    this.minimapBg = this.renderTerrainCanvas(140, { minX: WORLD_MIN_X, maxX: WORLD_MAX_X, minZ: WORLD_MIN_Z, maxZ: WORLD_MAX_Z });
     $('#release-btn').addEventListener('click', () => { this.sim.releaseSpirit(); });
     // classic WoW: the player interaction menu opens from the target portrait
     $('#target-frame').addEventListener('contextmenu', (ev) => {
@@ -71,9 +82,11 @@ export class Hud {
       music.setEnabled(!music.enabled);
       styleMusicBtn();
     });
-    this.showBanner(ZONE_NAME);
-    this.log('Welcome to Eastbrook Vale!', '#ffd100');
-    this.log('Find Marshal Redbrook in town — he has work for you.', '#ffd100');
+    const startZone = zoneAt(sim.player.pos.z);
+    this.lastZoneId = startZone.id;
+    this.showBanner(startZone.name);
+    this.log(`Welcome to ${startZone.name}!`, '#ffd100');
+    this.log(startZone.welcome, '#ffd100');
   }
 
   // -------------------------------------------------------------------------
@@ -97,8 +110,7 @@ export class Hud {
 
   private itemIcon(item: ItemDef): string {
     const q = item.quality ?? 'common';
-    const initials = item.name.replace(/[^A-Za-z ]/g, '').split(' ').map((w) => w[0]).join('').slice(0, 2);
-    return `<div class="item-icon q-${q}">${initials}</div>`;
+    return `<img class="item-icon q-${q}" src="${iconDataUrl('item', item.id)}" alt="" draggable="false">`;
   }
 
   moneyHtml(copper: number): string {
@@ -130,7 +142,7 @@ export class Hud {
   }
 
   private itemTooltip(item: ItemDef): string {
-    const qColor = item.quality === 'poor' ? '#9d9d9d' : item.quality === 'uncommon' ? '#1eff00' : '#fff';
+    const qColor = QUALITY_COLOR[item.quality ?? 'common'] ?? '#fff';
     let html = `<div class="tt-title" style="color:${qColor}">${item.name}</div>`;
     if (item.slot) {
       const slotNames: Record<string, string> = { mainhand: 'Main Hand', chest: 'Chest', legs: 'Legs', feet: 'Feet' };
@@ -210,7 +222,7 @@ export class Hud {
         return known ? this.abilityTooltip(known) : '<div class="tt-sub">Empty slot</div>';
       });
       bar.appendChild(btn);
-      this.abilityButtons.push({ btn, label, cdOverlay, cdText });
+      this.abilityButtons.push({ btn, label, cdOverlay, cdText, lastIcon: '' });
     }
   }
 
@@ -289,11 +301,15 @@ export class Hud {
         : 1 - p.castRemaining / Math.max(0.01, p.castTotal);
       (cb.querySelector('.fill') as HTMLElement).style.width = `${(frac * 100).toFixed(1)}%`;
       (cb.querySelector('.label') as HTMLElement).textContent = ABILITIES[p.castingAbility].name;
-    } else if (p.consuming) {
+    } else if (p.eating || p.drinking) {
       cb.style.display = 'block';
       cb.classList.add('channel');
-      (cb.querySelector('.fill') as HTMLElement).style.width = `${((p.consuming.remaining / 18) * 100).toFixed(1)}%`;
-      (cb.querySelector('.label') as HTMLElement).textContent = p.consuming.kind === 'food' ? 'Eating…' : 'Drinking…';
+      const c = p.eating && p.drinking
+        ? (p.eating.remaining >= p.drinking.remaining ? p.eating : p.drinking)
+        : (p.eating ?? p.drinking)!;
+      (cb.querySelector('.fill') as HTMLElement).style.width = `${((c.remaining / CONSUME_DURATION) * 100).toFixed(1)}%`;
+      (cb.querySelector('.label') as HTMLElement).textContent =
+        p.eating && p.drinking ? 'Eating & Drinking…' : p.eating ? 'Eating…' : 'Drinking…';
     } else {
       cb.style.display = 'none';
     }
@@ -305,15 +321,21 @@ export class Hud {
       const known = sim.known[i];
       if (!known) {
         ab.btn.classList.add('empty');
-        ab.label.textContent = '';
+        if (ab.lastIcon !== '') {
+          ab.lastIcon = '';
+          ab.label.style.backgroundImage = '';
+        }
         ab.cdOverlay.style.height = '0%';
         ab.cdText.textContent = '';
         continue;
       }
       const a = known.def;
       ab.btn.classList.remove('empty');
-      ab.label.textContent = a.icon;
-      ab.label.style.color = a.iconColor;
+      // set the painted icon once per slot change, not every frame
+      if (ab.lastIcon !== a.id) {
+        ab.lastIcon = a.id;
+        ab.label.style.backgroundImage = `url(${iconDataUrl('ability', a.id)})`;
+      }
       const cd = p.cooldowns.get(a.id) ?? 0;
       const gcdActive = !a.offGcd && p.gcdRemaining > 0;
       const shown = Math.max(cd, gcdActive ? p.gcdRemaining : 0);
@@ -334,6 +356,26 @@ export class Hud {
 
     $('#death-overlay').style.display = p.dead ? 'flex' : 'none';
 
+    // zone transitions: banner + welcome hint when crossing into a new band.
+    // A ~5yd dead-band past the boundary stops a player straddling the border
+    // from re-triggering the banner/log (and the map canvas regen) every step.
+    const inDungeon = p.pos.x > DUNGEON_X_THRESHOLD;
+    const currentZone = zoneAt(p.pos.z);
+    if (!inDungeon && currentZone.id !== this.lastZoneId) {
+      const lastZone = ZONES.find((z) => z.id === this.lastZoneId);
+      const pastDeadBand = !lastZone
+        || p.pos.z < lastZone.zMin - ZONE_BANNER_DEADBAND
+        || p.pos.z >= lastZone.zMax + ZONE_BANNER_DEADBAND;
+      if (pastDeadBand) {
+        if (this.lastZoneId !== '') {
+          this.showBanner(currentZone.name);
+          this.log(`Entering ${currentZone.name}.`, '#ffd100');
+          this.log(currentZone.welcome, '#ffd100');
+        }
+        this.lastZoneId = currentZone.id;
+      }
+    }
+
     // soundtrack: pick the zone theme and layer in combat percussion.
     // Combat = a mob is on us, or we traded blows in the last few seconds
     // (the wire protocol doesn't ship the inCombat flag).
@@ -342,8 +384,9 @@ export class Hud {
       if (e.kind === 'mob' && !e.dead && e.aggroTargetId === sim.playerId) { aggroed = true; break; }
     }
     const inCombat = aggroed || performance.now() - this.lastCombatEventAt < 5000;
-    const zone = p.pos.x > DUNGEON_X_THRESHOLD ? 'dungeon'
-      : Math.hypot(p.pos.x, p.pos.z) < TOWN_RADIUS + 10 ? 'town' : 'wilds';
+    const hub = currentZone.hub;
+    const zone = inDungeon ? 'dungeon'
+      : Math.hypot(p.pos.x - hub.x, p.pos.z - hub.z) < hub.radius + 10 ? 'town' : currentZone.biome;
     music.update(zone, inCombat);
 
     this.updateQuestTracker();
@@ -372,7 +415,7 @@ export class Hud {
       if (mode === 'debuffs' && !isDebuff) continue;
       const d = document.createElement('div');
       d.className = 'buff' + (isDebuff ? ' debuff' : '');
-      d.textContent = a.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      d.style.backgroundImage = `url(${iconDataUrl('aura', ABILITIES[a.id] ? a.id : `aura_${a.kind}`)})`;
       const dur = document.createElement('div');
       dur.className = 'dur';
       dur.textContent = a.remaining < 99 ? `${Math.ceil(a.remaining)}s` : '';
@@ -400,26 +443,38 @@ export class Hud {
   // Minimap & world map
   // -------------------------------------------------------------------------
 
-  private renderTerrainCanvas(N: number): HTMLCanvasElement {
+  // Render a region of the heightfield to a canvas; width W px, height
+  // derived from the region's aspect so a yard is square on screen.
+  private renderTerrainCanvas(W: number, region: { minX: number; maxX: number; minZ: number; maxZ: number }): HTMLCanvasElement {
+    const spanX = region.maxX - region.minX;
+    const spanZ = region.maxZ - region.minZ;
+    const H = Math.round(W * spanZ / spanX);
     const c = document.createElement('canvas');
-    c.width = N;
-    c.height = N;
+    c.width = W;
+    c.height = H;
     const ctx = c.getContext('2d')!;
-    const img = ctx.createImageData(N, N);
-    const span = 360;
+    const img = ctx.createImageData(W, H);
     const seed = this.sim.cfg.seed;
-    for (let iy = 0; iy < N; iy++) {
-      for (let ix = 0; ix < N; ix++) {
-        const x = (ix / N - 0.5) * span;
-        const z = -(iy / N - 0.5) * span;
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W; ix++) {
+        const x = region.minX + (ix / W) * spanX;
+        const z = region.maxZ - (iy / H) * spanZ;
         const h = terrainHeight(x, z, seed);
+        const biome = zoneAt(z).biome;
         let r = 58, g = 105, b = 48;
+        if (biome === 'marsh') { r = 64; g = 86; b = 48; }
+        else if (biome === 'peaks') { r = 92; g = 100; b = 82; }
         if (h < WATER_LEVEL) { r = 38; g = 84; b = 138; }
+        else if (h > 26) { r = 168; g = 172; b = 178; } // ridge / peak rock+snow
         else if (h > 11) { r = 112; g = 110; b = 102; }
         else if (h > 6) { r = 88; g = 102; b = 62; }
-        if (Math.sqrt(x * x + z * z) < 14) { r = 125; g = 100; b = 66; }
+        let nearHub = false;
+        for (const zn of ZONES) {
+          if (Math.hypot(x - zn.hub.x, z - zn.hub.z) < 14) { nearHub = true; break; }
+        }
+        if (nearHub) { r = 125; g = 100; b = 66; }
         else if (h >= WATER_LEVEL && roadDistance(x, z) < 2.4) { r = 138; g = 111; b = 71; }
-        const k = (iy * N + ix) * 4;
+        const k = (iy * W + ix) * 4;
         img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b; img.data[k + 3] = 255;
       }
     }
@@ -431,7 +486,6 @@ export class Hud {
     const ctx = this.minimapCtx;
     const S = 162;
     const p = this.sim.player;
-    const span = 360;
     ctx.clearRect(0, 0, S, S);
     ctx.save();
     ctx.beginPath();
@@ -440,10 +494,10 @@ export class Hud {
     ctx.imageSmoothingEnabled = false;
     const pxPerYard = 1.7;
     const bg = this.minimapBg;
-    const bgPxPerYard = bg.width / span;
+    const bgPxPerYard = bg.width / (WORLD_MAX_X - WORLD_MIN_X);
     const sw = S / (pxPerYard / bgPxPerYard);
-    const sx = (p.pos.x + span / 2) * bgPxPerYard - sw / 2;
-    const sy = (span / 2 - p.pos.z) * bgPxPerYard - sw / 2;
+    const sx = (p.pos.x - WORLD_MIN_X) * bgPxPerYard - sw / 2;
+    const sy = (WORLD_MAX_Z - p.pos.z) * bgPxPerYard - sw / 2;
     ctx.drawImage(bg, sx, sy, sw, sw, 0, 0, S, S);
 
     for (const e of this.sim.entities.values()) {
@@ -458,7 +512,7 @@ export class Hud {
         ctx.fillStyle = '#ffd100';
         ctx.font = 'bold 11px Georgia';
         ctx.fillText(hasReady ? '?' : hasAvail ? '!' : '•', mx - 2, my + 3);
-      } else if (e.kind === 'object' && (e.templateId === 'crypt_door' || e.templateId === 'crypt_exit')) {
+      } else if (e.kind === 'object' && (e.templateId === 'dungeon_door' || e.templateId === 'dungeon_exit')) {
         ctx.fillStyle = '#c084ff';
         ctx.beginPath();
         ctx.arc(mx, my, 3.5, 0, Math.PI * 2);
@@ -507,37 +561,53 @@ export class Hud {
     this.updateMapWindow();
   }
 
+  // The map window shows the zone band the player is standing in (each band
+  // is a square); POIs and dungeon portals come from the zone/dungeon data.
   private updateMapWindow(): void {
     const canvas = $('#map-canvas') as unknown as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     const S = canvas.width;
-    if (!this.mapBg) this.mapBg = this.renderTerrainCanvas(280);
+    const p = this.sim.player;
+    // inside an instance, show the zone the dungeon's door is in (dungeonAt
+    // owns the instance x-band layout); outdoors, follow the committed zone
+    // so border-straddling can't thrash the 280px canvas regen below
+    const dungeon = dungeonAt(p.pos.x);
+    const zone: ZoneDef = dungeon
+      ? zoneAt(dungeon.doorPos.z)
+      : ZONES.find((z) => z.id === this.lastZoneId) ?? zoneAt(p.pos.z);
+    const region = { minX: WORLD_MIN_X, maxX: WORLD_MAX_X, minZ: zone.zMin, maxZ: zone.zMax };
+    if (!this.mapBg || this.mapZoneId !== zone.id) {
+      this.mapBg = this.renderTerrainCanvas(280, region);
+      this.mapZoneId = zone.id;
+    }
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(this.mapBg, 0, 0, S, S);
-    const span = 360;
-    const toMap = (x: number, z: number) => ({ mx: ((x + span / 2) / span) * S, my: ((span / 2 - z) / span) * S });
-    // labels
-    ctx.font = 'bold 13px Georgia';
+    const spanX = region.maxX - region.minX;
+    const spanZ = region.maxZ - region.minZ;
+    const toMap = (x: number, z: number) => ({
+      mx: ((x - region.minX) / spanX) * S,
+      my: ((region.maxZ - z) / spanZ) * S,
+    });
+    // zone title
+    ctx.font = 'bold 16px Georgia';
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#ffe9a0';
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 3;
+    ctx.fillStyle = '#ffe9a0';
+    ctx.strokeText(zone.name, S / 2, 20);
+    ctx.fillText(zone.name, S / 2, 20);
+    // labels
+    ctx.font = 'bold 13px Georgia';
     const label = (x: number, z: number, text: string) => {
       const { mx, my } = toMap(x, z);
       ctx.strokeText(text, mx, my);
       ctx.fillText(text, mx, my);
     };
-    label(0, -3, 'Eastbrook');
-    label(-2, 70, 'Wolf Run');
-    label(65, 0, 'Boar Meadow');
-    label(-88, 82, 'Mirror Lake');
-    label(-60, 4, 'Webwood');
-    label(-84, -64, 'Copper Dig');
-    label(76, -76, 'Bandit Camp');
-    label(80, 80, 'Fallen Chapel');
-    // dungeon entrance portal
-    {
-      const { mx, my } = toMap(80, 90);
+    for (const poi of zone.pois) label(poi.x, poi.z, poi.label);
+    // dungeon entrance portals in this zone
+    for (const dungeon of DUNGEON_LIST) {
+      if (dungeon.doorPos.z < zone.zMin || dungeon.doorPos.z >= zone.zMax) continue;
+      const { mx, my } = toMap(dungeon.doorPos.x, dungeon.doorPos.z);
       ctx.fillStyle = '#c084ff';
       ctx.beginPath();
       ctx.arc(mx, my, 5, 0, Math.PI * 2);
@@ -545,14 +615,15 @@ export class Hud {
       ctx.stroke();
       ctx.fillStyle = '#e0c0ff';
       ctx.font = 'bold 12px Georgia';
-      ctx.strokeText('The Hollow Crypt', mx, my - 9);
-      ctx.fillText('The Hollow Crypt', mx, my - 9);
+      ctx.strokeText(dungeon.name, mx, my - 9);
+      ctx.fillText(dungeon.name, mx, my - 9);
       ctx.font = 'bold 13px Georgia';
       ctx.fillStyle = '#ffe9a0';
     }
     // npcs
     for (const e of this.sim.entities.values()) {
       if (e.kind !== 'npc') continue;
+      if (e.pos.z < zone.zMin || e.pos.z >= zone.zMax) continue;
       const { mx, my } = toMap(e.pos.x, e.pos.z);
       const hasAvail = e.questIds.some((q) => this.sim.questState(q) === 'available');
       const hasReady = e.questIds.some((q) => this.sim.questState(q) === 'ready');
@@ -564,18 +635,19 @@ export class Hud {
       }
     }
     // player
-    const p = this.sim.player;
-    const { mx, my } = toMap(p.pos.x, p.pos.z);
-    ctx.save();
-    ctx.translate(mx, my);
-    ctx.rotate(p.facing);
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.moveTo(0, -7); ctx.lineTo(5, 6); ctx.lineTo(-5, 6);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
+    if (p.pos.z >= zone.zMin && p.pos.z < zone.zMax && p.pos.x <= WORLD_MAX_X) {
+      const { mx, my } = toMap(p.pos.x, p.pos.z);
+      ctx.save();
+      ctx.translate(mx, my);
+      ctx.rotate(p.facing);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.moveTo(0, -7); ctx.lineTo(5, 6); ctx.lineTo(-5, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -829,7 +901,7 @@ export class Hud {
     const rewardItem = quest.itemRewards[this.sim.cfg.playerClass];
     if (rewardItem) {
       const item = ITEMS[rewardItem];
-      html += `<div class="qd-reward-row" data-reward>${this.itemIcon(item)}<span style="color:${item.quality === 'uncommon' ? '#1eff00' : '#fff'};font-size:12px">${item.name}</span></div>`;
+      html += `<div class="qd-reward-row" data-reward>${this.itemIcon(item)}<span style="color:${QUALITY_COLOR[item.quality ?? 'common'] ?? '#fff'};font-size:12px">${item.name}</span></div>`;
     }
     el.innerHTML = html;
     const rewardRow = el.querySelector('[data-reward]') as HTMLElement | null;
@@ -883,7 +955,7 @@ export class Hud {
     const el = $('#loot-window');
     let html = `<div class="panel-title"><span>${mob.name}</span><span class="x-btn" data-close>✕</span></div>`;
     if (mob.loot.copper > 0) {
-      html += `<div class="loot-item"><div class="item-icon q-common" style="color:#ffd100">$</div><span>${this.moneyHtml(mob.loot.copper)}</span></div>`;
+      html += `<div class="loot-item"><img class="item-icon q-common" src="${iconDataUrl('item', 'coin_gold')}" alt="" draggable="false"><span>${this.moneyHtml(mob.loot.copper)}</span></div>`;
     }
     for (const s of mob.loot.items) {
       const item = ITEMS[s.itemId];
@@ -927,6 +999,10 @@ export class Hud {
     const npc = this.sim.entities.get(this.openVendorNpcId);
     if (!npc) return;
     const el = $('#vendor-window');
+    // the rebuild replaces the hovered row (its mouseleave never fires) and
+    // collapses the scrolled list — drop the tooltip and restore the scroll
+    this.hideTooltip();
+    const scrollTop = el.scrollTop;
     let html = `<div class="panel-title"><span>${npc.name} — Goods</span><span class="x-btn" data-close>✕</span></div>`;
     el.innerHTML = html;
     for (const itemId of npc.vendorItems) {
@@ -947,6 +1023,7 @@ export class Hud {
     el.appendChild(hint);
     el.querySelector('[data-close]')?.addEventListener('click', () => this.closeVendor());
     el.style.display = 'block';
+    el.scrollTop = scrollTop;
   }
 
   closeVendor(): void {
@@ -985,7 +1062,7 @@ export class Hud {
       if (!item) continue;
       const row = document.createElement('div');
       row.className = 'bag-item';
-      const qColor = item.quality === 'poor' ? '#9d9d9d' : item.quality === 'uncommon' ? '#1eff00' : '#fff';
+      const qColor = QUALITY_COLOR[item.quality ?? 'common'] ?? '#fff';
       row.innerHTML = `${this.itemIcon(item)}<span style="color:${qColor}">${item.name}</span><span class="bi-count">${s.count > 1 ? 'x' + s.count : ''}</span>`;
       row.addEventListener('click', () => {
         if (this.tradeOpen) {
@@ -1055,8 +1132,8 @@ export class Hud {
       const item = itemId ? ITEMS[itemId] : null;
       const row = document.createElement('div');
       row.className = 'equip-slot';
-      const qColor = !item ? '#666' : item.quality === 'uncommon' ? '#1eff00' : '#fff';
-      row.innerHTML = `${item ? this.itemIcon(item) : '<div class="item-icon" style="border-color:#444;background:#0d0d13"></div>'}
+      const qColor = !item ? '#666' : QUALITY_COLOR[item.quality ?? 'common'] ?? '#fff';
+      row.innerHTML = `${item ? this.itemIcon(item) : `<img class="item-icon" style="border-color:#444" src="${iconDataUrl('item', 'slot_empty')}" alt="" draggable="false">`}
         <div><div class="slot-name">${slot.name}</div><div class="slot-item" style="color:${qColor}">${item ? item.name : 'Empty'}</div></div>`;
       if (item) this.attachTooltip(row, () => this.itemTooltip(item));
       col.appendChild(row);
@@ -1086,7 +1163,7 @@ export class Hud {
       const row = document.createElement('div');
       row.className = 'spell-row';
       const locked = !known;
-      row.innerHTML = `<div class="spell-icon" style="color:${def.iconColor};${locked ? 'filter:grayscale(1) brightness(0.5)' : ''}">${def.icon}</div>
+      row.innerHTML = `<div class="spell-icon" style="background-image:url(${iconDataUrl('ability', abilityId)});${locked ? 'filter:grayscale(1) brightness(0.5)' : ''}"></div>
         <div><div class="spell-name" style="${locked ? 'color:#777' : ''}">${def.name}${known && known.rank > 1 ? ` <span style="color:#998d6a;font-size:11px">Rank ${known.rank}</span>` : ''}</div>
         <div class="spell-sub">${locked ? `Trainable at level ${def.learnLevel}` : describeCost(known!, sim)}</div></div>`;
       if (known) this.attachTooltip(row, () => this.abilityTooltip(known));

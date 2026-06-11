@@ -81,8 +81,8 @@ function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWorld | 
     if (bestCorpse !== null) { world.lootCorpse(bestCorpse); return; }
     if (bestObj !== null) {
       const obj = world.entities.get(bestObj)!;
-      if (obj.templateId === 'crypt_door') { world.enterCrypt(); return; }
-      if (obj.templateId === 'crypt_exit') { world.leaveCrypt(); return; }
+      if (obj.templateId === 'dungeon_door' && obj.dungeonId) { world.enterDungeon(obj.dungeonId); return; }
+      if (obj.templateId === 'dungeon_exit') { world.leaveDungeon(); return; }
       world.pickUpObject(bestObj);
       return;
     }
@@ -104,8 +104,8 @@ function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWorld | 
       // target portrait (right-click it), like classic WoW unit frames
       if (e.kind === 'object') {
         if (d > INTERACT_RANGE + 1) { hud.showError('Too far away.'); return; }
-        if (e.templateId === 'crypt_door') world.enterCrypt();
-        else if (e.templateId === 'crypt_exit') world.leaveCrypt();
+        if (e.templateId === 'dungeon_door' && e.dungeonId) world.enterDungeon(e.dungeonId);
+        else if (e.templateId === 'dungeon_exit') world.leaveDungeon();
         else world.pickUpObject(id);
       } else if (e.kind === 'mob' && e.dead && e.lootable) {
         if (d <= INTERACT_RANGE + 1) hud.openLoot(id, x, y);
@@ -121,8 +121,8 @@ function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWorld | 
       if (e.kind === 'object') {
         const d = dist2d(world.player.pos, e.pos);
         if (d > INTERACT_RANGE + 1) return;
-        if (e.templateId === 'crypt_door') world.enterCrypt();
-        else if (e.templateId === 'crypt_exit') world.leaveCrypt();
+        if (e.templateId === 'dungeon_door' && e.dungeonId) world.enterDungeon(e.dungeonId);
+        else if (e.templateId === 'dungeon_exit') world.leaveDungeon();
         else world.pickUpObject(id);
       }
     }
@@ -190,6 +190,14 @@ function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWorld | 
 // ---------------------------------------------------------------------------
 // Offline flow
 // ---------------------------------------------------------------------------
+
+// Offline names go straight into innerHTML paths (quest $N text, char window
+// title), so enforce the server's character-name rule client-side too:
+// strip anything outside [A-Za-z' -], then require /^[A-Za-z][A-Za-z' -]{1,15}$/.
+function sanitizeOfflineName(raw: string): string {
+  const stripped = raw.replace(/[^A-Za-z' -]/g, '').replace(/^[^A-Za-z]+/, '').slice(0, 16);
+  return /^[A-Za-z][A-Za-z' -]{1,15}$/.test(stripped) ? stripped : 'Adventurer';
+}
 
 function startOffline(playerClass: PlayerClass, name: string): void {
   const sim = new Sim({ seed: WORLD_SEED, playerClass, playerName: name });
@@ -281,7 +289,7 @@ function wireStartScreens(): void {
     card.addEventListener('click', () => {
       audio.init();
       music.init();
-      const name = ($('#char-name') as unknown as HTMLInputElement).value.trim().slice(0, 16) || 'Adventurer';
+      const name = sanitizeOfflineName(($('#char-name') as unknown as HTMLInputElement).value.trim());
       startOffline((card as HTMLElement).dataset.class as PlayerClass, name);
     });
   });

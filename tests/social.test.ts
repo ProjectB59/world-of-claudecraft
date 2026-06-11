@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
-import { ALL_CLASSES, dist2d } from '../src/sim/types';
+import { ALL_CLASSES, MAX_LEVEL, dist2d } from '../src/sim/types';
 import { CLASSES, MOBS, abilitiesKnownAt, instanceOrigin, CRYPT_SPAWNS } from '../src/sim/data';
 import { groundHeight } from '../src/sim/world';
 
@@ -38,10 +38,14 @@ describe('nine classes', () => {
       const p = sim.player;
       expect(p.maxHp).toBeGreaterThan(30);
       expect(sim.known.length).toBeGreaterThan(0);
-      expect(CLASSES[cls].abilities.length).toBeLessThanOrEqual(10);
-      // all kit abilities resolve at level 10
-      const kit = abilitiesKnownAt(cls, 10);
+      // 12 action-bar slots cap the kit
+      expect(CLASSES[cls].abilities.length).toBeLessThanOrEqual(12);
+      // the full kit resolves at MAX_LEVEL; the 10-20 band still has things to learn
+      const kit = abilitiesKnownAt(cls, MAX_LEVEL);
       expect(kit.length).toBe(CLASSES[cls].abilities.length);
+      expect(abilitiesKnownAt(cls, 10).length).toBeLessThan(kit.length);
+      // every class's core kit keeps scaling: something reaches rank 3+ by 20
+      expect(kit.some((k) => k.rank >= 3)).toBe(true);
       // resource type sane
       if (cls === 'warrior') expect(p.resourceType).toBe('rage');
       else if (cls === 'rogue') expect(p.resourceType).toBe('energy');
@@ -184,7 +188,7 @@ describe('elite mobs', () => {
     const sim = makeWorld();
     const pid = sim.addPlayer('warrior', 'Tank');
     sim.enterCrypt(pid);
-    const origin = instanceOrigin(0);
+    const origin = instanceOrigin(0, 0);
     const shambler = nearestMob(sim, 'crypt_shambler', origin);
     expect(shambler).toBeTruthy();
     const t = MOBS.crypt_shambler;
@@ -392,7 +396,7 @@ describe('the Hollow Crypt', () => {
     expect(sim.instanceSlotAt(ec.pos)).not.toBe(sim.instanceSlotAt(ea.pos));
     // elites spawned in each claimed instance
     const slotA = sim.instanceSlotAt(ea.pos)!;
-    const originA = instanceOrigin(slotA);
+    const originA = instanceOrigin(0, slotA);
     const bossA = nearestMob(sim, 'morthen', originA);
     expect(bossA).toBeTruthy();
     expect(Math.abs(bossA.pos.x - originA.x)).toBeLessThan(50);
@@ -408,7 +412,7 @@ describe('the Hollow Crypt', () => {
     teleport(sim, a, 80, 88);
     sim.enterCrypt(a);
     const slot = sim.instanceSlotAt(sim.entities.get(a)!.pos)!;
-    const origin = instanceOrigin(slot);
+    const origin = instanceOrigin(0, slot);
     const cryptMobs = [...sim.entities.values()].filter(
       (e) => e.kind === 'mob' && Math.abs(e.pos.x - origin.x) < 120 && Math.abs(e.pos.z - origin.z) < 250,
     );
@@ -443,5 +447,67 @@ describe('the Hollow Crypt', () => {
     expect(sim.questState('q_rite')).toBe('available');
     sim.questsDone.add('q_rite');
     expect(sim.questState('q_hollow')).toBe('available');
+  });
+});
+
+describe('the new dungeons', () => {
+  it('the Sunken Bastion and Gravewyrm Sanctum are enterable with full spawn sets', () => {
+    const sim = makeWorld();
+    const a = sim.addPlayer('warrior', 'Aleph');
+    teleport(sim, a, 45, 511);
+    sim.enterDungeon('sunken_bastion', a);
+    const ea = sim.entities.get(a)!;
+    expect(ea.pos.x).toBeGreaterThan(1400); // index-1 band
+    const slot = sim.instanceSlotAt(ea.pos)!;
+    const origin = instanceOrigin(1, slot);
+    const vael = nearestMob(sim, 'vael_the_mistcaller', origin);
+    expect(vael).toBeTruthy();
+    sim.leaveDungeon(a);
+    expect(dist2d(ea.pos, { x: 45, y: 0, z: 515 })).toBeLessThan(10);
+
+    teleport(sim, a, 0, 876);
+    sim.enterDungeon('gravewyrm_sanctum', a);
+    expect(ea.pos.x).toBeGreaterThan(2000); // index-2 band
+    const slot2 = sim.instanceSlotAt(ea.pos)!;
+    const origin2 = instanceOrigin(2, slot2);
+    const korzul = nearestMob(sim, 'korzul_the_gravewyrm', origin2);
+    expect(korzul).toBeTruthy();
+    expect(korzul.level).toBe(20);
+    sim.leaveDungeon(a);
+    expect(dist2d(ea.pos, { x: 0, y: 0, z: 880 })).toBeLessThan(10);
+  });
+
+  it('Velkhar summons add waves at hp thresholds and Korgath enrages below 30%', () => {
+    const sim = makeWorld();
+    const a = sim.addPlayer('warrior', 'Aleph');
+    teleport(sim, a, 0, 876);
+    sim.enterDungeon('gravewyrm_sanctum', a);
+    const ea = sim.entities.get(a)!;
+    const origin = instanceOrigin(2, sim.instanceSlotAt(ea.pos)!);
+
+    // Velkhar: drop below 66% then 33% -> two waves of 3 raised_bonewalker
+    const velkhar = nearestMob(sim, 'grand_necromancer_velkhar', origin);
+    expect(velkhar).toBeTruthy();
+    const addsNear = () => [...sim.entities.values()].filter(
+      (e) => e.kind === 'mob' && !e.dead && e.templateId === 'raised_bonewalker'
+        && Math.abs(e.pos.x - origin.x) < 120,
+    ).length;
+    expect(addsNear()).toBe(0);
+    velkhar.inCombat = true;
+    velkhar.hp = Math.floor(velkhar.maxHp * 0.6);
+    sim.tick();
+    expect(addsNear()).toBe(3);
+    velkhar.hp = Math.floor(velkhar.maxHp * 0.3);
+    sim.tick();
+    expect(addsNear()).toBe(6);
+
+    // Korgath: enrage flag flips once below 30% and boosts swing damage
+    const korgath = nearestMob(sim, 'korgath_the_bound', origin);
+    expect(korgath).toBeTruthy();
+    expect(korgath.enraged).toBe(false);
+    korgath.inCombat = true;
+    korgath.hp = Math.floor(korgath.maxHp * 0.25);
+    sim.tick();
+    expect(korgath.enraged).toBe(true);
   });
 });

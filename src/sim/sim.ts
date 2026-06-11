@@ -1,17 +1,19 @@
 import {
-  ABILITIES, CAMPS, CLASSES, CRYPT_DOOR_POS, CRYPT_ENTRY, CRYPT_EXIT_OFFSET, CRYPT_SPAWNS,
-  DUNGEON_X_THRESHOLD, GRAVEYARD_POS, GROUND_OBJECTS, GROUP_XP_BONUS, INSTANCE_SLOT_COUNT,
+  ABILITIES, CAMPS, CLASSES, DUNGEONS, DUNGEON_LIST, DungeonDef, dungeonAt,
+  DUNGEON_X_THRESHOLD, GROUND_OBJECTS, GROUP_XP_BONUS, INSTANCE_SLOT_COUNT,
   ITEMS, MOBS, NPCS, PLAYER_START, QUESTS, REWARD_ARCHETYPE, abilitiesKnownAt, instanceOrigin,
+  zoneAt,
 } from './data';
 import { resolvePosition } from './colliders';
 import { createGroundObject, createMob, createNpc, createPlayer, recalcPlayerStats, PlayerEquipment } from './entity';
 import { Rng } from './rng';
 import { groundHeight, WATER_LEVEL } from './world';
 import {
-  AbilityDef, AbilityEffect, Aura, CAST_PUSHBACK_SEC, CHANNEL_PUSHBACK_FRACTION, DT, Entity, EquipSlot, GCD,
+  AbilityDef, AbilityEffect, Aura, CAST_PUSHBACK_SEC, CHANNEL_PUSHBACK_FRACTION, CONSUME_DURATION,
+  CONSUME_TICKS, DT, Entity, EquipSlot, GCD,
   INTERACT_RANGE, InvSlot, MELEE_RANGE, MAX_LEVEL,
   MoveInput, PlayerClass, QuestProgress, QuestState, RUN_SPEED, SimConfig, SimEvent, TURN_SPEED, Vec3,
-  angleTo, armorReduction, dist2d, emptyMoveInput, meleeMissChance, mobXpValue, normAngle,
+  angleTo, armorReduction, dist2d, emptyMoveInput, isConsuming, meleeMissChance, mobXpValue, normAngle,
   rageFromDealing, rageFromTaking, spellHitChance, xpForLevel,
 } from './types';
 
@@ -62,6 +64,7 @@ export interface DuelState {
 }
 
 export interface InstanceSlot {
+  dungeonId: string;
   slot: number;
   partyKey: string | null; // party id or 'solo:<pid>'
   mobIds: number[];
@@ -212,15 +215,17 @@ export class Sim {
       }
     }
 
-    // The Hollow Crypt entrance at the Fallen Chapel
-    const door = createGroundObject(this.nextId++, '', 'The Hollow Crypt', this.groundPos(CRYPT_DOOR_POS.x, CRYPT_DOOR_POS.z));
-    door.templateId = 'crypt_door';
-    door.objectItemId = null;
-    door.lootable = true; // interactable
-    this.entities.set(door.id, door);
-
-    for (let i = 0; i < INSTANCE_SLOT_COUNT; i++) {
-      this.instances.push({ slot: i, partyKey: null, mobIds: [], exitId: null, emptyFor: 0 });
+    // Dungeon entrances + their private instance slots
+    for (const dungeon of DUNGEON_LIST) {
+      const door = createGroundObject(this.nextId++, '', dungeon.name, this.groundPos(dungeon.doorPos.x, dungeon.doorPos.z));
+      door.templateId = 'dungeon_door';
+      door.dungeonId = dungeon.id;
+      door.objectItemId = null;
+      door.lootable = true; // interactable
+      this.entities.set(door.id, door);
+      for (let i = 0; i < INSTANCE_SLOT_COUNT; i++) {
+        this.instances.push({ dungeonId: dungeon.id, slot: i, partyKey: null, mobIds: [], exitId: null, emptyFor: 0 });
+      }
     }
 
     if (!cfg.noPlayer) {
@@ -233,8 +238,15 @@ export class Sim {
   // -------------------------------------------------------------------------
 
   addPlayer(cls: PlayerClass, name: string, opts?: { autoEquip?: boolean; state?: CharacterState }): number {
-    const startPos = opts?.state
-      ? this.groundPos(opts.state.pos.x, opts.state.pos.z)
+    // Characters saved inside a dungeon instance rejoin at its entrance —
+    // their old instance is gone (or belongs to someone else) by now.
+    let savedPos = opts?.state?.pos ?? null;
+    if (savedPos && savedPos.x > DUNGEON_X_THRESHOLD) {
+      const dungeon = dungeonAt(savedPos.x) ?? DUNGEON_LIST[0];
+      savedPos = { x: dungeon.doorPos.x, z: dungeon.doorPos.z - 4 };
+    }
+    const startPos = savedPos
+      ? this.groundPos(savedPos.x, savedPos.z)
       : this.groundPos(PLAYER_START.x, PLAYER_START.z);
     const player = createPlayer(this.nextId++, cls, startPos, name);
     this.entities.set(player.id, player);
@@ -666,8 +678,9 @@ export class Sim {
 
   private standUp(p: Entity): void {
     p.sitting = false;
-    if (p.consuming) {
-      p.consuming = null;
+    if (isConsuming(p)) {
+      p.eating = null;
+      p.drinking = null;
       this.emit({ type: 'log', text: 'You stand up.', color: '#999', pid: p.id });
     }
   }
@@ -688,12 +701,14 @@ export class Sim {
     } else if (p.resourceType === 'rage' && !p.inCombat) {
       p.resource = Math.max(0, p.resource - 2);
     }
-    if (!p.inCombat && p.hp < p.maxHp && !p.consuming) {
+    if (!p.inCombat && p.hp < p.maxHp && !p.eating) {
       const regen = p.stats.sta * 0.3 + 2;
       p.hp = Math.min(p.maxHp, p.hp + Math.round(regen));
     }
-    if (p.consuming) {
-      const c = p.consuming;
+    // food and drink tick independently, so both can run at once
+    for (const slot of ['eating', 'drinking'] as const) {
+      const c = p[slot];
+      if (!c) continue;
       if (c.hpPer2s > 0 && p.hp < p.maxHp) {
         const heal = Math.min(c.hpPer2s, p.maxHp - p.hp);
         p.hp += heal;
@@ -703,7 +718,7 @@ export class Sim {
         p.resource = Math.min(p.maxResource, p.resource + c.manaPer2s);
       }
       c.remaining -= 2;
-      if (c.remaining <= 0) p.consuming = null;
+      if (c.remaining <= 0) p[slot] = null;
     }
   }
 
@@ -863,6 +878,12 @@ export class Sim {
       if (ability.minRange && d < ability.minRange) { this.error(p.id, 'Too close!'); return; }
       const facingDiff = Math.abs(normAngle(angleTo(p.pos, target.pos) - p.facing));
       if (facingDiff > MELEE_ARC) { this.error(p.id, 'You must be facing your target.'); return; }
+      // execute-style gate: only usable while the target is nearly dead
+      if (ability.requiresTargetHpBelow !== undefined
+        && target.hp > target.maxHp * ability.requiresTargetHpBelow) {
+        this.error(p.id, `That ability requires the target below ${Math.round(ability.requiresTargetHpBelow * 100)}% health.`);
+        return;
+      }
       for (const eff of res.effects) {
         if (eff.type === 'weaponStrike' && eff.requiresBehind) {
           if (!p.weapon.dagger) { this.error(p.id, 'You must wield a dagger.'); return; }
@@ -964,7 +985,9 @@ export class Sim {
     const ability = res.def;
     if (ability.id === 'conjure_water') {
       this.spendResource(p, res.cost);
-      this.addItem('conjured_water', 2, p.id);
+      // higher ranks conjure better water (falls back if the item isn't defined)
+      const tiered = `conjured_water${res.rank}`;
+      this.addItem(res.rank > 1 && ITEMS[tiered] ? tiered : 'conjured_water', 2, p.id);
       return;
     }
 
@@ -1057,6 +1080,17 @@ export class Sim {
             duration: eff.basedur + eff.perCombo * spentCombo,
             value: eff.mult, sourceId: p.id, school: 'physical',
           });
+          break;
+        }
+        case 'finisherStun': {
+          if (!target || target.dead || spentCombo <= 0) break;
+          const dur = eff.base + eff.perCombo * spentCombo;
+          this.applyAura(target, {
+            id: ability.id + '_stun', name: ability.name, kind: 'stun',
+            remaining: dur, duration: dur, value: 0,
+            sourceId: p.id, school: ability.school,
+          });
+          this.enterCombat(p, target);
           break;
         }
         case 'weaponDamage':
@@ -1487,7 +1521,7 @@ export class Sim {
       if (target.resourceType === 'rage' && source && source.id !== target.id) {
         target.resource = Math.min(target.maxResource, target.resource + rageFromTaking(amount, target.level));
       }
-      if (target.consuming) target.consuming = null;
+      if (isConsuming(target)) { target.eating = null; target.drinking = null; }
       if (target.sitting) target.sitting = false;
       // vanilla spell pushback: a landed hit delays the cast rather than
       // cancelling it (misses and fully absorbed hits don't push back)
@@ -1528,7 +1562,8 @@ export class Sim {
       e.autoAttack = false;
       e.queuedOnSwing = null;
       e.comboPoints = 0;
-      e.consuming = null;
+      e.eating = null;
+      e.drinking = null;
       e.sitting = false;
       this.emit({ type: 'playerDeath', pid: e.id });
       for (const m of this.entities.values()) {
@@ -1609,7 +1644,26 @@ export class Sim {
     if (!template) return;
     let copper = 0;
     const items: InvSlot[] = [];
+    const rolledGroups = new Set<string>();
     for (const entry of template.loot) {
+      // exclusive groups (boss "one of three" tables): a single rng draw is
+      // partitioned by the group entries' chances so exactly one drops.
+      // Exactly one rng.next() per group keeps replays deterministic.
+      if (entry.rollGroup) {
+        if (rolledGroups.has(entry.rollGroup)) continue;
+        rolledGroups.add(entry.rollGroup);
+        const group = template.loot.filter((l) => l.rollGroup === entry.rollGroup);
+        const roll = this.rng.next();
+        let cumulative = 0;
+        for (const g of group) {
+          cumulative += g.chance;
+          if (roll < cumulative) {
+            if (g.itemId) items.push({ itemId: g.itemId, count: 1 });
+            break;
+          }
+        }
+        continue;
+      }
       if (entry.questId) {
         const qp = meta.questLog.get(entry.questId);
         if (!qp || qp.state !== 'active') continue;
@@ -1680,7 +1734,7 @@ export class Sim {
       mob.corpseTimer -= DT;
       mob.respawnTimer -= DT;
       // dungeon mobs stay dead until the instance resets
-      const isInstanceMob = mob.spawnPos.x > 600;
+      const isInstanceMob = mob.spawnPos.x > DUNGEON_X_THRESHOLD;
       if (!isInstanceMob && mob.respawnTimer <= 0 && (mob.corpseTimer <= 0 || !mob.lootable)) {
         this.respawnMob(mob);
       }
@@ -1688,6 +1742,8 @@ export class Sim {
     }
 
     mob.combatTimer += DT;
+
+    if (mob.inCombat) this.updateBossMechanics(mob);
 
     if (this.isStunned(mob)) {
       if (mob.auras.some((a) => a.kind === 'polymorph')) {
@@ -1742,11 +1798,11 @@ export class Sim {
           this.retargetMob(mob);
           break;
         }
-        const leash = mob.spawnPos.x > 600 ? DUNGEON_LEASH_DISTANCE : LEASH_DISTANCE;
+        const leash = mob.spawnPos.x > DUNGEON_X_THRESHOLD ? DUNGEON_LEASH_DISTANCE : LEASH_DISTANCE;
         if (dist2d(mob.pos, mob.spawnPos) > leash) {
           mob.aiState = 'evade';
           mob.aggroTargetId = null;
-          this.emit({ type: 'log', text: mob.name + ' returns home.', color: '#999' });
+          this.emit({ type: 'log', text: mob.name + ' returns home.', color: '#999', entityId: mob.id });
           break;
         }
         const d = dist2d(mob.pos, target.pos);
@@ -1796,6 +1852,9 @@ export class Sim {
           mob.auras = [];
           mob.inCombat = false;
           mob.tappedById = null;
+          this.despawnSummonedAdds(mob);
+          mob.firedSummons = 0;
+          mob.enraged = false;
           mob.wanderTimer = this.rng.range(2, 8);
         }
         break;
@@ -1818,6 +1877,8 @@ export class Sim {
     let dmg = this.rng.range(mob.weapon.min, mob.weapon.max);
     const crit = this.rng.chance(0.05);
     if (crit) dmg *= 2;
+    const enrage = MOBS[mob.templateId]?.enrage;
+    if (mob.enraged && enrage) dmg *= enrage.dmgMult;
     dmg *= 1 - armorReduction(target.stats.armor, mob.level);
     this.dealDamage(mob, target, Math.max(1, Math.round(dmg)), crit, 'physical', null, 'hit');
     // thorns / lightning shield on the defender
@@ -1862,10 +1923,78 @@ export class Sim {
     mob.aiState = 'idle';
     mob.aggroTargetId = null;
     mob.inCombat = false;
+    this.despawnSummonedAdds(mob);
+    mob.firedSummons = 0;
+    mob.enraged = false;
     mob.wanderTimer = this.rng.range(2, 8);
     for (const meta of this.players.values()) {
       const e = this.entities.get(meta.entityId);
       if (e && e.targetId === mob.id) e.targetId = null;
+    }
+  }
+
+  // Encounter reset: remove the adds a boss summoned this pull so retries
+  // start clean (firedSummons re-fires a fresh wave per pull). Player
+  // target/combo refs are cleared first, like freeInstance does.
+  private despawnSummonedAdds(boss: Entity): void {
+    if (boss.summonedIds.length === 0) return;
+    for (const id of boss.summonedIds) {
+      if (!this.entities.has(id)) continue;
+      for (const meta of this.players.values()) {
+        const e = this.entities.get(meta.entityId);
+        if (e?.targetId === id) e.targetId = null;
+        if (e?.comboTargetId === id) { e.comboTargetId = null; e.comboPoints = 0; }
+      }
+      this.entities.delete(id);
+    }
+    boss.summonedIds = [];
+  }
+
+  // Boss threshold mechanics: add waves (summonAdds) and enrage. Checked
+  // every tick while the boss is in combat; thresholds fire once per pull
+  // and reset on evade/respawn.
+  private updateBossMechanics(mob: Entity): void {
+    const tmpl = MOBS[mob.templateId];
+    if (!tmpl || (!tmpl.summonAdds && !tmpl.enrage)) return;
+    const hpFrac = mob.hp / Math.max(1, mob.maxHp);
+    if (tmpl.summonAdds) {
+      const thresholds = tmpl.summonAdds.atHpPct;
+      while (mob.firedSummons < thresholds.length && hpFrac <= thresholds[mob.firedSummons]) {
+        mob.firedSummons++;
+        this.spawnBossAdds(mob, tmpl.summonAdds.mobId, tmpl.summonAdds.count);
+      }
+    }
+    if (tmpl.enrage && !mob.enraged && hpFrac <= tmpl.enrage.belowHpPct) {
+      mob.enraged = true;
+      this.emit({ type: 'aura', targetId: mob.id, name: 'Enrage', gained: true });
+      this.emit({ type: 'log', text: `${mob.name} becomes enraged!`, color: '#ff6666', entityId: mob.id });
+      this.emit({ type: 'spellfx', sourceId: mob.id, targetId: mob.id, school: 'fire', fx: 'nova' });
+    }
+  }
+
+  private spawnBossAdds(boss: Entity, mobId: string, count: number): void {
+    const template = MOBS[mobId];
+    if (!template) return;
+    this.emit({ type: 'log', text: `${boss.name} calls for aid!`, color: '#ff6666', entityId: boss.id });
+    this.emit({ type: 'spellfx', sourceId: boss.id, targetId: boss.id, school: 'shadow', fx: 'nova' });
+    // adds spawned inside a claimed instance despawn with it
+    const inst = this.instances.find((i) => {
+      if (i.partyKey === null) return false;
+      const o = this.instanceOriginOf(i);
+      return Math.abs(boss.pos.x - o.x) < 120 && Math.abs(boss.pos.z - o.z) < 250;
+    });
+    const victim = boss.aggroTargetId !== null ? this.entities.get(boss.aggroTargetId) : null;
+    for (let k = 0; k < count; k++) {
+      const ang = (k / count) * Math.PI * 2 + 0.7;
+      const pos = this.groundPos(boss.pos.x + Math.sin(ang) * 3.5, boss.pos.z + Math.cos(ang) * 3.5);
+      const level = this.rng.int(template.minLevel, template.maxLevel);
+      const add = createMob(this.nextId++, template, level, pos);
+      add.spawnPos = { ...boss.spawnPos }; // leashes with the boss; stays dead in instances
+      add.tappedById = boss.tappedById;
+      this.entities.set(add.id, add);
+      boss.summonedIds.push(add.id);
+      inst?.mobIds.push(add.id);
+      if (victim && !victim.dead && victim.kind === 'player') this.aggroMob(add, victim, false);
     }
   }
 
@@ -1989,12 +2118,14 @@ export class Sim {
       if (this.isSwimming(p)) { this.error(meta.entityId, "You can't do that while swimming."); return; }
       this.removeItem(itemId, 1, meta.entityId);
       p.sitting = true;
-      p.consuming = {
+      // food and drink occupy separate slots, so you can do both at once
+      const slot = def.kind === 'food' ? 'eating' : 'drinking';
+      p[slot] = {
         itemId,
         kind: def.kind,
-        hpPer2s: def.foodHp ? Math.round(def.foodHp / 9) : 0,
-        manaPer2s: def.drinkMana ? Math.round(def.drinkMana / 9) : 0,
-        remaining: 18,
+        hpPer2s: def.foodHp ? Math.round(def.foodHp / CONSUME_TICKS) : 0,
+        manaPer2s: def.drinkMana ? Math.round(def.drinkMana / CONSUME_TICKS) : 0,
+        remaining: CONSUME_DURATION,
       };
       this.emit({ type: 'log', text: def.kind === 'food' ? 'You sit down to eat.' : 'You sit down to drink.', color: '#999', pid: meta.entityId });
     } else if (def.kind === 'weapon' || def.kind === 'armor') {
@@ -2019,9 +2150,13 @@ export class Sim {
   sellItem(itemId: string, pid?: number): void {
     const r = this.resolve(pid);
     if (!r) return;
-    const { meta } = r;
+    const { meta, e: p } = r;
     const def = ITEMS[itemId];
-    if (!def || this.countItem(itemId, meta.entityId) <= 0) return;
+    if (!def || this.countItem(itemId, meta.entityId) <= 0 || p.dead) return;
+    // mirror buyItem's gate: selling requires a vendor in interact range
+    const nearVendor = [...this.entities.values()].some((e) =>
+      e.kind === 'npc' && e.vendorItems.length > 0 && dist2d(p.pos, e.pos) <= INTERACT_RANGE + 2);
+    if (!nearVendor) { this.error(meta.entityId, 'There is no merchant nearby.'); return; }
     if (def.kind === 'quest') { this.error(meta.entityId, 'You cannot sell quest items.'); return; }
     this.removeItem(itemId, 1, meta.entityId);
     meta.copper += def.sellValue;
@@ -2121,8 +2256,8 @@ export class Sim {
     }
     if (bestCorpse) { this.lootCorpse(bestCorpse.id, p.id); return; }
     if (bestObj) {
-      if (bestObj.templateId === 'crypt_door') { this.enterCrypt(p.id); return; }
-      if (bestObj.templateId === 'crypt_exit') { this.leaveCrypt(p.id); return; }
+      if (bestObj.templateId === 'dungeon_door' && bestObj.dungeonId) { this.enterDungeon(bestObj.dungeonId, p.id); return; }
+      if (bestObj.templateId === 'dungeon_exit') { this.leaveDungeon(p.id); return; }
       this.pickUpObject(bestObj.id, p.id);
       return;
     }
@@ -2266,7 +2401,11 @@ export class Sim {
     const { meta, e: p } = r;
     if (!p.dead) return;
     p.dead = false;
-    p.pos = this.groundPos(GRAVEYARD_POS.x, GRAVEYARD_POS.z);
+    // dying in a dungeon sends you to the graveyard of the zone its door is
+    // in; dying outdoors, to your current zone's graveyard
+    const dungeon = dungeonAt(p.pos.x);
+    const graveyard = zoneAt(dungeon ? dungeon.doorPos.z : p.pos.z).graveyard;
+    p.pos = this.groundPos(graveyard.x, graveyard.z);
     p.prevPos = { ...p.pos };
     p.facing = 0;
     p.auras = [];
@@ -2655,7 +2794,7 @@ export class Sim {
   }
 
   // -------------------------------------------------------------------------
-  // The Hollow Crypt: party-instanced elite dungeon
+  // Dungeons: party-instanced elite content (the Hollow Crypt and friends)
   // -------------------------------------------------------------------------
 
   private instanceKeyFor(pid: number): string {
@@ -2663,9 +2802,13 @@ export class Sim {
     return party ? `party:${party.id}` : `solo:${pid}`;
   }
 
+  private instanceOriginOf(inst: InstanceSlot): { x: number; z: number } {
+    return instanceOrigin(DUNGEONS[inst.dungeonId].index, inst.slot);
+  }
+
   // Walking into a dungeon door teleports you through it (no click needed).
   // Party members who walk in land in the same instance via instanceKeyFor.
-  private cryptDoorId: number | null = null;
+  private dungeonDoorIds: number[] | null = null;
 
   private updateDoorTriggers(p: Entity): void {
     if (p.kind !== 'player') return;
@@ -2675,64 +2818,83 @@ export class Sim {
         if (inst.exitId === null) continue;
         const exit = this.entities.get(inst.exitId);
         if (exit && dist2d(p.pos, exit.pos) < DOOR_TRIGGER_RADIUS) {
-          this.leaveCrypt(p.id);
+          this.leaveDungeon(p.id);
           return;
         }
       }
       return;
     }
-    if (this.cryptDoorId === null) {
+    if (this.dungeonDoorIds === null) {
+      this.dungeonDoorIds = [];
       for (const e of this.entities.values()) {
-        if (e.templateId === 'crypt_door') { this.cryptDoorId = e.id; break; }
+        if (e.templateId === 'dungeon_door') this.dungeonDoorIds.push(e.id);
       }
     }
-    const door = this.cryptDoorId !== null ? this.entities.get(this.cryptDoorId) : null;
-    if (door && dist2d(p.pos, door.pos) < DOOR_TRIGGER_RADIUS) {
-      this.enterCrypt(p.id);
+    for (const doorId of this.dungeonDoorIds) {
+      const door = this.entities.get(doorId);
+      if (door && door.dungeonId && dist2d(p.pos, door.pos) < DOOR_TRIGGER_RADIUS) {
+        this.enterDungeon(door.dungeonId, p.id);
+        return;
+      }
     }
   }
 
-  enterCrypt(pid?: number): void {
+  enterDungeon(dungeonId: string, pid?: number): void {
     const r = this.resolve(pid);
-    if (!r) return;
+    const dungeon = DUNGEONS[dungeonId];
+    if (!r || !dungeon || r.e.dead) return;
     const key = this.instanceKeyFor(r.meta.entityId);
-    let inst = this.instances.find((i) => i.partyKey === key);
+    let inst = this.instances.find((i) => i.dungeonId === dungeonId && i.partyKey === key);
     if (!inst) {
-      inst = this.instances.find((i) => i.partyKey === null);
-      if (!inst) { this.error(r.meta.entityId, 'All instances of the Hollow Crypt are busy. Try again soon.'); return; }
+      inst = this.instances.find((i) => i.dungeonId === dungeonId && i.partyKey === null);
+      if (!inst) { this.error(r.meta.entityId, `All instances of ${dungeon.name} are busy. Try again soon.`); return; }
       this.claimInstance(inst, key);
     }
     const party = this.partyOf(r.meta.entityId);
-    if (!party || party.members.length < 5) {
-      this.emit({ type: 'log', text: 'The Hollow Crypt is meant for a full party of 5. Tread carefully.', color: '#f96', pid: r.meta.entityId });
+    if (!party || party.members.length < dungeon.suggestedPlayers) {
+      this.emit({ type: 'log', text: `${dungeon.name} is meant for a full party of ${dungeon.suggestedPlayers}. Tread carefully.`, color: '#f96', pid: r.meta.entityId });
     }
-    const origin = instanceOrigin(inst.slot);
+    const origin = this.instanceOriginOf(inst);
     const p = r.e;
-    p.pos = this.groundPos(origin.x + CRYPT_ENTRY.x, origin.z + CRYPT_ENTRY.z);
+    p.pos = this.groundPos(origin.x + dungeon.entry.x, origin.z + dungeon.entry.z);
     p.prevPos = { ...p.pos };
     p.facing = 0;
     p.targetId = null;
     p.autoAttack = false;
     inst.emptyFor = 0;
-    this.emit({ type: 'log', text: 'You descend into the Hollow Crypt...', color: '#b9f', pid: r.meta.entityId });
+    this.emit({ type: 'log', text: dungeon.enterText, color: '#b9f', pid: r.meta.entityId });
   }
 
-  leaveCrypt(pid?: number): void {
+  leaveDungeon(pid?: number): void {
     const r = this.resolve(pid);
-    if (!r) return;
+    if (!r || r.e.dead) return;
     const p = r.e;
-    p.pos = this.groundPos(CRYPT_DOOR_POS.x, CRYPT_DOOR_POS.z - 4);
+    // not inside any instance: nothing to leave (no DUNGEON_LIST[0] fallback —
+    // that silently teleported outdoor callers to the Hollow Crypt door)
+    const dungeon = dungeonAt(p.pos.x);
+    if (!dungeon) return;
+    p.pos = this.groundPos(dungeon.doorPos.x, dungeon.doorPos.z - 4);
     p.prevPos = { ...p.pos };
     p.targetId = null;
     p.autoAttack = false;
-    this.emit({ type: 'log', text: 'You climb back into daylight.', color: '#b9f', pid: r.meta.entityId });
+    this.emit({ type: 'log', text: dungeon.leaveText, color: '#b9f', pid: r.meta.entityId });
+  }
+
+  // Legacy single-dungeon entry points (tests + scripts use these).
+  enterCrypt(pid?: number): void {
+    this.enterDungeon('hollow_crypt', pid);
+  }
+
+  leaveCrypt(pid?: number): void {
+    this.leaveDungeon(pid);
   }
 
   private claimInstance(inst: InstanceSlot, key: string): void {
+    const dungeon = DUNGEONS[inst.dungeonId];
     inst.partyKey = key;
     inst.emptyFor = 0;
-    const origin = instanceOrigin(inst.slot);
-    for (const spawn of CRYPT_SPAWNS) {
+    const origin = this.instanceOriginOf(inst);
+    for (const spawn of dungeon.spawns) {
       const template = MOBS[spawn.mobId];
       const level = this.rng.int(template.minLevel, template.maxLevel);
       const mob = createMob(this.nextId++, template, level, this.groundPos(origin.x + spawn.x, origin.z + spawn.z));
@@ -2741,8 +2903,9 @@ export class Sim {
       this.entities.set(mob.id, mob);
       inst.mobIds.push(mob.id);
     }
-    const exit = createGroundObject(this.nextId++, '', 'Crypt Exit', this.groundPos(origin.x + CRYPT_EXIT_OFFSET.x, origin.z + CRYPT_EXIT_OFFSET.z));
-    exit.templateId = 'crypt_exit';
+    const exit = createGroundObject(this.nextId++, '', `${dungeon.name} Exit`, this.groundPos(origin.x + dungeon.exitOffset.x, origin.z + dungeon.exitOffset.z));
+    exit.templateId = 'dungeon_exit';
+    exit.dungeonId = dungeon.id;
     exit.objectItemId = null;
     exit.lootable = true;
     this.entities.set(exit.id, exit);
@@ -2751,11 +2914,14 @@ export class Sim {
 
   private freeInstance(inst: InstanceSlot): void {
     for (const id of inst.mobIds) {
-      const mob = this.entities.get(id);
-      if (mob) {
-        if (this.playersTargeting(id)) continue;
-        this.entities.delete(id);
+      if (!this.entities.has(id)) continue;
+      // drop any player targets on the despawning mob so the delete is clean
+      for (const meta of this.players.values()) {
+        const e = this.entities.get(meta.entityId);
+        if (e?.targetId === id) e.targetId = null;
+        if (e?.comboTargetId === id) { e.comboTargetId = null; e.comboPoints = 0; }
       }
+      this.entities.delete(id);
     }
     if (inst.exitId !== null) this.entities.delete(inst.exitId);
     inst.partyKey = null;
@@ -2764,19 +2930,11 @@ export class Sim {
     inst.emptyFor = 0;
   }
 
-  private playersTargeting(id: number): boolean {
-    for (const meta of this.players.values()) {
-      const e = this.entities.get(meta.entityId);
-      if (e?.targetId === id) return true;
-    }
-    return false;
-  }
-
   private updateInstances(): void {
     if (this.tickCount % 20 !== 0) return; // once a second
     for (const inst of this.instances) {
       if (inst.partyKey === null) continue;
-      const origin = instanceOrigin(inst.slot);
+      const origin = this.instanceOriginOf(inst);
       let occupied = false;
       for (const meta of this.players.values()) {
         const e = this.entities.get(meta.entityId);
@@ -2836,7 +2994,7 @@ export class Sim {
 
   instanceSlotAt(pos: Vec3): number | null {
     for (const inst of this.instances) {
-      const origin = instanceOrigin(inst.slot);
+      const origin = this.instanceOriginOf(inst);
       if (Math.abs(pos.x - origin.x) < 120 && Math.abs(pos.z - origin.z) < 250) return inst.slot;
     }
     return null;

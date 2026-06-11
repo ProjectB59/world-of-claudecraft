@@ -80,7 +80,7 @@ export interface ItemDef {
   // consumables: total restored over 18 seconds while sitting
   foodHp?: number;
   drinkMana?: number;
-  quality?: 'poor' | 'common' | 'uncommon' | 'rare'; // gray/white/green/blue name colors
+  quality?: 'poor' | 'common' | 'uncommon' | 'rare' | 'epic'; // gray/white/green/blue/purple name colors
   requiredClass?: PlayerClass[];
 }
 
@@ -94,9 +94,14 @@ export interface LootEntry {
   copper?: number;
   chance: number; // 0..1
   questId?: string; // only drops while this quest is active and not complete
+  // Entries sharing a rollGroup are exclusive: one rng draw is partitioned by
+  // their chances so exactly one drops (group chances should sum to 1.0).
+  rollGroup?: string;
 }
 
-export type MobFamily = 'beast' | 'humanoid' | 'murloc' | 'spider' | 'kobold' | 'undead';
+export type MobFamily =
+  | 'beast' | 'humanoid' | 'murloc' | 'spider' | 'kobold' | 'undead'
+  | 'troll' | 'ogre' | 'elemental' | 'dragonkin';
 
 export interface MobTemplate {
   id: string;
@@ -121,6 +126,10 @@ export interface MobTemplate {
   elite?: boolean;
   // Boss mechanic: periodic AoE pulse around the mob while in combat.
   aoePulse?: { min: number; max: number; radius: number; every: number; name: string };
+  // Boss mechanic: spawn adds when hp first drops below each threshold (descending fractions).
+  summonAdds?: { mobId: string; count: number; atHpPct: number[] };
+  // Boss mechanic: damage multiplier once hp drops below the threshold.
+  enrage?: { belowHpPct: number; dmgMult: number };
 }
 
 export type AbilityEffect =
@@ -147,6 +156,7 @@ export type AbilityEffect =
   | { type: 'aoeRoot'; duration: number; radius: number; min: number; max: number }
   | { type: 'selfBuff'; kind: AuraKind; value: number; duration: number }
   | { type: 'finisherHaste'; mult: number; basedur: number; perCombo: number } // slice and dice
+  | { type: 'finisherStun'; base: number; perCombo: number } // kidney shot: stun seconds scale with combo
   | { type: 'gainResource'; amount: number } // bloodrage immediate
   | { type: 'selfDamagePctMax'; pct: number } // bloodrage cost
   | { type: 'charge' };
@@ -186,6 +196,106 @@ export interface AbilityDef {
   description: string; // tooltip text, $d = damage placeholder
 }
 
+// ---------------------------------------------------------------------------
+// Content shapes — zones, NPCs, camps, props, dungeons. The per-zone content
+// modules in sim/content/ export records of these; sim/data.ts merges them.
+// ---------------------------------------------------------------------------
+
+export interface NpcDef {
+  id: string;
+  name: string;
+  title: string;
+  pos: { x: number; z: number };
+  facing: number;
+  color: number;
+  questIds: string[];
+  vendorItems?: string[];
+  greeting: string;
+}
+
+export interface CampDef {
+  mobId: string;
+  center: { x: number; z: number };
+  radius: number;
+  count: number;
+}
+
+// Ground interactables (sparkle objects)
+export interface GroundObjectDef {
+  itemId: string;
+  name: string;
+  positions: { x: number; z: number }[];
+}
+
+export interface DungeonSpawn {
+  mobId: string;
+  x: number; // relative to instance origin
+  z: number;
+}
+
+export interface DungeonDef {
+  id: string;
+  name: string;
+  index: number; // x-band for instance origins; must be unique
+  doorPos: { x: number; z: number }; // overworld entrance portal
+  entry: { x: number; z: number }; // player arrival point (instance-local)
+  exitOffset: { x: number; z: number }; // exit portal (instance-local)
+  spawns: DungeonSpawn[];
+  interior: 'crypt' | 'sanctum'; // renderer + collider interior builder key
+  suggestedPlayers: number;
+  enterText: string;
+  leaveText: string;
+}
+
+export type BiomeId = 'vale' | 'marsh' | 'peaks';
+
+export interface ZoneDef {
+  id: string;
+  name: string;
+  zMin: number;
+  zMax: number;
+  levelRange: [number, number];
+  biome: BiomeId;
+  hub: { x: number; z: number; radius: number; name: string };
+  graveyard: { x: number; z: number };
+  lakes: { x: number; z: number; radius: number }[];
+  pois: { x: number; z: number; label: string }[];
+  welcome: string; // chat-log hint shown on first entry
+}
+
+export interface BuildingDef {
+  kind: 'house' | 'inn' | 'chapel';
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  rot: number;
+}
+
+// Static prop placement per zone — the renderer builds meshes from these and
+// the collider grid blocks movement against them, so they must stay in sync.
+export interface ZonePropsDef {
+  buildings: BuildingDef[];
+  wells: { x: number; z: number; r: number }[];
+  stalls: { x: number; z: number; rot: number; r: number }[];
+  mines: { x: number; z: number; rot: number }[];
+  docks: { x: number; z: number; rot: number; hutLocal: { x: number; z: number; hw: number; hd: number } }[];
+  tents: { x: number; z: number; rot: number; scale: number }[];
+  crates: [number, number][];
+  campfires: [number, number][];
+  mudHuts: [number, number][];
+  ruinRings: { x: number; z: number; ringR: number; columns: number }[];
+  fences: { x1: number; z1: number; x2: number; z2: number }[];
+  graveyards: { x: number; z: number }[]; // 6-headstone cluster anchor
+}
+
+export function emptyZoneProps(): ZonePropsDef {
+  return {
+    buildings: [], wells: [], stalls: [], mines: [], docks: [], tents: [],
+    crates: [], campfires: [], mudHuts: [], ruinRings: [], fences: [], graveyards: [],
+  };
+}
+
 export interface QuestObjective {
   type: 'kill' | 'collect';
   targetMobId?: string; // for kill
@@ -218,12 +328,21 @@ export interface QuestProgress {
   state: 'active' | 'ready' | 'done';
 }
 
+// Consumables restore their total over CONSUME_DURATION seconds while sitting,
+// ticking on the classic 2-second regen tick. Food and drink run concurrently.
+export const CONSUME_DURATION = 18; // seconds
+export const CONSUME_TICKS = 9; // CONSUME_DURATION / 2s regen tick
+
 export interface Consuming {
   itemId: string;
   kind: 'food' | 'drink';
   hpPer2s: number;
   manaPer2s: number;
   remaining: number;
+}
+
+export function isConsuming(e: { eating: Consuming | null; drinking: Consuming | null }): boolean {
+  return e.eating !== null || e.drinking !== null;
 }
 
 export interface Entity {
@@ -273,11 +392,15 @@ export interface Entity {
   comboTargetId: number | null;
   overpowerUntil: number; // sim-time until which overpower is usable
   sitting: boolean;
-  consuming: Consuming | null;
+  eating: Consuming | null;
+  drinking: Consuming | null;
   // mob AI
   aiState: AiState;
   tappedById: number | null; // first player to damage this mob owns loot/xp/quest credit
   pulseTimer: number; // boss aoe pulse countdown
+  firedSummons: number; // summonAdds thresholds already triggered
+  summonedIds: number[]; // live adds this boss summoned; despawned on reset
+  enraged: boolean; // enrage mechanic active
   spawnPos: Vec3;
   wanderTarget: Vec3 | null;
   wanderTimer: number;
@@ -292,6 +415,7 @@ export interface Entity {
   vendorItems: string[];
   // object (ground interactable)
   objectItemId: string | null;
+  dungeonId: string | null; // set on dungeon door/exit portals
   // misc
   dead: boolean;
   scale: number;
@@ -329,7 +453,9 @@ export type SimEvent = { pid?: number } & (
   | { type: 'heal2'; sourceId: number; targetId: number; amount: number; crit: boolean; ability: string }
   // visual-only cue for the renderer: spell projectiles, dot ticks, aoe novas
   | { type: 'spellfx'; sourceId: number; targetId: number; school: string; fx: 'projectile' | 'tick' | 'nova' }
-  | { type: 'log'; text: string; color?: string }
+  // entityId (when set) anchors the log to that entity so the server only
+  // delivers it to nearby players; anchorless logs broadcast server-wide
+  | { type: 'log'; text: string; color?: string; entityId?: number }
 );
 
 export interface MoveInput {
@@ -374,9 +500,12 @@ export function normAngle(a: number): number {
 // Classic progression formulas
 // ---------------------------------------------------------------------------
 
-// XP required to go from level L to L+1 (real vanilla values, levels 1..10)
-export const XP_TABLE = [400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600];
-export const MAX_LEVEL = 10;
+// XP required to go from level L to L+1 (real vanilla values, levels 1..20)
+export const XP_TABLE = [
+  400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600,
+  8800, 10100, 11400, 12900, 14400, 16000, 17700, 19400, 21300, 23200,
+];
+export const MAX_LEVEL = 20;
 
 export function xpForLevel(level: number): number {
   return XP_TABLE[Math.min(level - 1, XP_TABLE.length - 1)];
@@ -387,7 +516,8 @@ export function xpForLevel(level: number): number {
 export function zeroDiff(playerLevel: number): number {
   if (playerLevel <= 7) return 5;
   if (playerLevel <= 9) return 6;
-  return 7;
+  if (playerLevel <= 15) return 7;
+  return 8;
 }
 
 // Real vanilla mob XP: base = 45 + 5 * mobLevel, scaled by level difference.

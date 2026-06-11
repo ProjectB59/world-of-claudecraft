@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
-import { dist2d } from '../src/sim/types';
+import { Entity, dist2d } from '../src/sim/types';
 import { CRYPT_DOOR_POS, DUNGEON_X_THRESHOLD, LAKE, MOBS } from '../src/sim/data';
+import { createMob } from '../src/sim/entity';
 import { groundHeight, WATER_LEVEL } from '../src/sim/world';
 import { isBlocked, resolvePosition } from '../src/sim/colliders';
 
@@ -129,7 +130,7 @@ describe('the Hollow Crypt doors', () => {
     expect(p.pos.x).toBeGreaterThan(DUNGEON_X_THRESHOLD);
 
     // the exit portal sits 6yd behind the entry point — walk into it
-    const exit = [...sim.entities.values()].find((e) => e.templateId === 'crypt_exit')!;
+    const exit = [...sim.entities.values()].find((e) => e.templateId === 'dungeon_exit')!;
     p.pos.x = exit.pos.x;
     p.pos.z = exit.pos.z + 1.2;
     p.facing = Math.PI;
@@ -174,6 +175,75 @@ describe('the Hollow Crypt doors', () => {
     expect(slotA).not.toBeNull();
     expect(slotB).not.toBeNull();
     expect(slotA).not.toBe(slotB);
+  });
+});
+
+describe('boss loot and encounter resets', () => {
+  it('Korzul and Velkhar always drop exactly one item from their three-way table', () => {
+    const sim = makeSim();
+    const meta = sim.meta(sim.playerId)!;
+    for (const bossId of ['korzul_the_gravewyrm', 'grand_necromancer_velkhar']) {
+      const template = MOBS[bossId];
+      const groupItems = template.loot.filter((l) => l.rollGroup).map((l) => l.itemId!);
+      expect(groupItems.length).toBe(3);
+      const mob = createMob(900000, template, 20, { x: 0, y: 0, z: 0 });
+      // accessor defeats TS narrowing (mob.loot is assigned null in the loop)
+      const lootOf = (m: Entity) => m.loot;
+      const seen = new Set<string>();
+      for (let i = 0; i < 300; i++) {
+        mob.loot = null;
+        (sim as any).rollLoot(mob, meta);
+        const dropped = (lootOf(mob)?.items ?? []).filter((s) => groupItems.includes(s.itemId));
+        expect(dropped.length, `${bossId} kill #${i}`).toBe(1);
+        seen.add(dropped[0].itemId);
+      }
+      expect([...seen].sort()).toEqual([...groupItems].sort()); // all three reachable
+    }
+  });
+
+  it('boss adds despawn on encounter reset instead of stacking across pulls', () => {
+    const sim = makeSim();
+    const p = sim.player;
+    teleportTo(sim, 45, 515 - 1.2); // walk into the Sunken Bastion door
+    sim.tick();
+    expect(p.pos.x).toBeGreaterThan(DUNGEON_X_THRESHOLD);
+    const vael = [...sim.entities.values()].find((e) => e.templateId === 'vael_the_mistcaller')!;
+    const thralls = () => [...sim.entities.values()].filter((e) => e.templateId === 'drowned_thrall').length;
+    // pull to 50%: the 60% summon threshold fires one wave of 2 thralls
+    vael.inCombat = true;
+    vael.hp = Math.floor(vael.maxHp * 0.5);
+    const events = sim.tick();
+    expect(thralls()).toBe(2);
+    // the "calls for aid!" log is anchored to the boss so it routes by radius
+    const aid = events.find((e) => e.type === 'log' && e.text.includes('calls for aid'));
+    expect(aid && 'entityId' in aid ? aid.entityId : undefined).toBe(vael.id);
+    // wipe-style reset: boss evades home -> wave despawns, thresholds re-arm
+    vael.aiState = 'evade';
+    vael.aggroTargetId = null;
+    vael.pos = { ...vael.spawnPos };
+    sim.tick();
+    expect(vael.aiState).toBe('idle');
+    expect(vael.firedSummons).toBe(0);
+    expect(thralls()).toBe(0);
+  });
+
+  it('leaveDungeon outdoors is a no-op (no crypt-door fallback teleport)', () => {
+    const sim = makeSim();
+    const p = sim.player;
+    teleportTo(sim, 0, -40);
+    sim.leaveDungeon();
+    expect(p.pos.x).toBe(0);
+    expect(p.pos.z).toBe(-40);
+  });
+
+  it('selling requires a vendor within interact range', () => {
+    const sim = makeSim();
+    sim.addItem('wolf_fang', 1);
+    teleportTo(sim, 0, -40); // open road, far from every vendor
+    const copperBefore = sim.copper;
+    sim.sellItem('wolf_fang');
+    expect(sim.countItem('wolf_fang')).toBe(1);
+    expect(sim.copper).toBe(copperBefore);
   });
 });
 

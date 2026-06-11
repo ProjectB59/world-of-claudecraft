@@ -2,7 +2,7 @@
 // Speaks NDJSON over stdin/stdout: one JSON object per line in, one per line out.
 //
 //   -> {"cmd":"info"}
-//   <- {"obs_size":77,"num_actions":18,"actions":[...]}
+//   <- {"obs_size":...,"num_actions":...,"actions":[...]}  (sizes are content-dependent; query, don't hardcode)
 //   -> {"cmd":"reset","seed":123,"player_class":"warrior","config":{...}}
 //   <- {"obs":[...],"info":{...}}
 //   -> {"cmd":"step","action":4}
@@ -36,7 +36,8 @@ interface EnvConfig {
 
 const DEFAULT_CONFIG: EnvConfig = {
   frameSkip: 5, // 4 decisions per sim-second
-  maxSteps: 3000,
+  // the cap is level 20 across three zones now — episodes need room to breathe
+  maxSteps: 8000,
   respawnSeconds: 15,
   terminateOnDeath: false,
   rewards: {

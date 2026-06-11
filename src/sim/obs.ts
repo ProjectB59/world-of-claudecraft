@@ -1,4 +1,4 @@
-import { ITEMS, QUESTS, QUEST_ORDER } from './data';
+import { ITEMS, QUESTS, QUEST_ORDER, WORLD_MAX_X, WORLD_MAX_Z, WORLD_MIN_Z } from './data';
 import { Sim } from './sim';
 import { Entity, GCD, angleTo, dist2d, normAngle, xpForLevel, MAX_LEVEL } from './types';
 
@@ -95,8 +95,8 @@ export function encodeObs(sim: Sim): number[] {
   obs.push(p.resource / Math.max(1, p.maxResource));
   obs.push(p.level / MAX_LEVEL);
   obs.push(p.level >= MAX_LEVEL ? 1 : sim.xp / xpForLevel(p.level));
-  obs.push(clamp(p.pos.x / 180, -1, 1));
-  obs.push(clamp(p.pos.z / 180, -1, 1));
+  obs.push(clamp(p.pos.x / WORLD_MAX_X, -1, 1));
+  obs.push(clamp((p.pos.z - (WORLD_MIN_Z + WORLD_MAX_Z) / 2) / ((WORLD_MAX_Z - WORLD_MIN_Z) / 2), -1, 1));
   obs.push(Math.sin(p.facing));
   obs.push(Math.cos(p.facing));
   obs.push(p.gcdRemaining / GCD);
@@ -105,7 +105,7 @@ export function encodeObs(sim: Sim): number[] {
   obs.push(p.inCombat ? 1 : 0);
   obs.push(p.autoAttack ? 1 : 0);
   obs.push(p.comboPoints / 5);
-  obs.push(p.sitting || p.consuming ? 1 : 0);
+  obs.push(p.sitting || p.eating || p.drinking ? 1 : 0);
   obs.push(sim.time > p.overpowerUntil ? 0 : 1); // dodge proc available
 
   // --- abilities (10 x 2 = 20) ---

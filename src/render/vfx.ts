@@ -1,10 +1,20 @@
 import * as THREE from 'three';
+import { GFX } from './gfx';
 
 // Spell & ambience particle system. One pooled THREE.Points cloud drawn with
 // additive blending; projectiles are lightweight emitters that home on their
 // target and burst on arrival. No textures — soft discs shaded in GLSL.
+//
+// On the composer tiers, colors are pushed past 1.0 (the HDR HalfFloat target
+// preserves them) so projectile cores, novas and heal pillars bloom; the low
+// tier keeps plain colors and the legacy look.
 
 const CAPACITY = 4096;
+
+// HDR multipliers (graphics-plan step 9); 1.0 on the no-composer path
+function hdr(k: number): number {
+  return GFX.composer ? k : 1;
+}
 
 export const SCHOOL_COLORS: Record<string, number> = {
   fire: 0xff7a2a,
@@ -13,13 +23,17 @@ export const SCHOOL_COLORS: Record<string, number> = {
   shadow: 0x9a5df0,
   holy: 0xffe9a0,
   nature: 0x86e86a,
-  physical: 0xfff2d8,
+  // warm steel-spark — near-white crossed the bloom threshold colorlessly and
+  // melee hits read as faint white noise
+  physical: 0xffd28a,
 };
 
 interface Projectile {
   pos: THREE.Vector3;
   targetId: number;
-  color: THREE.Color;
+  color: THREE.Color; // base school color (impact burst = x1.6)
+  coreColor: THREE.Color; // HDR core (x2.5)
+  trailColor: THREE.Color; // sparkling trail (x1.4)
   speed: number;
   ttl: number;
 }
@@ -127,11 +141,19 @@ export class Vfx {
     const from = this.anchor(sourceId, 0.62);
     if (!from) return;
     const color = new THREE.Color(SCHOOL_COLORS[school] ?? 0xffffff);
-    this.projectiles.push({ pos: from.clone(), targetId, color, speed: 26, ttl: 3 });
+    this.projectiles.push({
+      pos: from.clone(),
+      targetId,
+      color,
+      coreColor: color.clone().multiplyScalar(hdr(2.5)),
+      trailColor: color.clone().multiplyScalar(hdr(1.4)),
+      speed: 26,
+      ttl: 3,
+    });
   }
 
   burst(at: THREE.Vector3, school: string, count = 18, power = 1): void {
-    const c = SCHOOL_COLORS[school] ?? 0xffffff;
+    const c = new THREE.Color(SCHOOL_COLORS[school] ?? 0xffffff).multiplyScalar(hdr(1.6));
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2;
       const up = Math.random() * 0.9 + 0.1;
@@ -152,7 +174,7 @@ export class Vfx {
   nova(centerId: number, school: string): void {
     const at = this.anchor(centerId, 0.12);
     if (!at) return;
-    const c = SCHOOL_COLORS[school] ?? 0xffffff;
+    const c = new THREE.Color(SCHOOL_COLORS[school] ?? 0xffffff).multiplyScalar(hdr(1.6));
     for (let i = 0; i < 34; i++) {
       const a = (i / 34) * Math.PI * 2;
       const sp = 11 + Math.random() * 3;
@@ -163,13 +185,15 @@ export class Vfx {
   healGlow(targetId: number): void {
     const at = this.anchor(targetId, 0.1);
     if (!at) return;
+    const green = new THREE.Color(0xbaf7a0).multiplyScalar(hdr(1.8));
+    const gold = new THREE.Color(0xffe9a0).multiplyScalar(hdr(1.8));
     for (let i = 0; i < 22; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = 0.4 + Math.random() * 0.7;
       this.spawn(
         at.x + Math.sin(a) * r, at.y + Math.random() * 0.4, at.z + Math.cos(a) * r,
         Math.sin(a) * 0.25, 1.6 + Math.random() * 1.4, Math.cos(a) * 0.25,
-        i % 3 === 0 ? 0xbaf7a0 : 0xffe9a0, 0.3 + Math.random() * 0.25, 0.9 + Math.random() * 0.5, -1.2,
+        i % 3 === 0 ? green : gold, 0.3 + Math.random() * 0.25, 0.9 + Math.random() * 0.5, -1.2,
       );
     }
   }
@@ -190,19 +214,22 @@ export class Vfx {
   meleeSpark(targetId: number, crit: boolean): void {
     const at = this.anchor(targetId, 0.55);
     if (!at) return;
-    this.burst(at, 'physical', crit ? 14 : 6, crit ? 1.1 : 0.55);
+    // big enough to actually read mid-fight at 1600x900
+    this.burst(at, 'physical', crit ? 22 : 10, crit ? 1.4 : 0.85);
   }
 
   levelUpPillar(targetId: number): void {
     const at = this.anchor(targetId, 0);
     if (!at) return;
+    const white = new THREE.Color(0xfff8e0).multiplyScalar(hdr(1.8));
+    const gold = new THREE.Color(0xffd14d).multiplyScalar(hdr(1.8));
     for (let i = 0; i < 46; i++) {
       const a = Math.random() * Math.PI * 2;
       const r = 0.3 + Math.random() * 0.9;
       this.spawn(
         at.x + Math.sin(a) * r, at.y + Math.random() * 0.3, at.z + Math.cos(a) * r,
         0, 4.5 + Math.random() * 3.5, 0,
-        i % 4 === 0 ? 0xfff8e0 : 0xffd14d, 0.42, 1.1 + Math.random() * 0.4, -1,
+        i % 4 === 0 ? white : gold, 0.42, 1.1 + Math.random() * 0.4, -1,
       );
     }
   }
@@ -256,23 +283,29 @@ export class Vfx {
       const dist = dir.length();
       const step = pr.speed * dt;
       if (dist <= Math.max(0.7, step)) {
-        // impact
-        for (let k = 0; k < 16; k++) {
+        // impact: school-tinted flash + burst that survives a 30fps frame
+        this.tmpColor.copy(pr.color).multiplyScalar(hdr(1.6));
+        this.spawn(target.x, target.y, target.z, 0, 0.5, 0, this.tmpColor, 0.8, 0.22);
+        for (let k = 0; k < 22; k++) {
           const a = Math.random() * Math.PI * 2;
           const sp = 2.5 + Math.random() * 4;
-          this.spawn(target.x, target.y, target.z, Math.sin(a) * sp, Math.random() * 3, Math.cos(a) * sp, pr.color, 0.36, 0.4, 7);
+          this.spawn(
+            target.x, target.y, target.z,
+            Math.sin(a) * sp, Math.random() * 3, Math.cos(a) * sp,
+            this.tmpColor, 0.44, 0.55, 7,
+          );
         }
         this.projectiles.splice(i, 1);
         continue;
       }
       dir.multiplyScalar(step / dist);
       pr.pos.add(dir);
-      // bright core + sparkling trail
-      this.spawn(pr.pos.x, pr.pos.y, pr.pos.z, 0, 0, 0, pr.color, 0.85, 0.09);
+      // bright HDR core (blooms into a comet) + sparkling trail
+      this.spawn(pr.pos.x, pr.pos.y, pr.pos.z, 0, 0, 0, pr.coreColor, 1.0, 0.12);
       this.spawn(
         pr.pos.x + (Math.random() - 0.5) * 0.25, pr.pos.y + (Math.random() - 0.5) * 0.25, pr.pos.z + (Math.random() - 0.5) * 0.25,
         (Math.random() - 0.5) * 0.8, 0.4, (Math.random() - 0.5) * 0.8,
-        pr.color, 0.3, 0.45, 1.5,
+        pr.trailColor, 0.32, 0.6, 1.5,
       );
     }
 

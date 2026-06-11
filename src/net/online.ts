@@ -87,10 +87,11 @@ function blankEntity(id: number): Entity {
     channeling: false, channelTickTimer: 0, channelTickEvery: 0,
     gcdRemaining: 0, cooldowns: new Map(), queuedOnSwing: null, fiveSecondRule: 99,
     comboPoints: 0, comboTargetId: null, overpowerUntil: -1,
-    sitting: false, consuming: null,
-    aiState: 'idle', tappedById: null, pulseTimer: 0, spawnPos: { x: 0, y: 0, z: 0 }, wanderTarget: null, wanderTimer: 0,
+    sitting: false, eating: null, drinking: null,
+    aiState: 'idle', tappedById: null, pulseTimer: 0, firedSummons: 0, summonedIds: [], enraged: false,
+    spawnPos: { x: 0, y: 0, z: 0 }, wanderTarget: null, wanderTimer: 0,
     aggroTargetId: null, respawnTimer: 0, corpseTimer: 0, lootable: false, loot: null,
-    xpValue: 0, questIds: [], vendorItems: [], objectItemId: null,
+    xpValue: 0, questIds: [], vendorItems: [], objectItemId: null, dungeonId: null,
     dead: false, scale: 1, color: 0xffffff,
   };
 }
@@ -234,6 +235,7 @@ export class ClientWorld implements IWorld {
         e.prevPos = { x: w.x, y: w.y, z: w.z };
         e.facing = w.f;
         e.prevFacing = w.f;
+        e.dungeonId = w.dgn ?? null;
         if (e.kind === 'npc') {
           const def = NPCS[e.templateId];
           e.questIds = def ? [...def.questIds] : [];
@@ -292,8 +294,11 @@ export class ClientWorld implements IWorld {
       e.critChance = s.crit ?? 0.05;
       e.dodgeChance = s.dodge ?? 0.05;
       e.weapon = s.weapon ?? e.weapon;
-      e.consuming = s.consuming
-        ? { itemId: '', kind: s.consuming.kind, hpPer2s: 0, manaPer2s: 0, remaining: s.consuming.remaining }
+      e.eating = s.eat
+        ? { itemId: '', kind: 'food', hpPer2s: 0, manaPer2s: 0, remaining: s.eat.remaining }
+        : null;
+      e.drinking = s.drk
+        ? { itemId: '', kind: 'drink', hpPer2s: 0, manaPer2s: 0, remaining: s.drk.remaining }
         : null;
       this.xp = s.xp ?? 0;
       this.copper = s.copper ?? 0;
@@ -442,10 +447,17 @@ export class ClientWorld implements IWorld {
   duelDecline(): void {
     this.cmd({ cmd: 'duel_decline' });
   }
+  enterDungeon(dungeonId: string): void {
+    this.cmd({ cmd: 'enter_dungeon', dungeon: dungeonId });
+  }
+  leaveDungeon(): void {
+    this.cmd({ cmd: 'leave_dungeon' });
+  }
+  // legacy aliases kept for older scripts
   enterCrypt(): void {
-    this.cmd({ cmd: 'enter_crypt' });
+    this.enterDungeon('hollow_crypt');
   }
   leaveCrypt(): void {
-    this.cmd({ cmd: 'leave_crypt' });
+    this.leaveDungeon();
   }
 }

@@ -152,7 +152,7 @@ async function main() {
       const nearbyMobs = b.mobs().filter((m) => b.dist(m) < 40);
       if (b.self.rtype === 'mana' && nearbyMobs.length === 0) {
         const manaFrac = (b.self.res ?? 0) / Math.max(1, b.self.mres ?? 1);
-        if (b.self.consuming) { b.input({}); continue; } // keep sitting
+        if (b.self.eat || b.self.drk) { b.input({}); continue; } // keep sitting
         if (manaFrac < 0.35) {
           b.input({});
           b.cmd({ cmd: 'use', item: 'spring_water' });

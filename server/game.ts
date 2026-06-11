@@ -35,6 +35,7 @@ function wireEntity(e: Entity): Record<string, unknown> {
   if (e.dead) out.dead = 1;
   if (e.lootable) out.loot = 1;
   if (e.hostile) out.h = 1;
+  if (e.dungeonId) out.dgn = e.dungeonId;
   if (e.scale !== 1) out.sc = e.scale;
   if (e.color !== 0xffffff) out.c = e.color;
   if (e.castingAbility) {
@@ -43,7 +44,7 @@ function wireEntity(e: Entity): Record<string, unknown> {
     out.castTot = round2(e.castTotal);
     if (e.channeling) out.chan = 1;
   }
-  if (e.sitting || e.consuming) out.sit = 1;
+  if (e.sitting || e.eating || e.drinking) out.sit = 1;
   if (e.aggroTargetId !== null) out.aggro = e.aggroTargetId;
   if (e.tappedById !== null) out.tap = e.tappedById;
   if (e.auras.length > 0) {
@@ -233,18 +234,22 @@ export class GameServer {
         }
         break;
       }
-      // the Hollow Crypt
-      case 'enter_crypt': {
-        // must actually be near the door
+      // dungeons ('enter_crypt'/'leave_crypt' kept as aliases for older bots)
+      case 'enter_crypt':
+      case 'enter_dungeon': {
+        // must actually be near that dungeon's door
+        const dungeonId = msg.cmd === 'enter_crypt' ? 'hollow_crypt' : msg.dungeon;
+        if (typeof dungeonId !== 'string') break;
         const e = sim.entities.get(pid);
-        const door = [...sim.entities.values()].find((x) => x.templateId === 'crypt_door');
-        if (e && door && Math.hypot(e.pos.x - door.pos.x, e.pos.z - door.pos.z) < 8) sim.enterCrypt(pid);
+        const door = [...sim.entities.values()].find((x) => x.templateId === 'dungeon_door' && x.dungeonId === dungeonId);
+        if (e && door && Math.hypot(e.pos.x - door.pos.x, e.pos.z - door.pos.z) < 8) sim.enterDungeon(dungeonId, pid);
         break;
       }
-      case 'leave_crypt': {
+      case 'leave_crypt':
+      case 'leave_dungeon': {
         const e = sim.entities.get(pid);
-        const exit = e ? [...sim.entities.values()].find((x) => x.templateId === 'crypt_exit' && Math.hypot(e.pos.x - x.pos.x, e.pos.z - x.pos.z) < 8) : null;
-        if (exit) sim.leaveCrypt(pid);
+        const exit = e ? [...sim.entities.values()].find((x) => x.templateId === 'dungeon_exit' && Math.hypot(e.pos.x - x.pos.x, e.pos.z - x.pos.z) < 8) : null;
+        if (exit) sim.leaveDungeon(pid);
         break;
       }
     }
@@ -288,7 +293,8 @@ export class GameServer {
         crit: p.critChance,
         dodge: p.dodgeChance,
         weapon: p.weapon,
-        consuming: p.consuming ? { kind: p.consuming.kind, remaining: round2(p.consuming.remaining) } : null,
+        eat: p.eating ? { remaining: round2(p.eating.remaining) } : null,
+        drk: p.drinking ? { remaining: round2(p.drinking.remaining) } : null,
         opUntil: p.overpowerUntil > this.sim.time ? 1 : 0,
         party: this.partyWire(session.pid),
         trade: this.tradeWire(session.pid),

@@ -93,19 +93,36 @@ node scripts/mp_integration.mjs   # 26-check API/WS/persistence suite
 node scripts/mp_browser.mjs       # two real browser clients see each other
 ```
 
+## The Sunken Bastion & Gravewyrm Sanctum
+
+The conspiracy doesn't end with Morthen. **The Sunken Bastion** (5-player,
+~level 13, southeast Mirefen) holds Vael the Mistcaller — he summons waves of
+Drowned Thralls at 60% and 30% health. The finale is the **Gravewyrm
+Sanctum** (5-player, level 20, beneath Thornpeak): three chambers of elite
+boneguard and drakonid, Korgath the Bound (enrages below 30%), Grand
+Necromancer Velkhar (more add waves), and **Korzul the Gravewyrm** — epic
+weapons drop here, and the lead-up quest chain is soloable so nobody is
+locked out of the story.
+
+
+
 ## Play offline
 
 ```bash
 npm run dev        # open http://localhost:5173 -> Play Offline
 ```
 
-Name your character, pick **Warrior**, **Mage**, or **Rogue**, and you're in
-Eastbrook Vale: a market town ringed by six hubs — wolf runs and a rare wolf
-to the north, boar meadows east, the Webwood west, Mirror Lake and its murloc
-camps northwest, a kobold-infested copper dig southwest, a ruined chapel with
-restless dead northeast, and a bandit camp (with its boss, Gorrak the
-Ruthless) southeast. Ten quests across six NPCs, a vendor, and gear upgrades
-for all three classes.
+Name your character, pick any of the nine classes, and you're in **Eastbrook
+Vale** (levels 1-7): a market town ringed by six hubs — wolf runs north, boar
+meadows east, the Webwood west, Mirror Lake northwest, a kobold copper dig
+southwest, a ruined chapel with restless dead northeast, and Gorrak's bandit
+camp southeast. The road north climbs through a mountain pass into **Mirefen
+Marsh** (6-13, hub: Fenbridge) and on up to **Thornpeak Heights** (13-20,
+hub: Highwatch) — three zones, ~60 quests, and one storyline: the Gravecaller
+conspiracy, from the first restless bones outside Eastbrook to **Korzul the
+Gravewyrm** beneath the peaks. Each hub has vendors (including weapon- and
+armorsmiths selling honest white gear), a graveyard, its own music, and a
+zone map.
 
 ### Controls (classic layout)
 
@@ -126,10 +143,13 @@ for all three classes.
 - Spell-hit table with the +3-level cliff (96/95/94/83%); melee miss/dodge vs level
 - Armor DR `armor/(armor + 85·AttackerLevel + 400)`
 - HP/mana stat rules: first 20 stamina → 1 hp each, rest → 10; first 20 int → 1 mana, rest → 15
-- XP curve 400/900/1400/…; mob XP `45 + 5·L` with real zero-difference gray bands
+- XP curve 400/900/1400/… through level 20; mob XP `45 + 5·L` with real zero-difference gray bands
 - 1.5 s GCD (1.0 s for rogues), weapon swing timers, 5-second mana rule
 
-**All nine vanilla classes (learn levels and rank values from vanilla, 1–10)**
+**All nine vanilla classes (learn levels and rank values from vanilla, 1–20 —
+spells gain ranks as you level: Lightning Bolt R2 at 8, R3 at 14, R4 at 20,
+plus new high-band abilities like Execute, Kidney Shot, Flash Heal,
+Stormstrike, and Starfire)**
 - *Warrior*: rage, Heroic Strike (on-next-swing, off-GCD), Battle Shout,
   Charge, Rend, Thunder Clap, Hamstring, Bloodrage, Overpower (dodge proc)
 - *Paladin*: Seal of Righteousness (weapon imbue) unleashed by **Judgement**,
@@ -156,6 +176,7 @@ for all three classes.
 
 **World & systems**
 - Eating/drinking: sit down, restore over 18 s, breaks on damage or standing
+  — and yes, you can eat and drink at the same time
 - Vendor: buy food/water, sell your grays; coin display in g/s/c
 - Ground quest objects with sparkles (steal the bandits' supply crates back)
 - Mob AI: wander, proximity aggro by level difference, social pulls (murlocs
@@ -169,8 +190,11 @@ for all three classes.
   stall, tents, campfires with flickering light, mine portal, ruined columns,
   fishing dock, murloc mud-huts, roads painted into the terrain, grass tufts,
   pine + oak trees, lake with animated water, drifting clouds, real-time shadows
-- Eight rigged creature models (wolf/boar/spider/murloc/kobold/skeleton/
-  humanoid/sheep) with walk/attack/cast/sit/death animations
+- Twelve rigged creature families (wolf/boar/spider/murloc/kobold/skeleton/
+  humanoid/troll/ogre/elemental/dragonkin/sheep) with walk/attack/cast/sit/
+  death animations
+- Painted procedural icons for every spell, item, and buff — drawn on canvas
+  at runtime, no asset files
 - Classic UI: portrait unit frames, buff/debuff bars with durations, action
   bar with cooldown sweeps + range/resource coloring, cast/channel bar,
   spellbook, character paperdoll, quest log, world map, vendor + loot windows,
@@ -190,7 +214,7 @@ python python/example_random_agent.py  # smoke test + throughput
 ```python
 from wow_env import WoWClassicEnv
 
-env = WoWClassicEnv(player_class="rogue", frame_skip=5, max_steps=3000)
+env = WoWClassicEnv(player_class="rogue", frame_skip=5, max_steps=8000)
 obs, info = env.reset(seed=42)
 obs, reward, terminated, truncated, info = env.step(action)
 ```

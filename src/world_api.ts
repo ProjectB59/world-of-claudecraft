@@ -93,6 +93,6 @@ export interface IWorld {
   duelRequest(targetPid: number): void;
   duelAccept(): void;
   duelDecline(): void;
-  enterCrypt(): void;
-  leaveCrypt(): void;
+  enterDungeon(dungeonId: string): void;
+  leaveDungeon(): void;
 }

@@ -1,0 +1,138 @@
+[
+  {
+    "scores": [
+      {
+        "design": "A (lore-first)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS TO JUDGE. Verified in workflow transcripts (.../a4d85149.../subagents/workflows/wf_0c329a02-def/): all 6 lore-lens attempts (agent-a1812069f62de546f + 5 retries) ended with '[Request interrupted by user]' while still chunk-reading data.ts (~14 transcript records each, zero design prose; max assistant text = one 87-char 'let me read...' line). The judge prompt's 'Three competing expansion designs follow' interpolated nothing because the script's designs.filter(d => d.text) dropped the empty results."
+      },
+      {
+        "design": "B (pacing-first)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS TO JUDGE. All 6 pacing-lens attempts (agent-a1ff2fdb5a9f25aa9 + 5 retries) died identically \u2014 interrupted at the 5th-6th Read of data.ts around line 892, zero assistant prose. Retry waves ran ~16-27 min apart (22:27 through 00:33 local), consistent with a per-agent timeout killing designers before they finished reading the 1,463-line data.ts, let alone writing a spec."
+      },
+      {
+        "design": "C (dungeon-first)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS TO JUDGE. All 6 dungeon-lens attempts (agent-a27bd84e97623488a + 5 retries) failed the same way. Only the three non-world siblings completed and have results in journal.jsonl: spell-ranks (18.2K chars), icons (27.7K chars), graphics plan (25.2K chars). A prior judge (agent-a806036714c6ef470) already submitted an all-zeros verdict at 13:10Z; the workflow looped judges anyway. This is at least the 5th judge attempt."
+      }
+    ],
+    "winner": "none \u2014 no world design was ever produced (18/18 designer attempts interrupted with zero output), so there is no winner to synthesize from. The Synthesize step must author the master spec directly from the WORLD_BRIEF using the verified scaffolding in 'grafts', or the orchestrator must re-run the three designers with the root-cause fix in 'flaws' (inline a pre-digested data.ts summary instead of demanding a full read). Do NOT re-run the judge again without design text \u2014 it will produce this same verdict.",
+    "grafts": [
+      "VERIFIED XP ANCHORS (re-checked against src/sim/types.ts:389-418): XP 6->13 = 46,500 (3600+4500+5400+6500+7600+8800+10100); 13->20 = 113,100 (11400+12900+14400+16000+17700+19400+21300). XP_TABLE already contains vanilla values through L20 \u2014 no table work needed, only MAX_LEVEL plumbing. Kill XP = 45+5*mobLevel at level, +5%/level above (cap +20%); gray cutoff zeroDiff = 5 (player<=7), 6 (8-9), 7 (10-15), 8 (16+). Elite XP mult = 2 (sim.ts:1570). GROUP_XP_BONUS = [1,1,1.166,1.3,1.43] with per-member XP divided by party size (sim.ts:1595).",
+      "ZONE-1 CARRY-OVER (recomputed by summing QUESTS in data.ts:1098-1225): existing 13 quests pay exactly 7,810 quest XP; with ~90 required kills at avg ~70 XP and 1.6x overshoot, players reach ~L7 from solo content and 8-10 via the Hollow Crypt (13 elite spawns: 12 trash incl. miniboss Sexton Marrow + Morthen; q_hollow pays 1,500 XP + 1g). Zone 2 must therefore catch players at 6-7 via a breadcrumb (minLevel 6) from Brother Aldric/Marshal Redbrook, with the crypt as the 8-10 group spike breadcrumbed back from the new hub.",
+      "ZONE-2 BUDGET TEMPLATE THAT BALANCES: gross target 46,500 * 1.10-1.20 = 51,150-55,800. ~15-16 quests averaging ~1,300 XP (rising 800->2,000 by chain depth) = ~21,000 quest XP; remainder ~30,000-35,000 from kills at ~95 XP/kill (mobs L8-12) = ~330 effective kills; / 1.6 overshoot = ~205 quest-required kills = counts of 10-15 across 10-12 kill/collect quests as staged two-part chains on the same camps (matches zone-1 norms of 8-10 per quest).",
+      "ZONE-3 BUDGET TEMPLATE THAT BALANCES (with corrected dungeon math): gross target 113,100 * 1.10-1.20 = 124,410-135,720. ~17-18 quests averaging ~2,800 XP (2,000->4,500) = ~48,000-50,000 quest XP; remainder ~75,000-85,000 from kills at ~125 XP/kill (mobs L13-19) = ~640 effective kills = ~86 kills/level (normal classic pacing); / 1.6 = ~400 required kills via two-stage chains plus 2-3 outdoor elite group arcs (2x XP). The 19->20 stretch (21,300 XP) must be carried by the final-dungeon LEAD-UP CHAIN quest XP (4-5 quests at 3,500-4,500 each, solo-able at 18-19) \u2014 NOT by dungeon clears (see flaws: a full 5-man clear nets only ~2,300 trash XP per member).",
+      "PACING STRUCTURE TO BAKE IN: breadcrumb quests hub-to-hub at minLevel 6 and 12-13; each new hub front-loads 3-4 quests on the nearest 2 camps so the first 30 minutes have zero dead travel; roads (polylines) between hubs with camps 40-90 yd off-road; final dungeon entry gated minLevel 18, suggestedPlayers 5; Hollow Crypt gets 2-4 added build-up quests using the existing sigil pattern (ground-sparkle collect, like gravecaller_sigil) so the user's 'riveting crypt' requirement is met without new engine work.",
+      "STORY SPINE SALVAGE (the one fixed point all three lenses shared via the brief): Morthen is the opening act; q_whispers already plants the hook \u2014 Aldric's line 'the mark of the Gravecallers, a sect I had prayed was extinct' (data.ts:1177). Make the Gravecallers servants of a greater zone-3 villain; have Brother Aldric (and one zone-2 native, e.g. the weaponsmith or a marshal's scout) physically recur in zone 2 and 3 so reveals land with known faces; per-class rewards only need 3 archetype entries thanks to REWARD_ARCHETYPE (data.ts:1234).",
+      "DO NOT REDO COMPLETED WORK: three sibling design specs already exist as journal results in wf_0c329a02-def/journal.jsonl \u2014 ability ranks 1-20 for all nine classes (18.2K chars), the full procedural icon system spec (27.7K chars), and the graphics overhaul plan (25.2K chars). Synthesis should incorporate them by reference, not regenerate them."
+    ],
+    "flaws": [
+      "BLOCKING: there is no winning design to synthesize. The synthesis prompt will interpolate zero DESIGN blocks (same .filter(d => d.text) behavior that emptied the judge prompt). Either re-run the three designers after fixing the root cause below, or instruct the synthesizer to author the complete master spec itself from the WORLD_BRIEF + the grafts here: story arc continuing the Gravecaller plot, zone 2 (6-13), zone 3 (13-20) with hubs/NPCs/mobs/camps/quests, Hollow Crypt build-up quests, level-20 final dungeon, item/vendor/food tables.",
+      "ROOT CAUSE TO FIX IN THE WORKFLOW: all 18 designer attempts were interrupted ('[Request interrupted by user]') while still chunk-reading data.ts \u2014 they never reached the writing stage. Fix: inline a pre-digested content summary (quest/mob/NPC/camp tables, ~2K tokens) directly into the designer prompt, or scope the read to data.ts:892-1463 (mobs/NPCs/quests/camps/world) and types.ts:383-418 (XP formulas) instead of 'READ FIRST: all of it'. Also raise or remove the per-agent timeout that produced the ~16-27-minute interrupt waves.",
+      "XP MATH ERROR IN THE PREVIOUS JUDGE'S VERDICT \u2014 CORRECT IT IN SYNTHESIS: it budgeted 'a full final-dungeon clear = ~8,000+ XP per run' as a band-top soak. Actual sim math (sim.ts:1595) divides kill XP by party size after the 1.43 group bonus: per member = mobXp * 2 * 1.43 / 5 = 0.572x solo. A 28-elite-kill L19-20 dungeon nets ~2,300 trash XP per member (28 * ~290 * 0.572), and a Hollow Crypt clear ~650. Dungeon runs are loot/story events, not XP soaks \u2014 the 18->20 budget must come from lead-up chain quest XP.",
+      "BAND-COVERAGE GUARDRAIL: zone 2 needs mobs up to L12+ and zone 3 up to L19+ or kill XP collapses at the top of each band under the gray cutoff (zeroDiff 7 at player 10-15, 8 at 16+). Verify every level 6-19 has at-level mobs within its zone.",
+      "SOFT GAP AT 7-9: zone-1 solo content runs dry around L7 and the crypt is a 5-man spike, not solo progression. Zone 2's first 4-5 quests (minLevel 6, mobs L7-9) must single-handedly carry 7->9 for solo players; front-load accordingly.",
+      "QUEST XP CEILING: keep any single quest's XP at or below ~25% of a level at its intended level (existing ceiling: q_hollow 1,500 vs 6,500 needed at L10 = 23%). The zone-3 lead-up chain at 3,500-4,500 per quest vs 19,400-21,300 per level (18-19%) respects this.",
+      "ECONOMY CONTINUITY: zone-1 quests pay 75-500c (q_hollow 1g = 10,000c). Scale zone 2 to ~2-8s per quest and zone 3 to ~10-30s; price vendor white gear so a full band set costs roughly that band's total quest copper; food/drink tiers must match hp/mana pools at L13 and L20 (consume window fixed at 18s).",
+      "ID HYGIENE: all new ids snake_case and collision-checked against existing data.ts ids (q_*, mobs like tunnel_rat/morthen/gorrak, items like gravecaller_*); new mob families limited to primitive-rig-buildable ones; cap new boss mechanics at 2-3 simple types (summon adds, enrage <30% hp, frontal breath) and flag each as sim work alongside the existing aoePulse."
+    ]
+  },
+  {
+    "scores": [
+      {
+        "design": "A (lore-first)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS. The design:world-lore agent produced zero assistant output across all retries (verified in agent transcripts under .../subagents/workflows/wf_0c329a02-def/: max assistant block = 0 chars in agent-a1812069f62de546f.jsonl and 5 sibling retries). The judge prompt contained no DESIGN blocks because the workflow's designs.filter(d => d.text) dropped the empty result. Nothing to score."
+      },
+      {
+        "design": "B (pacing-first)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS. design:world-pacing failed identically (agent-a1ff2fdb5a9f25aa9.jsonl and 5 retries, all with zero assistant output \u2014 agents died after reading data.ts, likely context overrun from the 32K-token file read plus the full WORLD_BRIEF). Nothing to score."
+      },
+      {
+        "design": "C (dungeon-first)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS. design:world-dungeon failed identically (agent-a27bd84e97623488a.jsonl and 5 retries, zero assistant output). Only the ranks (18K chars), icons (28K chars), and graphics-plan (25K chars) designers completed. Nothing to score."
+      }
+    ],
+    "winner": "none \u2014 all three world designs are missing; every designer attempt crashed with empty output, so the Synthesize step must author the master spec directly from the WORLD_BRIEF (or the workflow should re-run the three designers, ideally with the data.ts read scoped down to the mobs/quests/world sections to avoid whatever killed 18 straight attempts)",
+    "grafts": [
+      "VERIFIED XP BUDGET (use as-is): 6->13 needs 46,500 (3600+4500+5400+6500+7600+8800+10100); 13->20 needs 113,100 (11400+12900+14400+16000+17700+19400+21300); total 6->20 = 159,600. Kill XP at-level = 45+5*mobLevel: zone-2 mobs L8-12 average ~95 XP/kill; zone-3 mobs L13-19 average ~125 XP/kill; elites double it; group multipliers 1.166/1.3/1.43 already exist (GROUP_XP_BONUS in data.ts).",
+      "ZONE 1 CARRY-OVER (recomputed from data.ts): existing 13 quests award 7,810 quest XP total; with kill XP this lands players at ~6-7, and the Hollow Crypt (elite 2x XP trash, Morthen L10, q_hollow 1,500 XP) bridges 9->10. Zone 2's band should therefore be designed as 6/7->13 with the crypt as the mid-band group spike at 9-10, breadcrumbed from the new zone-2 hub.",
+      "ZONE 2 BUDGET TEMPLATE THAT BALANCES: target 46,500 * 1.10-1.20 = 51,150-55,800 total. 15-16 quests averaging ~1,300 XP (rising 800->2,000 by chain depth) = ~21,000 quest XP; remaining ~32,000-35,000 from kills = ~350 effective kills at 95 XP; divided by the 1.6x overshoot factor = ~220 quest-required kills, i.e. 12-15 counts across 10-12 kill/collect quests plus chains. These counts match existing zone-1 norms (8-10 per quest) when split into staged chains on the same camps.",
+      "ZONE 3 BUDGET TEMPLATE THAT BALANCES: target 113,100 * 1.10-1.20 = 124,400-135,700. 17-18 quests averaging ~2,800 XP (2,000->4,000, consistent with the game's curve where q_hollow pays 1,500 at L10) = ~48,000-50,000 quest XP; remaining ~78,000-85,000 from kills = ~640 effective kills at 125 XP = ~86 kills/level, which is normal classic pacing; with the 1.6x overshoot only ~400 quest-required kills are needed = 20-25 per camp via two-stage chains (kill 10-12, then follow-up 12-15 on the same camp), plus 2-3 elite group quests (2x XP/kill) and a full final-dungeon clear (~25-30 elite kills at 2x ~140 XP = ~8,000+ per run) to soak the top of the band.",
+      "PACING STRUCTURE TO BAKE IN: breadcrumb quest from Brother Aldric/the Marshal to the zone-2 hub at minLevel 6, and from zone 2 to zone 3 at minLevel 12-13; each hub front-loads 3-4 quests on the same 2 camps so the first 30 minutes have zero dead travel; roads (polylines) between hubs with camps placed 40-90 yd off-road; final dungeon entry quest gated minLevel 18 with suggestedPlayers 5.",
+      "ENGINE-PALETTE REMINDERS for the synthesizer (already paid-for capabilities): kill/collect objectives only, requiresQuest chains, minLevel gates, ground sparkle objects for non-kill story beats (the Gravecaller sigil pattern), rare spawns on long timers (Old Greyjaw pattern), aoePulse boss mechanic exists; cap new boss mechanics at 2-3 simple ones (summon adds, enrage below 30% hp, frontal breath) and flag each as sim work."
+    ],
+    "flaws": [
+      "BLOCKING: there is no winning design to synthesize from. The synthesis prompt will interpolate zero DESIGN blocks (same .filter(d => d.text) behavior). The synthesizer must either be re-run after the three designers are retried, or must write the complete master spec itself from the WORLD_BRIEF requirements: story arc continuing the Gravecaller plot, zone 2 (6-13) and zone 3 (13-20) with hubs/NPCs/mobs/camps/quests, Hollow Crypt build-up quests, level-20 final dungeon, item/vendor tables.",
+      "ROOT CAUSE TO FIX IN THE WORKFLOW: all 18 designer attempts died after the initial data.ts read with zero assistant output. Re-runs should scope the read (data.ts lines 892-1357 cover mobs/NPCs/quests/camps/world; types.ts lines 189-220 and 383-417 cover QuestDef and XP formulas) instead of demanding 'READ FIRST: all of it'.",
+      "XP MATH GUARDRAILS the synthesized spec must satisfy (verify against these exact numbers): zone-2 total (quest XP + 1.6x-overshoot kill XP at 45+5*L) in 51,150-55,800; zone-3 total in 124,400-135,700; no quest's XP reward exceeding ~50% of a level at its intended level (existing ceiling: q_hollow 1,500 vs 6,500 needed at L10 = 23%); every band 6-7 through 19-20 must have at-level mobs available given the gray-band cutoff (zeroDiff = 7 at L10-15, 8 at L16+), so zone 2 needs mobs to L12 and zone 3 to L19 minimum or kill XP collapses at band top.",
+      "DUNGEON PLACEMENT MATH: the Hollow Crypt is the only group content and sits at L10; the spec must not leave the 14-17 stretch spike-free \u2014 add at least one outdoor elite group quest arc (suggestedPlayers 3) in zone 3 mid-band, and place the final dungeon lead-up chain so its non-dungeon quests are completable solo at 18-19.",
+      "ECONOMY CONTINUITY: copper rewards must scale with the existing curve (zone 1 pays 75-500c per quest, q_hollow 1g) \u2014 zone 2 should land ~2-8s per quest, zone 3 ~10-30s, vendor white gear priced so a full set costs roughly the band's quest copper income; food/drink tiers need foodHp/drinkMana roughly matching new hp/mana pools at 13 and 20 (18s consume window is fixed).",
+      "ID HYGIENE: all new ids must be snake_case and collision-checked against existing data.ts ids (q_*, mob ids like tunnel_rat/morthen/gorrak, item ids like gravecaller_*); the existing REWARD_ARCHETYPE fallback (warrior/rogue/mage) means item rewards only need 3 entries per quest."
+    ]
+  },
+  {
+    "scores": [
+      {
+        "design": "A (lore-first, design:world-lore)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS TO JUDGE. The prompt's 'Three competing expansion designs follow' was followed by nothing. Verified in workflow transcripts (/Users/reubenhorne/.claude/projects/-Users-reubenhorne-Documents-code-levy-street-world-of-claudecraft/a4d85149-25e1-4b3b-a4db-7a660507d7a7/subagents/workflows/wf_0c329a02-def/): the world-lore designer produced zero assistant output across ~6 retries (e.g. agent-a1812069f62de546f.jsonl, agent-af745c47de243ef68.jsonl \u2014 max assistant text 0 chars). A prior judge (agent-a806036714c6ef470, result in journal.jsonl) found the same. Scoring fabricated content would be dishonest; 0 = absent, not bad."
+      },
+      {
+        "design": "B (pacing-first, design:world-pacing)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS. Same failure mode: all retries died after the file-read phase with empty output (agent-a1ff2fdb5a9f25aa9.jsonl and siblings). Likely cause: designers Read the whole 34K-token src/sim/data.ts plus full brief and crashed/overran; later judge retries additionally hit API socket errors (agent-a9634bf241383d5a6.jsonl). The orchestrator's designs.filter(d => d.text) silently dropped the empty results, so every judge (including this one and the 3 lens-judges acee39a2/a5f7d4b3/a4b9a054) received a prompt with zero DESIGN blocks."
+      },
+      {
+        "design": "C (dungeon-first, design:world-dungeon)",
+        "story": 0,
+        "pacing": 0,
+        "implementability": 0,
+        "total": 0,
+        "notes": "NO DESIGN TEXT EXISTS (agent-a27bd84e97623488a.jsonl and retries, zero assistant output). What I COULD verify against the live engine (src/sim/data.ts, src/sim/types.ts @ commit 2d05cc2): XP_TABLE already extends to L20 with the exact vanilla values and MAX_LEVEL=20; mobXpValue(45+5*L with vanilla zero-diff bands) and GROUP_XP_BONUS exist; ZoneDef/zoneAt already model a north-running zone strip with unused biomes 'marsh' and 'peaks' ready; DungeonDef supports multiple instances via index x-bands. I verified the prompt's XP claims: 6->13 = 46,500 and 13->20 = 113,100 (both exact). The judge-verified budget targets and a palette-checked fallback skeleton are in grafts/flaws so the synthesis step is not blocked."
+      }
+    ],
+    "winner": "NONE of A/B/C \u2014 no design text was ever produced (all designer agents crashed with empty output; verified in transcripts). Synthesis should proceed from the judge-authored, engine-verified fallback skeleton in grafts rather than re-looping the failed designers.",
+    "grafts": [
+      "FALLBACK ZONE 2 (palette-verified): 'Mirefen Marsh', biome 'marsh' (already in BiomeId, src/sim/data.ts:1411), appended to ZONES as z-band 180..540 with hub hamlet ~(0,300) + graveyard + lakes \u2014 zone 1 geography untouched (zoneAt/WORLD_MIN_Z/MAX_Z derive from the ZONES array, so adding bands is the engine-intended path). Levels 7-13. Camps reuse existing families (murloc deepfen, spider mire-widows, undead drowned-dead, humanoid Gravecaller cultists) + ONE new family 'troll' (hunched humanoid primitive rig, cheap). Story: Morthen (existing Hollow Crypt boss) was only an acolyte \u2014 the cult's Mistcaller is drowning-and-raising an army in the fen; hooks chain from Brother Aldric via a breadcrumb quest gated minLevel 7 (NOT requiresQuest q_hollow, so solo players aren't locked out of zone 2 by a 5-player quest).",
+      "FALLBACK ZONE 2 DUNGEON: 'The Sunken Bastion', 5-player ~L13, DungeonDef index 1 (instanceOrigin x-band 1500). Reuse interior 'crypt' builder initially (DungeonDef.interior is currently the literal type 'crypt' \u2014 widening it is a one-line type change but each NEW interior costs renderer+collider work; reuse is the cheap path). Boss: Vael the Mistcaller \u2014 aoePulse (existing) + NEW MECHANIC #1: summonAdds {mobId, count, atHpPct:[0.6,0.3]} \u2014 the simplest high-value new mechanic, one spawn call on hp thresholds.",
+      "FALLBACK ZONE 3: 'Thornpeak Heights', biome 'peaks' (already in BiomeId), z-band 540..900, hub 'Highwatch' ~(0,660). Levels 13-20. TWO more new families max: 'ogre' (scaled-up humanoid rig) and 'elemental' (floating primitive chunks, no limbs \u2014 cheapest rig of all). Dragonkin ONLY for the final boss model. Elite ogre war-camps as suggestedPlayers:2-3 group quests (elite = 2x XP, closes the late-level XP gap). Finale: the cult serves Korzul the Gravewyrm; epic L20 5-player dungeon 'Gravewyrm Sanctum' (index 2): elite trash, miniboss pair (bound ogre guardian; grand-necromancer with summonAdds), Korzul with aoePulse + NEW MECHANIC #2: enrage {belowHpPct:0.3, dmgMult:1.5} \u2014 a two-field multiplier check, trivially deterministic. Cap new mechanics at these 2; frontal breath needs facing-cone math, defer it.",
+      "FROM THE SIBLING DESIGNERS THAT DID COMPLETE (results in wf_0c329a02-def/journal.jsonl): the ranks designer's tuning anchors \u2014 mob hp \u2248 40+18L (L14\u2248292, L20\u2248400, elite x2.3), exactly ONE new AbilityEffect type (finisherStun) for all 9 classes' L1-20 kits, and two new conjured-water ranks; the icons designer's iconId-recipe architecture (sim carries only a string; all drawing in src/ui/icons/); the graphics designer's 11-step tiered renderer plan keyed off ?gfx tier. The synthesis doc should cite these as the companion specs for tasks #5, #7, #8 rather than redesigning them.",
+      "QUEST-DESIGN RULES VERIFIED AGAINST THE PALETTE: only 'kill' and 'collect' objectives exist (QuestDef, src/sim/types.ts:189-211) \u2014 no escort/explore/use-object quests, reject any in synthesis; collect via loot-table questId entries (drop-gated to active quest) or GROUND_OBJECTS sparkles; chains via requiresQuest, gates via minLevel, group content via suggestedPlayers; item rewards need only 3 variants thanks to REWARD_ARCHETYPE (warrior/rogue/mage fallback, data.ts:1234). Each new hub needs vendor NPCs with buyValue'd food/drink/white-gear (feeds task #6)."
+    ],
+    "flaws": [
+      "XP MATH (judge-verified, binding on synthesis): 6->13 = 46,500 and 13->20 = 113,100 \u2014 both confirmed exact against XP_TABLE in src/sim/types.ts:389. Zone 1 calibration: existing 13 quests total 7,810 reward XP = 0.70x of the 1->7 requirement (11,200), with objective kills lifting total content to ~1.5-1.6x. Synthesis MUST match that ratio: zone 2 quest rewards \u2248 30-35k XP (~20-22 quests averaging ~1,500), zone 3 quest rewards \u2248 75-80k XP (~26-30 quests averaging ~2,700-3,000).",
+      "LATE-GAME GRIND GAP IS THE #1 RISK: at-level kill XP is only 110-145 at L13-19 while 17->20 alone needs 58,400 XP (~150 grind kills per level). A zone 3 with 28 quests at vanilla-ish rewards (avg 2,800) + ~18 effective kills/quest yields ~142.9k = only 1.26x of 113,100 \u2014 short of the 1.6x cushion. Synthesis must close it with elite group-quest camps (2x XP/kill), two dungeon quest chains paying 4-6k each, and reward averages nearer 3,000, or add quests to 32+. Also compute overshoot against green-level kills (mobXpValue decays with level diff and zeroes at the zeroDiff band), not at-level kills.",
+      "OVERSHOOT ON THE 6->13 SEAM: zone 1 only carries to L7 (11,200 XP of need vs ~17k content); players hit Mirefen at 6-7, so budget zone 2 against the full 46,500 (6->13), not 42,900 \u2014 i.e. design to ~64-70k total zone-2 content XP.",
+      "ENGINE TYPE CHANGES SYNTHESIS MUST LIST EXPLICITLY: (1) MobFamily union (src/sim/types.ts:99) needs +troll/+ogre/+elemental (+dragonkin for one boss) and each needs a primitive rig in the renderer \u2014 cap at 3 new rigs + 1 boss model; (2) DungeonDef.interior literal 'crypt' (src/sim/data.ts:1316) must widen to a union; (3) exactly 2 new boss mechanics (summonAdds, enrage) added to MobTemplate, both deterministic and pulse-timer-like in sim.ts; (4) new dungeons take index 1 and 2 (instanceOrigin x-bands already generalize).",
+      "WORKFLOW BUG THE PARENT MUST FIX BEFORE ANY RE-RUN: all 3 world-designer agents produced empty output across ~6 retries each (zero assistant text; later retries died on API socket errors) \u2014 likely from single-shot Reads of the 34K-token src/sim/data.ts blowing context. Re-run designers with chunked reads (the file now hard-caps at 25K tokens/read) or hand them a condensed palette digest. And make the judge step fail loudly when designs.filter(d => d.text) yields fewer than 3 entries instead of silently sending judges an empty prompt \u2014 this exact silent-drop already burned two full judge rounds (see agent-a806036714c6ef470 result in journal.jsonl)."
+    ]
+  }
+]
