@@ -155,6 +155,10 @@ export class Api {
   async reportPlayerByName(reporterCharacterId: number, targetCharacterName: string, reason: string, details: string): Promise<void> {
     await this.post('/api/reports', { reporterCharacterId, targetCharacterName, reason, details });
   }
+
+  async projectStats(): Promise<{ accounts_created: number; players_online: number; realm: string }> {
+    return this.get('/api/project-stats');
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -149,6 +149,12 @@ export async function findAccount(username: string): Promise<AccountRow | null> 
   return res.rows[0] ?? null;
 }
 
+export async function getAccountsCount(): Promise<number> {
+  const res = await pool.query('SELECT COUNT(*)::int AS count FROM accounts');
+  return res.rows[0]?.count ?? 0;
+}
+
+
 export async function touchLogin(accountId: number): Promise<void> {
   await pool.query('UPDATE accounts SET last_login = now() WHERE id = $1', [accountId]);
 }

@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { WebSocketServer, WebSocket } from 'ws';
 import {
-  ensureSchema, pool, createAccount, findAccount, touchLogin, saveToken, accountForToken,
+  ensureSchema, pool, createAccount, findAccount, getAccountsCount, touchLogin, saveToken, accountForToken,
   listCharacters, getCharacter, createCharacter, deleteCharacter, closeOrphanSessions,
   pruneChatLogs, searchCharacters, characterCountsByRealm, moderationStatusForAccount, renameCharacter,
   findCharacterReportTargetByName,
@@ -286,6 +286,14 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       } catch (err) {
         return json(res, 400, { error: err instanceof Error ? err.message : 'could not submit report' });
       }
+    }
+    if (req.method === 'GET' && url === '/api/project-stats') {
+      const accountsCount = await getAccountsCount();
+      return json(res, 200, {
+        accounts_created: accountsCount,
+        players_online: game.clients.size,
+        realm: REALM,
+      });
     }
     if (req.method === 'GET' && url === '/api/status') {
       return json(res, 200, {
