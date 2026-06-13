@@ -13,6 +13,17 @@ import { Meters } from './meters';
 import { audio } from '../game/audio';
 import { music } from '../game/music';
 import { iconDataUrl, QUALITY_COLOR } from './icons';
+import { Keybinds, BIND_ACTIONS, BIND_CATEGORIES, isReservedCode, keyLabel } from '../game/keybinds';
+import { Settings, GameSettings, SETTING_RANGES } from '../game/settings';
+
+// hooks main wires after Input exists (the options menu drives input, audio,
+// graphics, and logout, all of which live outside the HUD)
+export interface OptionsHooks {
+  logout(): void;
+  captureKey(cb: (code: string | null) => void): void;
+  settings: Settings;
+  onSettingChange(key: keyof GameSettings, value: number): void;
+}
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string): T => document.querySelector(sel) as T;
 
@@ -31,9 +42,13 @@ const IGNORED_CHAT_NAMES_KEY = 'woc_ignored_chat_names';
 
 export class Hud {
   private static readonly BAR_ABILITY_SLOTS = 11; // bar slots 1..11; slot 0 is the fixed Attack toggle
-  private abilityButtons: { btn: HTMLButtonElement; label: HTMLSpanElement; cdOverlay: HTMLDivElement; cdText: HTMLDivElement; lastIcon: string }[] = [];
+  private abilityButtons: { btn: HTMLButtonElement; label: HTMLSpanElement; keybindEl: HTMLSpanElement; cdOverlay: HTMLDivElement; cdText: HTMLDivElement; lastIcon: string }[] = [];
   private slotMap: (string | null)[] = []; // index = barSlot-1, value = ability id
   private dragFromSlot: number | null = null;
+  private optionsHooks: OptionsHooks | null = null;
+  private optionsView: 'main' | 'keybinds' | 'graphics' | 'audio' = 'main';
+  private capturingKey: { action: string; index: number } | null = null; // binding awaiting a key
+  private keybindNote = '';
   private chatLogEl = $('#chatlog');
   private combatLogEl = $('#combatlog');
   private errorEl = $('#error-msg');
@@ -66,12 +81,13 @@ export class Hud {
 
   private meters: Meters;
 
-  constructor(private sim: IWorld, private renderer: Renderer) {
+  constructor(private sim: IWorld, private renderer: Renderer, private keybinds: Keybinds) {
     this.ignoredChatNames = this.loadIgnoredChatNames();
     this.meters = new Meters(sim);
     this.bindLogTabs();
     this.loadSlotMap();
     this.buildActionBar();
+    this.refreshKeybindLabels();
     this.buildXpTicks();
     $('#pf-name').textContent = sim.player.name;
     this.drawPortrait($('#pf-portrait') as unknown as HTMLCanvasElement, CLASS_GLYPH[sim.cfg.playerClass], CLASSES[sim.cfg.playerClass].color);
@@ -287,7 +303,6 @@ export class Hud {
 
   private buildActionBar(): void {
     const bar = $('#actionbar');
-    const keybinds = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='];
     for (let i = 0; i < 12; i++) {
       const btn = document.createElement('button');
       btn.className = 'action-btn empty';
@@ -295,7 +310,7 @@ export class Hud {
       label.className = 'icon-label';
       const kb = document.createElement('span');
       kb.className = 'keybind';
-      kb.textContent = keybinds[i];
+      kb.textContent = this.keybinds.primaryLabel(`slot${i}`); // rebindable; refreshKeybindLabels keeps it current
       const cdOverlay = document.createElement('div');
       cdOverlay.className = 'cd-overlay';
       const cdText = document.createElement('div');
@@ -350,7 +365,14 @@ export class Hud {
         });
       }
       bar.appendChild(btn);
-      this.abilityButtons.push({ btn, label, cdOverlay, cdText, lastIcon: '' });
+      this.abilityButtons.push({ btn, label, keybindEl: kb, cdOverlay, cdText, lastIcon: '' });
+    }
+  }
+
+  // Repaint the keycap on every action button from the current bindings.
+  private refreshKeybindLabels(): void {
+    for (let i = 0; i < this.abilityButtons.length; i++) {
+      this.abilityButtons[i].keybindEl.textContent = this.keybinds.primaryLabel(`slot${i}`);
     }
   }
 
@@ -1808,11 +1830,245 @@ export class Hud {
   }
 
   // -------------------------------------------------------------------------
+  // Options menu (Esc) + hotkey rebinding
+  // -------------------------------------------------------------------------
+
+  attachOptions(hooks: OptionsHooks): void {
+    this.optionsHooks = hooks;
+  }
+
+  get optionsOpen(): boolean {
+    return $('#options-menu').style.display === 'block';
+  }
+
+  // True while a menu that should pause character movement is up.
+  isModalOpen(): boolean {
+    return this.optionsOpen;
+  }
+
+  toggleOptionsMenu(): void {
+    if (this.optionsOpen) { this.closeOptions(); return; }
+    this.optionsView = 'main';
+    this.capturingKey = null;
+    this.keybindNote = '';
+    this.renderOptions();
+    $('#options-menu').style.display = 'block';
+    audio.click();
+  }
+
+  closeOptions(): void {
+    $('#options-menu').style.display = 'none';
+    this.capturingKey = null;
+    this.hideTooltip();
+  }
+
+  private renderOptions(): void {
+    if (this.optionsView === 'keybinds') { this.renderKeybinds(); return; }
+    if (this.optionsView === 'graphics') { this.renderGraphics(); return; }
+    if (this.optionsView === 'audio') { this.renderAudio(); return; }
+    const el = $('#options-menu');
+    el.innerHTML = `<div class="panel-title"><span>Game Menu</span><span class="x-btn" data-close>✕</span></div>`;
+    const list = document.createElement('div');
+    list.className = 'opt-list';
+    const add = (text: string, onClick: () => void) => {
+      const b = document.createElement('button');
+      b.className = 'btn opt-btn';
+      b.textContent = text;
+      b.addEventListener('click', () => { audio.click(); onClick(); });
+      list.appendChild(b);
+    };
+    const goto = (view: 'keybinds' | 'graphics' | 'audio') => { this.optionsView = view; this.keybindNote = ''; this.renderOptions(); };
+    add('Key Bindings', () => goto('keybinds'));
+    add('Graphics', () => goto('graphics'));
+    add('Audio', () => goto('audio'));
+    add('Logout', () => this.optionsHooks?.logout());
+    add('Return to Game', () => this.closeOptions());
+    el.appendChild(list);
+    el.querySelector('[data-close]')?.addEventListener('click', () => this.closeOptions());
+  }
+
+  // A labelled slider bound to a numeric setting; live-applies via the hook.
+  private settingSlider(parent: HTMLElement, label: string, key: keyof GameSettings): void {
+    const hooks = this.optionsHooks;
+    if (!hooks) return;
+    const r = SETTING_RANGES[key];
+    const row = document.createElement('div');
+    row.className = 'set-row';
+    const name = document.createElement('span');
+    name.className = 'set-name';
+    name.textContent = label;
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'set-slider';
+    slider.min = String(r.min);
+    slider.max = String(r.max);
+    slider.step = '0.05';
+    slider.value = String(hooks.settings.get(key));
+    const val = document.createElement('span');
+    val.className = 'set-val';
+    const pct = () => `${Math.round(hooks.settings.get(key) * 100)}%`;
+    val.textContent = pct();
+    slider.addEventListener('input', () => {
+      hooks.onSettingChange(key, Number(slider.value));
+      val.textContent = pct();
+    });
+    row.append(name, slider, val);
+    parent.appendChild(row);
+  }
+
+  private settingsViewShell(title: string): HTMLElement {
+    const el = $('#options-menu');
+    el.innerHTML = `<div class="panel-title"><span>${title}</span><span class="x-btn" data-close>✕</span></div>`;
+    const body = document.createElement('div');
+    body.className = 'set-rows';
+    el.appendChild(body);
+    return body;
+  }
+
+  private settingsViewFooter(): void {
+    const el = $('#options-menu');
+    const reset = document.createElement('button');
+    reset.className = 'btn';
+    reset.textContent = 'Reset to Defaults';
+    reset.addEventListener('click', () => {
+      audio.click();
+      this.optionsHooks?.settings.reset();
+      // re-apply every setting to its subsystem, then redraw the view
+      const all = this.optionsHooks?.settings.all();
+      if (all) for (const k of Object.keys(all) as (keyof GameSettings)[]) this.optionsHooks?.onSettingChange(k, all[k]);
+      this.renderOptions();
+    });
+    const back = document.createElement('button');
+    back.className = 'btn';
+    back.textContent = 'Back';
+    back.addEventListener('click', () => { audio.click(); this.optionsView = 'main'; this.renderOptions(); });
+    el.append(reset, back);
+    el.querySelector('[data-close]')?.addEventListener('click', () => this.closeOptions());
+  }
+
+  private renderGraphics(): void {
+    const body = this.settingsViewShell('Graphics');
+    this.settingSlider(body, 'Camera Speed', 'cameraSpeed');
+    this.settingSlider(body, 'Brightness', 'brightness');
+    this.settingSlider(body, 'Render Quality', 'renderScale');
+    const note = document.createElement('div');
+    note.className = 'set-note';
+    note.textContent = 'Lower Camera Speed for a calmer mouselook. Render Quality below 100% boosts FPS on weaker machines.';
+    $('#options-menu').appendChild(note);
+    this.settingsViewFooter();
+  }
+
+  private renderAudio(): void {
+    const body = this.settingsViewShell('Audio');
+    this.settingSlider(body, 'Sound Effects', 'sfxVolume');
+    this.settingSlider(body, 'Music Volume', 'musicVolume');
+    const row = document.createElement('div');
+    row.className = 'set-row';
+    const name = document.createElement('span');
+    name.className = 'set-name';
+    name.textContent = 'Music';
+    const toggle = document.createElement('button');
+    toggle.className = 'btn set-toggle';
+    const sync = () => { toggle.textContent = music.enabled ? 'On' : 'Off'; toggle.classList.toggle('off', !music.enabled); };
+    sync();
+    toggle.addEventListener('click', () => { audio.click(); music.setEnabled(!music.enabled); sync(); });
+    row.append(name, toggle);
+    body.appendChild(row);
+    this.settingsViewFooter();
+  }
+
+  // Display name for an action row. Action-bar slots show the ability that
+  // currently occupies them (slot 0 is always Attack); everything else uses
+  // its registry label.
+  private actionDisplayName(actionId: string, fallback: string): string {
+    if (!actionId.startsWith('slot')) return fallback;
+    const slot = Number(actionId.slice(4));
+    if (slot === 0) return 'Attack';
+    const known = this.abilityForSlot(slot);
+    return known ? known.def.name : fallback;
+  }
+
+  private renderKeybinds(): void {
+    const el = $('#options-menu');
+    el.innerHTML = `<div class="panel-title"><span>Key Bindings</span><span class="x-btn" data-close>✕</span></div>`;
+    const note = document.createElement('div');
+    note.className = 'kb-note';
+    note.textContent = this.keybindNote || 'Click a key cell, then press a key to bind it. Esc cancels. Each action has a primary and an alternate key.';
+    el.appendChild(note);
+    const rows = document.createElement('div');
+    rows.className = 'kb-rows';
+    for (const category of BIND_CATEGORIES) {
+      const header = document.createElement('div');
+      header.className = 'kb-cat';
+      header.textContent = category;
+      rows.appendChild(header);
+      for (const action of BIND_ACTIONS.filter((a) => a.category === category)) {
+        const row = document.createElement('div');
+        row.className = 'kb-row';
+        const name = document.createElement('span');
+        name.className = 'kb-name';
+        name.textContent = this.actionDisplayName(action.id, action.label);
+        row.appendChild(name);
+        for (let index = 0; index < 2; index++) {
+          const capturing = this.capturingKey?.action === action.id && this.capturingKey?.index === index;
+          const key = document.createElement('button');
+          key.className = 'btn kb-key' + (capturing ? ' capturing' : '');
+          key.textContent = capturing ? '…' : (this.keybinds.labelAt(action.id, index) || '—');
+          key.title = index === 0 ? 'Primary' : 'Alternate';
+          key.addEventListener('click', () => this.beginCapture(action.id, index, action.label));
+          row.appendChild(key);
+        }
+        rows.appendChild(row);
+      }
+    }
+    el.appendChild(rows);
+    const reset = document.createElement('button');
+    reset.className = 'btn';
+    reset.textContent = 'Reset to Defaults';
+    reset.addEventListener('click', () => {
+      audio.click();
+      this.keybinds.reset();
+      this.capturingKey = null;
+      this.keybindNote = 'Bindings reset to defaults.';
+      this.refreshKeybindLabels();
+      this.renderKeybinds();
+    });
+    const back = document.createElement('button');
+    back.className = 'btn';
+    back.textContent = 'Back';
+    back.addEventListener('click', () => { audio.click(); this.optionsView = 'main'; this.capturingKey = null; this.renderOptions(); });
+    el.append(reset, back);
+    el.querySelector('[data-close]')?.addEventListener('click', () => this.closeOptions());
+  }
+
+  private beginCapture(actionId: string, index: number, fallbackLabel: string): void {
+    if (!this.optionsHooks) return;
+    const name = this.actionDisplayName(actionId, fallbackLabel);
+    this.capturingKey = { action: actionId, index };
+    this.keybindNote = `Press a key for "${name}"…`;
+    this.renderKeybinds();
+    this.optionsHooks.captureKey((code) => {
+      this.capturingKey = null;
+      if (code === null) {
+        this.keybindNote = 'Rebinding cancelled.';
+      } else if (isReservedCode(code)) {
+        this.keybindNote = `${keyLabel(code)} is reserved and can't be bound.`;
+      } else if (this.keybinds.bind(actionId, index, code)) {
+        this.keybindNote = `Bound "${name}" to ${keyLabel(code)}.`;
+        this.refreshKeybindLabels();
+      }
+      // re-render only if the menu is still open (player may have closed it)
+      if (this.optionsOpen) this.renderKeybinds();
+    });
+  }
+
+  // -------------------------------------------------------------------------
 
   // Closes the topmost UI. Returns true if something was closed.
   closeAll(): boolean {
     let closed = false;
     this.closeContextMenu();
+    if (this.optionsOpen) { this.closeOptions(); return true; }
     if (this.tradeOpen) {
       this.sim.tradeCancel();
       closed = true;
