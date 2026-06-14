@@ -387,6 +387,55 @@ describe('hunter pets', () => {
     expect(sim.petOf(sim.playerId)).toBe(wolf);
   });
 
+  it('friendly target spells can affect controlled pets', () => {
+    const { sim, wolf: pet } = tamedSetup();
+    const druidId = sim.addPlayer('druid', 'Druid');
+    const druid = sim.entities.get(druidId)!;
+    teleport(sim, druid, pet.pos.x + 5, pet.pos.z);
+    druid.resource = druid.maxResource;
+    const armorBefore = (sim as any).effectiveArmor(pet);
+
+    sim.targetEntity(pet.id, druidId);
+    sim.castAbility('mark_of_the_wild', druidId);
+    expect(pet.auras.some((a) => a.id === 'mark_of_the_wild')).toBe(true);
+    expect((sim as any).effectiveArmor(pet)).toBeGreaterThan(armorBefore);
+
+    const priestId = sim.addPlayer('priest', 'Priest');
+    const priest = sim.entities.get(priestId)!;
+    teleport(sim, priest, pet.pos.x + 6, pet.pos.z);
+    priest.resource = priest.maxResource;
+    const maxHpBefore = pet.maxHp;
+    sim.targetEntity(pet.id, priestId);
+    sim.castAbility('power_word_fortitude', priestId);
+    expect(pet.maxHp).toBeGreaterThan(maxHpBefore);
+
+    const paladinId = sim.addPlayer('paladin', 'Paladin');
+    const paladin = sim.entities.get(paladinId)!;
+    sim.setPlayerLevel(4, paladinId);
+    teleport(sim, paladin, pet.pos.x + 7, pet.pos.z);
+    paladin.resource = paladin.maxResource;
+    const attackPowerBefore = (sim as any).effectiveAttackPower(pet);
+    sim.targetEntity(pet.id, paladinId);
+    sim.castAbility('blessing_of_might', paladinId);
+    expect((sim as any).effectiveAttackPower(pet)).toBeGreaterThan(attackPowerBefore);
+
+    pet.hp = pet.maxHp - 40;
+    const damagedHp = pet.hp;
+    for (let i = 0; i < 20 * 2; i++) sim.tick();
+    sim.castAbility('healing_touch', druidId);
+    for (let i = 0; i < 20 * 3; i++) sim.tick();
+
+    expect(pet.hp).toBeGreaterThan(damagedHp);
+
+    (sim as any).dealDamage(null, pet, pet.hp, false, 'physical', 'test', 'hit');
+    expect(pet.dead).toBe(true);
+    expect(pet.auras).toHaveLength(0);
+    expect(pet.maxHp).toBe(maxHpBefore);
+    (sim as any).respawnMob(pet);
+    expect(pet.auras).toHaveLength(0);
+    expect(pet.maxHp).toBe(maxHpBefore);
+  });
+
   it('the pet assists against attackers, growls, and builds its own threat', () => {
     const { sim, wolf: pet } = tamedSetup();
     const boar = nearestMob(sim, 'wild_boar');
@@ -408,10 +457,21 @@ describe('hunter pets', () => {
 
   it('dismiss releases the pet back to the wild', () => {
     const { sim, wolf } = tamedSetup();
+    const priestId = sim.addPlayer('priest', 'Priest');
+    const priest = sim.entities.get(priestId)!;
+    teleport(sim, priest, wolf.pos.x + 5, wolf.pos.z);
+    priest.resource = priest.maxResource;
+    const maxHpBefore = wolf.maxHp;
+    sim.targetEntity(wolf.id, priestId);
+    sim.castAbility('power_word_fortitude', priestId);
+    expect(wolf.maxHp).toBeGreaterThan(maxHpBefore);
+
     for (let i = 0; i < 25; i++) sim.tick();
     sim.castAbility('dismiss_pet');
     expect(wolf.ownerId).toBe(null);
     expect(wolf.hostile).toBe(true);
+    expect(wolf.auras).toHaveLength(0);
+    expect(wolf.maxHp).toBe(maxHpBefore);
     expect(sim.petOf(sim.playerId)).toBe(null);
   });
 

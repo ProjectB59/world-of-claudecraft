@@ -789,10 +789,42 @@ export class Sim {
   private effectiveArmor(e: Entity): number {
     let armor = e.stats.armor;
     for (const a of e.auras) {
+      if (e.kind !== 'player' && a.kind === 'buff_armor') armor += a.value;
       if (a.kind === 'sunder') armor -= a.value * (a.stacks ?? 1);
     }
     return Math.max(0, armor);
   }
+
+  private effectiveAttackPower(e: Entity): number {
+    let attackPower = e.attackPower;
+    if (e.kind !== 'player') {
+      for (const a of e.auras) {
+        if (a.kind === 'buff_ap') attackPower += a.value;
+      }
+    }
+    return attackPower;
+  }
+
+  private nonPlayerAuraHp(aura: Aura): number {
+    if (aura.kind === 'buff_sta') return aura.value * 10;
+    if (aura.kind === 'buff_allstats') return aura.value * 10;
+    return 0;
+  }
+
+  private applyNonPlayerStatAura(target: Entity, aura: Aura, direction: 1 | -1): void {
+    if (target.kind === 'player') return;
+    const hpDelta = this.nonPlayerAuraHp(aura) * direction;
+    if (hpDelta === 0) return;
+    const hpFrac = target.maxHp > 0 ? target.hp / target.maxHp : 1;
+    target.maxHp = Math.max(1, target.maxHp + hpDelta);
+    target.hp = target.dead ? 0 : Math.max(1, Math.min(target.maxHp, Math.round(target.maxHp * hpFrac)));
+  }
+
+  private clearNonPlayerStatAuras(target: Entity): void {
+    if (target.kind === 'player') return;
+    for (const aura of target.auras) this.applyNonPlayerStatAura(target, aura, -1);
+  }
+
   // swing interval multiplier: >1 = slower (thunder clap), haste divides
   private swingIntervalMult(e: Entity): number {
     let m = 1;
@@ -1061,6 +1093,7 @@ export class Sim {
       }
       if (a.remaining <= 0) {
         e.auras.splice(i, 1);
+        this.applyNonPlayerStatAura(e, a, -1);
         this.emit({ type: 'aura', targetId: e.id, name: a.name, gained: false });
         if (a.kind.startsWith('buff') || a.kind.startsWith('form')) statsDirty = true;
       }
@@ -1439,7 +1472,7 @@ export class Sim {
         }
         case 'finisherDamage': {
           if (!target || spentCombo <= 0) break;
-          let dmg = eff.base + eff.perCombo * spentCombo + this.rng.range(0, eff.variance) + (p.attackPower / 14);
+          let dmg = eff.base + eff.perCombo * spentCombo + this.rng.range(0, eff.variance) + (this.effectiveAttackPower(p) / 14);
           const crit = this.rng.chance(p.critChance);
           if (crit) dmg *= 2;
           dmg *= 1 - armorReduction(this.effectiveArmor(target), p.level);
@@ -1750,8 +1783,12 @@ export class Sim {
   private applyAura(target: Entity, aura: Aura): void {
     if (target.kind === 'npc' && isRejectedFriendlyNpcAura(aura)) return;
     const existing = target.auras.findIndex((a) => a.id === aura.id && a.sourceId === aura.sourceId);
-    if (existing >= 0) target.auras.splice(existing, 1);
+    if (existing >= 0) {
+      this.applyNonPlayerStatAura(target, target.auras[existing], -1);
+      target.auras.splice(existing, 1);
+    }
     target.auras.push(aura);
+    this.applyNonPlayerStatAura(target, aura, 1);
     this.emit({ type: 'aura', targetId: target.id, name: aura.name, gained: true });
     if (target.kind === 'player') {
       const meta = this.players.get(target.id);
@@ -1843,6 +1880,8 @@ export class Sim {
   /** Dismissal, owner logout, or pet respawn: the beast goes back to the wild
    *  and walks home. Mobs that were fighting it forget it. */
   private releasePetToWild(pet: Entity): void {
+    this.clearNonPlayerStatAuras(pet);
+    pet.auras = [];
     pet.ownerId = null;
     pet.petTauntTimer = 0;
     pet.hostile = true;
@@ -1959,7 +1998,7 @@ export class Sim {
     // weapon imbues (seals, rockbiter) add flat damage to every swing
     let imbueBonus = 0;
     for (const a of attacker.auras) if (a.kind === 'imbue') imbueBonus += a.value;
-    let dmg = (this.rng.range(attacker.weapon.min, attacker.weapon.max) + (attacker.attackPower / 14) * attacker.weapon.speed) * mult + bonus + imbueBonus;
+    let dmg = (this.rng.range(attacker.weapon.min, attacker.weapon.max) + (this.effectiveAttackPower(attacker) / 14) * attacker.weapon.speed) * mult + bonus + imbueBonus;
     const critChance = Math.max(0.005, attacker.critChance - Math.max(0, target.level - attacker.level) * 0.002);
     const crit = this.rng.chance(critChance);
     if (crit) dmg *= 2;
@@ -2113,6 +2152,7 @@ export class Sim {
   private handleDeath(e: Entity, killer: Entity | null): void {
     e.dead = true;
     e.hp = 0;
+    this.clearNonPlayerStatAuras(e);
     e.auras = [];
     e.castingAbility = null;
     this.emit({ type: 'death', entityId: e.id, killerId: killer?.id ?? -1 });
@@ -2515,7 +2555,7 @@ export class Sim {
       this.emit({ type: 'damage', sourceId: mob.id, targetId: target.id, amount: 0, crit: false, school: 'physical', ability: null, kind: 'dodge' });
       return;
     }
-    let dmg = this.rng.range(mob.weapon.min, mob.weapon.max);
+    let dmg = this.rng.range(mob.weapon.min, mob.weapon.max) + (this.effectiveAttackPower(mob) / 14) * mob.weapon.speed;
     const crit = this.rng.chance(0.05);
     if (crit) dmg *= 2;
     const enrage = MOBS[mob.templateId]?.enrage;
@@ -2616,6 +2656,7 @@ export class Sim {
   }
 
   private respawnMob(mob: Entity): void {
+    this.clearNonPlayerStatAuras(mob);
     mob.dead = false;
     mob.lootable = false;
     mob.loot = null;
@@ -3260,8 +3301,12 @@ export class Sim {
   }
 
   private isFriendlyTo(caster: Entity, target: Entity): boolean {
-    if (target.kind !== 'player') return false;
-    return !this.isHostileTo(caster, target);
+    if (target.kind === 'player') return !this.isHostileTo(caster, target);
+    if (target.kind === 'mob' && target.ownerId !== null) {
+      const owner = this.entities.get(target.ownerId);
+      return !!owner && owner.kind === 'player' && !this.isHostileTo(caster, owner);
+    }
+    return false;
   }
 
   // -------------------------------------------------------------------------

@@ -71,6 +71,28 @@ describe('nine classes', () => {
     expect(p.hp).toBe(hpBefore); // fully soaked
   });
 
+  it('friendly target spells can affect selected players', () => {
+    const sim = makeWorld();
+    const priestId = sim.addPlayer('priest', 'Healer');
+    const priest = sim.entities.get(priestId)!;
+    const allyId = sim.addPlayer('warrior', 'Ally');
+    const ally = sim.entities.get(allyId)!;
+    teleport(sim, priestId, ally.pos.x + 5, ally.pos.z);
+    sim.setPlayerLevel(6, priestId);
+    priest.resource = priest.maxResource;
+    ally.hp = 20;
+
+    sim.targetEntity(ally.id, priestId);
+    sim.castAbility('lesser_heal', priestId);
+    for (let i = 0; i < 20 * 3; i++) sim.tick();
+    expect(ally.hp).toBeGreaterThan(20);
+
+    for (let i = 0; i < 25; i++) sim.tick();
+    sim.castAbility('power_word_shield', priestId);
+    sim.tick();
+    expect(ally.auras.some((a) => a.kind === 'absorb')).toBe(true);
+  });
+
   it('renew ticks healing over time', () => {
     const sim = new Sim({ seed: 42, playerClass: 'priest' });
     sim.setPlayerLevel(8);
