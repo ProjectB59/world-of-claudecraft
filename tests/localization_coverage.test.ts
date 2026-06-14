@@ -26,6 +26,16 @@ import {
   t,
   type TranslationKey,
 } from "../src/ui/i18n";
+import { ABILITIES, CLASSES, ITEMS, MOBS, NPCS, QUESTS } from "../src/sim/data";
+import {
+  assertEntityTranslationsReady,
+  entityTranslationFallbackLog,
+  entityTranslationKey,
+  entityTranslationManifest,
+  missingEntityTranslationsForPhases,
+  resetEntityTranslationFallbackLog,
+  tEntity,
+} from "../src/ui/entity_i18n";
 
 const locales: Record<string, typeof en> = {
   es,
@@ -240,6 +250,22 @@ describe("i18n Localization Key Coverage", () => {
     return [...value.matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)].map((match) => match[1]).sort();
   }
 
+  function entityCount(kind: string, field: string): number {
+    return entityTranslationManifest().filter((entry) => entry.kind === kind && entry.field === field).length;
+  }
+
+  function sourceFilesUnder(relativeDir: string): string[] {
+    const root = path.resolve(process.cwd(), relativeDir);
+    if (!fs.existsSync(root)) return [];
+    const files: string[] = [];
+    for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+      const entryPath = path.join(root, entry.name);
+      if (entry.isDirectory()) files.push(...sourceFilesUnder(path.relative(process.cwd(), entryPath)));
+      else if (/\.(ts|tsx|js|mjs)$/.test(entry.name)) files.push(entryPath);
+    }
+    return files;
+  }
+
   for (const [code, locale] of Object.entries(locales)) {
     it(`should have 100% key match and non-empty translations for locale: ${code}`, () => {
       verifyKeys(en, locale);
@@ -343,6 +369,68 @@ describe("i18n Localization Key Coverage", () => {
       }
     }
     setLanguage("en");
+  });
+
+  it("should enumerate Phase 6 entity source coverage for later translation phases", () => {
+    const manifest = entityTranslationManifest();
+    expect(new Set(manifest.map((entry) => entry.key)).size).toBe(manifest.length);
+    for (const entry of manifest) {
+      expect(entry.source.trim().length, `${entry.kind}.${entry.id}.${entry.field}`).toBeGreaterThan(0);
+    }
+
+    expect(entityCount("class", "name")).toBe(Object.keys(CLASSES).length);
+    expect(entityCount("class", "description")).toBe(Object.keys(CLASSES).length);
+    expect(entityCount("ability", "name")).toBe(Object.keys(ABILITIES).length);
+    expect(entityCount("ability", "description")).toBe(Object.keys(ABILITIES).length);
+    expect(entityCount("item", "name")).toBe(Object.keys(ITEMS).length);
+    expect(entityCount("mob", "name")).toBe(Object.keys(MOBS).length);
+    expect(entityCount("npc", "name")).toBe(Object.keys(NPCS).length);
+    expect(entityCount("npc", "title")).toBe(Object.keys(NPCS).length);
+    expect(entityCount("npc", "greeting")).toBe(Object.keys(NPCS).length);
+    expect(entityCount("quest", "title")).toBe(Object.keys(QUESTS).length);
+    expect(entityCount("quest", "text")).toBe(Object.keys(QUESTS).length);
+    expect(entityCount("quest", "completion")).toBe(Object.keys(QUESTS).length);
+    expect(entityCount("questObjective", "label")).toBe(Object.values(QUESTS).reduce((sum, quest) => sum + quest.objectives.length, 0));
+  });
+
+  it("should resolve entity text through the client resolver and record canonical fallbacks", () => {
+    resetEntityTranslationFallbackLog();
+    setLanguage("de_DE");
+    expect(tEntity({ kind: "class", id: "mage", field: "name" })).toBe(t("classes.mage"));
+    expect(entityTranslationFallbackLog()).toHaveLength(0);
+
+    const ability = ABILITIES.fireball;
+    const abilityName = tEntity({ kind: "ability", id: ability.id, field: "name" });
+    const abilityDescription = tEntity({ kind: "ability", id: ability.id, field: "description", values: { damage: "11-14" } });
+    expect(abilityName).toBe(ability.name);
+    expect(abilityDescription).toContain("11-14");
+    expect(abilityDescription).not.toContain("$d");
+    expect(entityTranslationFallbackLog().map((entry) => entry.key)).toEqual(expect.arrayContaining([
+      entityTranslationKey({ kind: "ability", id: ability.id, field: "name" }),
+      entityTranslationKey({ kind: "ability", id: ability.id, field: "description" }),
+    ]));
+
+    setLanguage("en");
+    resetEntityTranslationFallbackLog();
+  });
+
+  it("should expose phase-gated missing entity translations before later phases are accepted", () => {
+    const phaseSevenMissing = missingEntityTranslationsForPhases(["phase7"]);
+    expect(phaseSevenMissing.some((entry) => entry.key === entityTranslationKey({ kind: "ability", id: "fireball", field: "name" }))).toBe(true);
+    expect(phaseSevenMissing.some((entry) => entry.key === entityTranslationKey({ kind: "class", id: "mage", field: "name" }))).toBe(false);
+
+    expect(missingEntityTranslationsForPhases(["phase8"]).some((entry) => entry.key === entityTranslationKey({ kind: "item", id: "worn_sword", field: "name" }))).toBe(true);
+    expect(missingEntityTranslationsForPhases(["phase9"]).some((entry) => entry.key === entityTranslationKey({ kind: "npc", id: "marshal_redbrook", field: "greeting" }))).toBe(true);
+    expect(missingEntityTranslationsForPhases(["phase9"]).some((entry) => entry.key === entityTranslationKey({ kind: "questObjective", questId: "q_wolves", objectiveIndex: 0, field: "label" }))).toBe(true);
+    expect(() => assertEntityTranslationsReady([])).not.toThrow();
+    expect(() => assertEntityTranslationsReady(["phase7"])).toThrow(/Missing entity translations/);
+  });
+
+  it("should keep the entity resolver out of simulation and server modules", () => {
+    for (const file of [...sourceFilesUnder("src/sim"), ...sourceFilesUnder("server")]) {
+      const source = fs.readFileSync(file, "utf8");
+      expect(source, file).not.toMatch(/(?:from|import)\s+["'][^"']*ui\/(?:i18n|entity_i18n)["']/);
+    }
   });
 
   it("should preserve and render every Phase 2 HUD interpolation placeholder in every locale", () => {
