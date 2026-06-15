@@ -4238,6 +4238,9 @@ export class Sim {
       this.error(r.meta.entityId, this.gearReadout(r.meta));
     if (/^\/(?:abilities|spells|spellbook)(?:\s|$)/i.test(raw)) {
       this.error(r.meta.entityId, this.abilitiesReadout(r.meta, r.e));
+    // "/pet" (aliases /companion /pets) — self-only readout of your active pet
+    if (/^\/(?:pet|pets|companion)(?:\s|$)/i.test(raw)) {
+      this.error(r.meta.entityId, this.petReadout(r.e));
       return null;
     }
 
@@ -5828,6 +5831,16 @@ export class Sim {
     if (known.length === 0) return 'You have not learned any abilities yet.';
     const list = known.map((k) => `${k.def.name} (Rank ${k.rank})`).join(', ');
     return `Spellbook (${known.length}): ${list}.`;
+  // Self-only readout of the player's active pet: name, level, beast family,
+  // and current health. Reads live pet state via petOf() so it stays accurate
+  // regardless of how the pet was acquired (tame, summon).
+  private petReadout(owner: Entity): string {
+    const pet = this.petOf(owner.id);
+    if (!pet) return 'You do not have a pet.';
+    const family = MOBS[pet.templateId]?.family;
+    const kind = family ? ` ${family}` : '';
+    const pct = pet.maxHp > 0 ? Math.round((pet.hp / pet.maxHp) * 100) : 0;
+    return `Your pet: ${pet.name} (level ${pet.level}${kind}) — HP ${pet.hp}/${pet.maxHp} (${pct}%).`;
   }
 }
 
