@@ -4,9 +4,9 @@ import {
   validateAllocation, dormantNodes, computeTalentModifiers, emptyAllocation,
   exportBuild, importBuild, TALENT_BUILD_VERSION, MAX_LOADOUTS, type TalentAllocation,
 } from '../src/sim/content/talents';
-import { MAX_LEVEL, dist2d } from '../src/sim/types';
+import { ALL_CLASSES, MAX_LEVEL, dist2d } from '../src/sim/types';
 import { Sim } from '../src/sim/sim';
-import { abilitiesKnownAt } from '../src/sim/content/classes';
+import { ABILITIES, abilitiesKnownAt } from '../src/sim/content/classes';
 import { terrainHeight } from '../src/sim/world';
 import { ClientWorld } from '../src/net/online';
 
@@ -38,9 +38,32 @@ describe('talent tree validation (load-time)', () => {
     }
   });
 
-  it('keeps non-warrior talent trees explicitly unavailable for graceful UI fallback', () => {
-    for (const cls of ['paladin', 'hunter', 'rogue', 'priest', 'shaman', 'mage', 'warlock', 'druid'] as const) {
-      expect(talentsFor(cls)).toBeNull();
+  it('registers all playable classes with populated class and spec trees', () => {
+    for (const cls of ALL_CLASSES) {
+      const ct = talentsFor(cls);
+      expect(ct, cls).toBeTruthy();
+      expect(ct!.specs, cls).toHaveLength(3);
+      expect(ct!.nodes.filter((n) => n.tree === 'class').length, cls).toBeGreaterThanOrEqual(7);
+      for (const s of ct!.specs) {
+        expect(ct!.nodes.filter((n) => n.tree === 'spec' && n.specId === s.id).length, `${cls}:${s.id}`).toBeGreaterThanOrEqual(6);
+      }
+    }
+  });
+
+  it('references only abilities that exist', () => {
+    for (const cls of ALL_CLASSES) {
+      const ct = talentsFor(cls)!;
+      for (const s of ct.specs) expect(ABILITIES[s.signature], `${cls}:${s.id}:${s.signature}`).toBeTruthy();
+      for (const node of ct.nodes) {
+        const effects = [
+          node.effect,
+          ...(node.choices ?? []).map((c) => c.effect),
+        ].filter(Boolean);
+        for (const eff of effects) {
+          if (eff!.grant) expect(ABILITIES[eff!.grant.ability], `${node.id}:${eff!.grant.ability}`).toBeTruthy();
+          for (const mod of eff!.ability ?? []) expect(ABILITIES[mod.ability], `${node.id}:${mod.ability}`).toBeTruthy();
+        }
+      }
     }
   });
 
@@ -171,9 +194,37 @@ describe('precomputed modifiers', () => {
     expect(mods.global.meleeDmgPct).toBeCloseTo(0.10); // Sharpened Blades mastery
   });
 
+  it('makes every chosen spec signature available at the first talent level', () => {
+    for (const cls of ALL_CLASSES) {
+      const ct = talentsFor(cls)!;
+      for (const s of ct.specs) {
+        const known = abilitiesKnownAt(cls, FIRST_TALENT_LEVEL, computeTalentModifiers(cls, alloc({ spec: s.id })));
+        expect(known.some((k) => k.def.id === s.signature), `${cls}:${s.id}:${s.signature}`).toBe(true);
+      }
+    }
+  });
+
   it('accumulates per-ability modifiers across ranks', () => {
     const mods = computeTalentModifiers('warrior', alloc({ spec: 'arms', ranks: { arms_imp_overpower: 2 } }));
     expect(mods.abilities.overpower.dmgPct).toBeCloseTo(0.50); // 0.25 * 2
+  });
+
+  it('applies ability modifiers to shields, buffs, and imbues, not only damage spells', () => {
+    const shield = abilitiesKnownAt('priest', 10, computeTalentModifiers('priest',
+      alloc({ spec: 'discipline', ranks: { disc_twin_disciplines: 1 } }))).find((k) => k.def.id === 'power_word_shield')!;
+    expect(effOf(shield).amount).toBe(56); // 48 * (1 + 8% mastery + 8% talent)
+
+    const fort = abilitiesKnownAt('priest', 20, computeTalentModifiers('priest',
+      alloc({ ranks: { pri_imp_fortitude: 2 } }))).find((k) => k.def.id === 'power_word_fortitude')!;
+    expect(effOf(fort).value).toBe(17); // 12 stamina * 1.40
+
+    const demonSkin = abilitiesKnownAt('warlock', 20, computeTalentModifiers('warlock',
+      alloc({ ranks: { wlk_demonic_skin: 2 } }))).find((k) => k.def.id === 'demon_skin')!;
+    expect(effOf(demonSkin).value).toBe(112); // 80 armor * 1.40
+
+    const seal = abilitiesKnownAt('paladin', 20, computeTalentModifiers('paladin',
+      alloc({ spec: 'retribution', ranks: { ret_seal_command: 2 } }))).find((k) => k.def.id === 'seal_of_righteousness')!;
+    expect(effOf(seal)).toMatchObject({ bonus: 16, judgeMin: 44, judgeMax: 64 }); // mastery + 2 talent ranks
   });
 });
 

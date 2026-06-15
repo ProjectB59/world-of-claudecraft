@@ -1276,9 +1276,14 @@ function scaleEffect(eff: AbilityEffect, dmgMult: number, healMult: number, flat
     case 'aoeRoot': return { ...eff, min: Math.round(eff.min * dmgMult), max: Math.round(eff.max * dmgMult) };
     case 'drainTick': return { ...eff, min: Math.round(eff.min * dmgMult), max: Math.round(eff.max * dmgMult) };
     case 'finisherDamage': return { ...eff, base: Math.round(eff.base * dmgMult + flat), perCombo: Math.round(eff.perCombo * dmgMult) };
-    case 'imbue': return { ...eff, bonus: Math.round(eff.bonus * dmgMult) };
+    case 'imbue': return { ...eff, bonus: Math.round(eff.bonus * dmgMult + flat), judgeMin: eff.judgeMin === undefined ? undefined : Math.round(eff.judgeMin * dmgMult + flat), judgeMax: eff.judgeMax === undefined ? undefined : Math.round(eff.judgeMax * dmgMult + flat) };
     case 'heal': return { ...eff, min: Math.round(eff.min * healMult + flat), max: Math.round(eff.max * healMult + flat) };
     case 'hot': return { ...eff, total: Math.round(eff.total * healMult + flat) };
+    case 'absorb': return { ...eff, amount: Math.round(eff.amount * healMult + flat) };
+    case 'buffTarget': return { ...eff, value: Math.round(eff.value * dmgMult + flat) };
+    case 'selfBuff': return { ...eff, value: Math.round(eff.value * dmgMult + flat) };
+    case 'lifeTap': return { ...eff, mana: Math.round(eff.mana * dmgMult + flat) };
+    case 'gainResource': return { ...eff, amount: Math.round(eff.amount * dmgMult + flat) };
     default: return eff;
   }
 }
@@ -1309,12 +1314,14 @@ export function abilitiesKnownAt(cls: PlayerClass, level: number, mods?: TalentM
   const out: KnownAbility[] = [];
   const baseIds = CLASSES[cls].abilities;
   const ids = [...baseIds];
+  const grantIds = new Set<string>();
+  for (const g of mods?.grants ?? []) grantIds.add(g.ability);
   for (const g of mods?.grants ?? []) if (!ids.includes(g.ability)) ids.push(g.ability);
 
   for (const id of ids) {
     const def = ABILITIES[id];
     if (!def) continue;
-    const granted = !baseIds.includes(id);
+    const granted = grantIds.has(id) || !baseIds.includes(id);
     if (!granted && def.learnLevel > level) continue; // class kit is level-gated; grants bypass it
 
     let rank = 1, cost = def.cost, castTime = def.castTime, effects = def.effects;

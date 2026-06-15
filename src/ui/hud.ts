@@ -2636,17 +2636,23 @@ export class Hud {
     const pop = document.createElement('div');
     pop.id = 'tal-choice-pop';
     pop.className = 'tal-choice-pop';
+    pop.setAttribute('role', 'menu');
+    pop.setAttribute('aria-label', node.name);
     pop.innerHTML = (node.choices ?? []).map((o) => {
       const sel = stage.choices[node.id] === o.id;
-      return `<div class="tal-choice-opt${sel ? ' sel' : ''}" data-opt="${esc(o.id)}"><span class="tco-icon" style="background-image:url(${talentEffectIcon(o.effect, 'passive')})"></span>`
+      return `<div class="tal-choice-opt${sel ? ' sel' : ''}" role="menuitemradio" tabindex="0" aria-checked="${sel}" data-opt="${esc(o.id)}"><span class="tco-icon" style="background-image:url(${talentEffectIcon(o.effect, 'passive')})"></span>`
         + `<span class="tco-text"><b>${esc(o.name)}</b><span>${esc(o.description)}</span></span></div>`;
     }).join('');
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
-    pop.style.left = `${Math.min(window.innerWidth - pop.offsetWidth - 8, r.right + 8)}px`;
-    pop.style.top = `${Math.max(8, Math.min(window.innerHeight - pop.offsetHeight - 8, r.top))}px`;
-    pop.querySelectorAll('.tal-choice-opt').forEach((optEl) => optEl.addEventListener('click', (e) => {
-      e.stopPropagation();
+    const preferredLeft = r.left + r.width / 2 - pop.offsetWidth / 2;
+    const left = Math.max(8, Math.min(window.innerWidth - pop.offsetWidth - 8, preferredLeft));
+    const top = Math.max(8, Math.min(window.innerHeight - pop.offsetHeight - 8, r.bottom + 12));
+    const caretLeft = Math.max(14, Math.min(pop.offsetWidth - 14, r.left + r.width / 2 - left));
+    pop.style.left = `${left}px`;
+    pop.style.top = `${top}px`;
+    pop.style.setProperty('--tal-choice-caret-left', `${caretLeft}px`);
+    const choose = (optEl: Element) => {
       const optId = optEl.getAttribute('data-opt') ?? '';
       if (ranks === 0) {
         const cand = cloneAllocation(stage);
@@ -2657,7 +2663,20 @@ export class Hud {
       stage.choices[node.id] = optId;
       pop.remove();
       this.renderTalents();
-    }));
+    };
+    pop.querySelectorAll('.tal-choice-opt').forEach((optEl) => {
+      optEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        choose(optEl);
+      });
+      optEl.addEventListener('keydown', (e) => {
+        const ke = e as KeyboardEvent;
+        if (ke.key === 'Escape') { ke.preventDefault(); pop.remove(); anchor.focus(); return; }
+        this.keyboardActivate(ke, () => choose(optEl));
+      });
+    });
+    const firstOpt = (pop.querySelector('.tal-choice-opt.sel') ?? pop.querySelector('.tal-choice-opt')) as HTMLElement | null;
+    firstOpt?.focus();
     setTimeout(() => document.addEventListener('click', () => pop.remove(), { once: true }), 0);
   }
 
@@ -2770,6 +2789,12 @@ export class Hud {
     return role === 'tank' ? t('game.talents.roleTank') : role === 'healer' ? t('game.talents.roleHealer') : t('game.talents.roleDps');
   }
 
+  private keyboardActivate(e: KeyboardEvent, action: () => void): void {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    action();
+  }
+
   // Structural equality of two allocations (ignores key order / zero ranks), so
   // the Apply button only lights up on a real change.
   private allocsEqual(a: TalentAllocation, b: TalentAllocation): boolean {
@@ -2806,16 +2831,20 @@ export class Hud {
     el.innerHTML =
       `<div class="panel-title"><span>${t('game.talents.title')} <span style="color:#998d6a;font-size:11px">${esc(CLASSES[cls].name)}</span></span>${close}</div>`
       + `<div class="tal-head"><span>${t('game.talents.available')}: <b>${Math.max(0, total - spent)}</b> / ${total}</span><span>${t('game.talents.spent')}: <b>${spent}</b></span></div>`
-      + `<div class="tal-tabs">`
-      + `<div class="tal-tab${this.talentTab === 'class' ? ' active' : ''}" data-tab="class">${t('game.talents.classTab')}<span class="tt-pts">${treeSpent('class')}</span></div>`
-      + `<div class="tal-tab${this.talentTab === 'spec' ? ' active' : ''}" data-tab="spec">${t('game.talents.specTab')}<span class="tt-pts">${treeSpent('spec')}</span></div>`
-      + `</div><div id="tal-body"></div>`
+      + `<div class="tal-tabs" role="tablist" aria-label="${esc(t('game.talents.title'))}">`
+      + `<div class="tal-tab${this.talentTab === 'class' ? ' active' : ''}" role="tab" tabindex="${this.talentTab === 'class' ? '0' : '-1'}" aria-selected="${this.talentTab === 'class'}" aria-controls="tal-body" data-tab="class"><span class="tal-tab-label">${t('game.talents.classTab')}</span><span class="tt-pts">${treeSpent('class')}</span></div>`
+      + `<div class="tal-tab${this.talentTab === 'spec' ? ' active' : ''}" role="tab" tabindex="${this.talentTab === 'spec' ? '0' : '-1'}" aria-selected="${this.talentTab === 'spec'}" aria-controls="tal-body" data-tab="spec"><span class="tal-tab-label">${t('game.talents.specTab')}</span><span class="tt-pts">${treeSpent('spec')}</span></div>`
+      + `</div><div id="tal-body" role="tabpanel"></div>`
       + this.talentFooterHtml(stage, total, spent);
 
-    el.querySelectorAll('.tal-tab').forEach((tab) => tab.addEventListener('click', () => {
-      this.talentTab = (tab as HTMLElement).dataset.tab as 'class' | 'spec';
+    const switchTab = (tab: HTMLElement) => {
+      this.talentTab = tab.dataset.tab as 'class' | 'spec';
       this.renderTalents();
-    }));
+    };
+    el.querySelectorAll('.tal-tab').forEach((tab) => {
+      tab.addEventListener('click', () => switchTab(tab as HTMLElement));
+      tab.addEventListener('keydown', (e) => this.keyboardActivate(e as KeyboardEvent, () => switchTab(tab as HTMLElement)));
+    });
     el.querySelector('[data-close]')?.addEventListener('click', () => { el.style.display = 'none'; this.hideTooltip(); this.talentStage = null; });
 
     const body = el.querySelector('#tal-body') as HTMLElement;
@@ -2830,14 +2859,22 @@ export class Hud {
 
   private renderSpecTab(body: HTMLElement, ct: NonNullable<ReturnType<typeof talentsFor>>, stage: TalentAllocation): void {
     const picker = document.createElement('div'); picker.className = 'tal-specs';
+    picker.setAttribute('role', 'radiogroup');
+    picker.setAttribute('aria-label', t('game.talents.specTab'));
     for (const sp of ct.specs) {
       const card = document.createElement('div');
-      card.className = 'tal-spec' + (stage.spec === sp.id ? ' sel' : '');
+      const selected = stage.spec === sp.id;
+      card.className = 'tal-spec' + (selected ? ' sel' : '');
+      card.setAttribute('role', 'radio');
+      card.setAttribute('tabindex', selected || !stage.spec ? '0' : '-1');
+      card.setAttribute('aria-checked', String(selected));
+      card.setAttribute('aria-label', `${sp.name}, ${this.roleLabel(sp.role)}`);
       card.innerHTML = `<div class="ts-icon" style="background-image:url(${iconDataUrl('ability', sp.signature)})"></div><div class="ts-name">${esc(sp.name)}</div><div class="ts-role">${this.roleLabel(sp.role)}</div>`;
       this.attachTooltip(card, () => `<div class="tt-title">${esc(sp.name)}</div><div class="tt-sub">${esc(sp.description)}</div>`
         + `<div class="tt-sub" style="color:#ffd100">${t('game.talents.signature')}: ${esc(ABILITIES[sp.signature]?.name ?? sp.signature)}</div>`
         + `<div class="tt-sub">${t('game.talents.mastery')}: ${esc(sp.mastery.name)} — ${esc(sp.mastery.description)}</div>`);
       card.addEventListener('click', () => this.stageSetSpec(stage, sp.id));
+      card.addEventListener('keydown', (e) => this.keyboardActivate(e as KeyboardEvent, () => this.stageSetSpec(stage, sp.id)));
       picker.appendChild(card);
     }
     body.appendChild(picker);
@@ -2893,12 +2930,21 @@ export class Hud {
       const canAdd = ranks < n.maxRank && validateAllocation(cls, cand, total).ok;
       const shape = n.kind === 'active' ? 'square' : n.kind === 'choice' ? 'octagon' : 'circle';
       const state = isDormant ? 'dormant' : ranks >= n.maxRank ? 'maxed' : ranks > 0 ? 'filled' : canAdd ? 'avail' : 'locked';
+      const chosen = n.kind === 'choice' ? n.choices!.find((c) => c.id === stage.choices[n.id]) : undefined;
       const div = document.createElement('div');
       div.className = `tal-node ${shape} ${state}`;
+      div.setAttribute('role', 'button');
+      div.setAttribute('tabindex', '0');
+      div.setAttribute('aria-pressed', String(ranks > 0));
+      if (!canAdd && ranks <= 0) div.setAttribute('aria-disabled', 'true');
+      const chosenLabel = chosen ? `, ${chosen.name}` : '';
+      div.setAttribute('aria-label', `${n.name}${chosenLabel}, ${t('game.talents.rank')} ${ranks}/${n.maxRank}`);
       div.style.left = `${n.col * CW + (CW - NS) / 2}px`;
       div.style.top = `${n.row * CH + TOP}px`;
-      const chosen = n.kind === 'choice' ? n.choices!.find((c) => c.id === stage.choices[n.id]) : undefined;
-      div.style.backgroundImage = `url(${chosen ? talentEffectIcon(chosen.effect, 'choice') : talentEffectIcon(n.effect, n.kind)})`;
+      const icon = document.createElement('span');
+      icon.className = 'tal-icon';
+      icon.style.backgroundImage = `url(${chosen ? talentEffectIcon(chosen.effect, 'choice') : talentEffectIcon(n.effect, n.kind)})`;
+      div.appendChild(icon);
       if (ranks > 0 || n.maxRank > 1) {
         const badge = document.createElement('span'); badge.className = 'tal-rank'; badge.textContent = `${ranks}/${n.maxRank}`;
         div.appendChild(badge);
@@ -2908,6 +2954,18 @@ export class Hud {
         // octagon choice nodes open a WoW-style option flyout; others add a rank
         if (n.kind === 'choice') this.openChoicePopup(div, n, stage);
         else this.talentNodeClick(stage, n);
+      });
+      div.addEventListener('keydown', (e) => {
+        const ke = e as KeyboardEvent;
+        if (ke.key === 'Backspace' || ke.key === 'Delete') {
+          ke.preventDefault();
+          this.talentNodeRemove(stage, n);
+          return;
+        }
+        this.keyboardActivate(ke, () => {
+          if (n.kind === 'choice') this.openChoicePopup(div, n, stage);
+          else this.talentNodeClick(stage, n);
+        });
       });
       div.addEventListener('contextmenu', (e) => { e.preventDefault(); this.talentNodeRemove(stage, n); });
       host.appendChild(div);

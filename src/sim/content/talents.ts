@@ -12,6 +12,10 @@
 
 import { MAX_LEVEL, type PlayerClass } from '../types';
 import { WARRIOR_TALENTS } from './talents_warrior';
+import {
+  DRUID_TALENTS, HUNTER_TALENTS, MAGE_TALENTS, PALADIN_TALENTS, PRIEST_TALENTS,
+  ROGUE_TALENTS, SHAMAN_TALENTS, WARLOCK_TALENTS,
+} from './talents_classic';
 
 export type TalentTree = 'class' | 'spec';
 export type TalentKind = 'passive' | 'active' | 'choice';
@@ -135,6 +139,14 @@ export interface TalentModifiers {
 
 export const TALENTS: Partial<Record<PlayerClass, ClassTalents>> = {
   warrior: WARRIOR_TALENTS,
+  paladin: PALADIN_TALENTS,
+  hunter: HUNTER_TALENTS,
+  rogue: ROGUE_TALENTS,
+  priest: PRIEST_TALENTS,
+  shaman: SHAMAN_TALENTS,
+  mage: MAGE_TALENTS,
+  warlock: WARLOCK_TALENTS,
+  druid: DRUID_TALENTS,
 };
 
 export function talentsFor(cls: PlayerClass): ClassTalents | null {
