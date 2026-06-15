@@ -91,6 +91,8 @@ const EMOTES: Record<string, EmoteDef> = {
 const EMOTE_ALIASES: Record<string, string> = {
   hi: 'greet', hello: 'greet', thanks: 'thank', applaud: 'clap',
 };
+const NEARBY_RANGE = 40; // /nearby scan radius — wider than say, tighter than yell
+const NEARBY_MAX = 10; // cap the /nearby list so a crowded camp can't spam chat
 const CHAT_BURST = 8; // messages a player may send back-to-back...
 const CHAT_REFILL = 2; // ...then this many more per second (caps spam amplifiers)
 const DUEL_FORFEIT_DISTANCE = 60;
@@ -4262,6 +4264,11 @@ export class Sim {
     // overworld zone with its level range, tagging the one you're standing in.
     if (/^\/(?:zones|zonelist|worldmap)(?:\s|$)/i.test(raw)) {
       this.error(r.meta.entityId, this.zonesReadout(r.e.pos.z));
+    // "/nearby" (aliases "/near", "/around") — self-only readout of players,
+    // pets, mobs, and NPCs within scan range, nearest first. Self-targeted
+    // error reply, matches no server interceptor, so it works online for free.
+    if (/^\/(?:nearby|near|around)(?:\s|$)/i.test(raw)) {
+      this.error(r.meta.entityId, this.nearbyReadout(r.e));
       return null;
     }
 
@@ -5925,6 +5932,32 @@ export class Sim {
     const meta = this.players.get(id);
     if (meta) return meta.name;
     return this.entities.get(id)?.name || 'Unknown';
+  // One scannable entry per nearby entity: name, what it is, and how far.
+  // Pets are mobs with a non-null ownerId; players have no level prefix.
+  private nearbyLabel(e: Entity, d: number): string {
+    const yd = `${Math.round(d)}yd`;
+    if (e.kind === 'player') return `${e.name} (player, ${yd})`;
+    const kind = e.kind === 'mob' && e.ownerId !== null ? 'pet' : e.kind;
+    return `${e.name} (Lvl ${e.level} ${kind}, ${yd})`;
+  }
+
+  // Self-only readout of living entities within NEARBY_RANGE of `self`,
+  // nearest first. Reads only live Entity state (pos/kind/level/hp), so it
+  // never desyncs and adds no persisted fields.
+  private nearbyReadout(self: Entity): string {
+    const found: { e: Entity; d: number }[] = [];
+    for (const e of this.entities.values()) {
+      if (e.id === self.id || e.kind === 'object' || e.hp <= 0) continue;
+      const d = dist2d(self.pos, e.pos);
+      if (d <= NEARBY_RANGE) found.push({ e, d });
+    }
+    if (found.length === 0) return 'Nothing is nearby.';
+    found.sort((a, b) => a.d - b.d);
+    const shown = found.slice(0, NEARBY_MAX);
+    const labels = shown.map(({ e, d }) => this.nearbyLabel(e, d));
+    const more = found.length - shown.length;
+    if (more > 0) labels.push(`(+${more} more)`);
+    return `Nearby (${found.length}): ${labels.join(', ')}.`;
   }
 }
 
