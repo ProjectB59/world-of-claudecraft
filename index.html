@@ -478,6 +478,13 @@
   .mana .bar-fill { background-color: var(--color-mana); }
   .rage .bar-fill { background-color: var(--color-rage); }
   .energy .bar-fill { background-color: var(--color-energy); }
+  /* Damage-absorb shield overlay (Power Word: Shield, Ice Barrier, …): a hatched
+     translucent segment laid over the health bar, extending past current health. */
+  .bar-absorb { position: absolute; inset: 0; width: 100%; transform-origin: left; transform: scaleX(0);
+    background: repeating-linear-gradient(115deg, rgba(255,255,255,0.42) 0 5px, rgba(190,225,255,0.16) 5px 10px);
+    box-shadow: inset 0 0 6px rgba(255,255,255,0.4); pointer-events: none; transition: transform 0.12s linear; }
+  .bar-absorb.overshield { background: repeating-linear-gradient(115deg, rgba(255,236,160,0.55) 0 5px, rgba(255,214,90,0.24) 5px 10px);
+    box-shadow: inset 0 0 7px rgba(255,225,140,0.6); }
   .combo-row { display: flex; gap: 4px; margin-top: 4px; height: 10px; }
   .combo-pip { width: 12px; height: 10px; border-radius: 50%; border: 1px solid #5c2020; background: #2a0d0d; }
   .combo-pip.on { background: radial-gradient(circle at 35% 30%, #ff7a5e, #c0392b); box-shadow: 0 0 5px #ff5533aa; border-color: #ffad99; }
@@ -5288,7 +5295,7 @@
       </div>
       <div class="uf-bars">
         <div class="uf-name" id="tf-name"></div>
-        <div class="bar hp"><div class="bar-fill" id="tf-hp"></div><div class="bar-text" id="tf-hp-text"></div></div>
+        <div class="bar hp"><div class="bar-fill" id="tf-hp"></div><div class="bar-absorb" id="tf-absorb"></div><div class="bar-text" id="tf-hp-text"></div></div>
         <div class="combo-row" id="combo-row"></div>
         <div class="uf-buffs" id="tf-debuffs"></div>
       </div>
@@ -5343,7 +5350,7 @@
             </div>
             <div class="uf-bars">
               <div class="uf-name" id="pf-name"></div>
-              <div class="bar hp"><div class="bar-fill" id="pf-hp"></div><div class="bar-text" id="pf-hp-text"></div></div>
+              <div class="bar hp"><div class="bar-fill" id="pf-hp"></div><div class="bar-absorb" id="pf-absorb"></div><div class="bar-text" id="pf-hp-text"></div></div>
               <div class="bar mana" id="pf-resource"><div class="bar-fill" id="pf-res"></div><div class="bar-text" id="pf-res-text"></div></div>
             </div>
           </div>
