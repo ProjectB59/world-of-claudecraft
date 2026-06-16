@@ -2,12 +2,12 @@ import { apiGet, apiLogin, apiPost, clearSession, getAdminName, getToken, ApiErr
 import { barChart, chartPanel } from './charts';
 import { escapeHtml, fmtBytes, fmtDuration } from './format';
 import {
-  renderAccountDetail, renderAccountsTable, renderCharactersTable, renderModerationDetail,
-  renderModerationQueue, renderOnlineTable, renderPager,
+  renderAccountDetail, renderAccountsTable, renderCharactersTable, renderChatFilter,
+  renderModerationDetail, renderModerationQueue, renderOnlineTable, renderPager,
 } from './tables';
 import type {
-  AccountDetail, AccountRow, Activity, CharacterRow, LivePlayer, ModerationAccountDetail,
-  ModerationQueueRow, Overview, Paginated,
+  AccountDetail, AccountRow, Activity, CharacterRow, ChatFilterData, LivePlayer,
+  ModerationAccountDetail, ModerationQueueRow, Overview, Paginated,
 } from './types';
 
 const LIVE_REFRESH_MS = 5_000;
@@ -31,7 +31,8 @@ const accountsState: TableState = { page: 1, search: '', sort: 'id', dir: 'desc'
 const charactersState: TableState = { page: 1, search: '', sort: 'level', dir: 'desc' };
 let liveTimer: number | null = null;
 let activityTimer: number | null = null;
-let activePage: 'overview' | 'moderation' = 'overview';
+type AdminPage = 'overview' | 'moderation' | 'chat-filter';
+let activePage: AdminPage = 'overview';
 let pendingModerationAction: { endpoint: string; body: unknown; accountId: number; source: 'account' | 'moderation' } | null = null;
 
 // ---------------------------------------------------------------------------
@@ -74,7 +75,7 @@ async function refreshModeration(): Promise<void> {
   }
 }
 
-function showPage(page: 'overview' | 'moderation'): void {
+function showPage(page: AdminPage): void {
   activePage = page;
   document.querySelectorAll<HTMLButtonElement>('.admin-tab').forEach((tab) => {
     tab.classList.toggle('active', tab.dataset.adminPage === page);
@@ -83,6 +84,16 @@ function showPage(page: 'overview' | 'moderation'): void {
     el.classList.toggle('active', el.id === `page-${page}`);
   });
   if (page === 'moderation') void refreshModeration();
+  if (page === 'chat-filter') void refreshChatFilter();
+}
+
+async function refreshChatFilter(): Promise<void> {
+  try {
+    const data = await apiGet<ChatFilterData>('/admin/api/chat-filter');
+    $('chat-filter').innerHTML = renderChatFilter(data);
+  } catch (err) {
+    if (!handleAuthFailure(err)) $('chat-filter').innerHTML = '<div class="empty">failed to load chat filter</div>';
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -463,8 +474,10 @@ function wireEvents(): void {
   $('admin-tabs').addEventListener('click', (e) => {
     const tab = (e.target as HTMLElement).closest<HTMLButtonElement>('.admin-tab');
     const page = tab?.dataset.adminPage;
-    if (page === 'overview' || page === 'moderation') showPage(page);
+    if (page === 'overview' || page === 'moderation' || page === 'chat-filter') showPage(page);
   });
+
+  wireChatFilterEvents();
 
   let searchTimer: number | null = null;
   $('account-search').addEventListener('input', (e) => {
@@ -504,6 +517,15 @@ function wireEvents(): void {
 
   $('moderation-detail').addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
+    const chatModBtn = target.closest('button[data-lift-mute], button[data-reset-strikes]') as HTMLButtonElement | null;
+    if (chatModBtn) {
+      const accountId = Number((target.closest('.mod-detail')?.querySelector('[data-action-account-id]') as HTMLElement | null)?.dataset.actionAccountId);
+      const endpoint = chatModBtn.dataset.liftMute !== undefined ? 'lift-mute' : 'reset-strikes';
+      void apiPost(`/admin/api/moderation/accounts/${accountId}/${endpoint}`, {})
+        .then(() => { if (Number.isFinite(accountId)) void openModerationAccount(accountId); })
+        .catch((err: unknown) => { if (!handleAuthFailure(err)) window.alert(err instanceof Error ? err.message : 'action failed'); });
+      return;
+    }
     const ignoreBtn = target.closest('button[data-ignore-report]') as HTMLButtonElement | null;
     if (ignoreBtn) {
       const reportId = Number(ignoreBtn.dataset.ignoreReport);
@@ -528,6 +550,48 @@ function wireEvents(): void {
     charactersState.sort = sort;
     charactersState.page = 1;
     void refreshCharacters();
+  });
+}
+
+function chatFilterError(err: unknown, action: string): void {
+  if (!handleAuthFailure(err)) window.alert(err instanceof Error ? err.message : `${action} failed`);
+}
+
+function wireChatFilterEvents(): void {
+  // Add a word: the per-tier form submits (Enter or the Add button).
+  $('chat-filter').addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest('form.word-add') as HTMLFormElement | null;
+    if (!form) return;
+    e.preventDefault();
+    const tier = form.dataset.addTier;
+    const input = form.querySelector('input') as HTMLInputElement | null;
+    const word = (input?.value ?? '').trim();
+    if (!word || (tier !== 'soft' && tier !== 'hard')) return;
+    void apiPost('/admin/api/chat-filter/words', { word, tier })
+      .then(() => refreshChatFilter())
+      .catch((err: unknown) => chatFilterError(err, 'add word'));
+  });
+
+  // Remove a word, or save the escalation config.
+  $('chat-filter').addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const del = target.closest('button[data-del-word]') as HTMLButtonElement | null;
+    if (del) {
+      void apiPost(`/admin/api/chat-filter/words/${Number(del.dataset.delWord)}/delete`, {})
+        .then(() => refreshChatFilter())
+        .catch((err: unknown) => chatFilterError(err, 'remove word'));
+      return;
+    }
+    if (target.closest('button[data-save-config]')) {
+      const warningsBeforeMute = Number(($('cf-warnings') as HTMLInputElement).value);
+      const muteLadderSeconds = ($('cf-ladder') as HTMLInputElement).value
+        .split(',')
+        .map((s) => Number(s.trim()))
+        .filter((n) => Number.isFinite(n) && n > 0);
+      void apiPost('/admin/api/chat-filter/config', { warningsBeforeMute, muteLadderSeconds })
+        .then(() => refreshChatFilter())
+        .catch((err: unknown) => chatFilterError(err, 'save config'));
+    }
   });
 }
 

@@ -73,6 +73,17 @@
   .admin-page.active { display: block; }
   section { margin-bottom: 18px; }
 
+  /* ---------- chat filter ---------- */
+  .word-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .word-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px 3px 9px; background: #1b1610; border: 1px solid #463a1c; border-radius: 12px; font-size: 13px; }
+  .word-del { background: none; border: none; color: #c98; cursor: pointer; font-size: 15px; line-height: 1; padding: 0 2px; }
+  .word-del:hover { color: #f55; }
+  .word-add { display: flex; gap: 6px; margin-top: 8px; }
+  .word-add input { flex: 1; }
+  .cf-config { display: flex; flex-direction: column; gap: 8px; max-width: 460px; }
+  .cf-config label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: #c9b27a; }
+  .chat-mod-status { margin: 6px 0; }
+
   /* ---------- stat cards ---------- */
   #stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .stat { padding: 10px 12px; }
@@ -209,6 +220,7 @@
     <nav id="admin-tabs">
       <button class="admin-tab active" data-admin-page="overview">Overview</button>
       <button class="admin-tab" data-admin-page="moderation">Moderation</button>
+      <button class="admin-tab" data-admin-page="chat-filter">Chat Filter</button>
     </nav>
 
     <main id="page-overview" class="admin-page active">
@@ -242,6 +254,12 @@
         <div class="panel-title">Moderation <span class="hint">highest open report counts first</span></div>
         <div id="moderation"></div>
         <div id="moderation-detail"></div>
+      </section>
+    </main>
+
+    <main id="page-chat-filter" class="admin-page">
+      <section>
+        <div id="chat-filter"></div>
       </section>
     </main>
   </div>

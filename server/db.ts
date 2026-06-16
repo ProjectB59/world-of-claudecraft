@@ -3,6 +3,7 @@ import type { CharacterState, MarketSave } from '../src/sim/sim';
 import type { PlayerClass } from '../src/sim/types';
 import type { ChatLogRow } from './chat_log';
 import { SOCIAL_SCHEMA } from './social_db';
+import { seedChatFilterDefaults } from './chat_filter_db';
 import { REALM } from './realm';
 
 try {
@@ -122,6 +123,41 @@ CREATE TABLE IF NOT EXISTS world_state (
   data JSONB NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Chat moderation: per-account timed mute + running strike count for the
+-- hard-word (slur) enforcement ladder. A mute blocks chat only, never login.
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS chat_muted_until TIMESTAMPTZ;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS chat_strikes INT NOT NULL DEFAULT 0;
+-- Admin-managed filter word lists. tier 'soft' = cosmetic (masked client-side
+-- when the player's filter is on); tier 'hard' = enforced (blocked + escalated).
+CREATE TABLE IF NOT EXISTS chat_filter_words (
+  id SERIAL PRIMARY KEY,
+  word TEXT NOT NULL,
+  tier TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (tier, word)
+);
+-- Single-row escalation config (warnings then a mute ladder, in seconds).
+CREATE TABLE IF NOT EXISTS chat_filter_config (
+  id INT PRIMARY KEY DEFAULT 1,
+  warnings_before_mute INT NOT NULL DEFAULT 1,
+  mute_ladder_seconds INT[] NOT NULL DEFAULT '{600,3600,86400}',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT chat_filter_config_singleton CHECK (id = 1)
+);
+-- Hard-word incident log, surfaced per-account in the moderation dashboard.
+CREATE TABLE IF NOT EXISTS chat_violations (
+  id BIGSERIAL PRIMARY KEY,
+  account_id INT REFERENCES accounts(id) ON DELETE CASCADE,
+  character_id INT REFERENCES characters(id) ON DELETE SET NULL,
+  character_name TEXT NOT NULL DEFAULT '',
+  term TEXT NOT NULL DEFAULT '',
+  channel TEXT NOT NULL DEFAULT '',
+  message TEXT NOT NULL DEFAULT '',
+  action TEXT NOT NULL DEFAULT '',
+  mute_seconds INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS chat_violations_account ON chat_violations(account_id, created_at DESC);
 `;
 
 export async function ensureSchema(): Promise<void> {
@@ -136,6 +172,9 @@ export async function ensureSchema(): Promise<void> {
     await client.query('SELECT pg_advisory_xact_lock($1)', [0x57_4f_43_01]); // "WOC\x01"
     await client.query(SCHEMA);
     await client.query(SOCIAL_SCHEMA);
+    // Seed the chat-filter word lists + config on first boot only (idempotent).
+    // Runs under the same advisory lock so concurrent realm boots don't race.
+    await seedChatFilterDefaults(client);
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
@@ -157,6 +196,11 @@ export interface AccountModerationStatus {
   suspendedUntil: string | null;
   reason: string;
   message: string;
+  // Chat mute is independent of `locked`: a muted account can still log in and
+  // play, it just can't send chat until `chatMutedUntil` passes. Surfaced here
+  // so the WS auth handshake can seed the live session without a second query.
+  chatMutedUntil: string | null;
+  chatStrikes: number;
 }
 
 export interface AccountChatMuteStatus {
@@ -221,14 +265,19 @@ export async function accountForToken(token: string): Promise<number | null> {
 
 export async function moderationStatusForAccount(accountId: number): Promise<AccountModerationStatus> {
   const res = await pool.query(
-    `SELECT banned_at, suspended_until, moderation_reason
+    `SELECT banned_at, suspended_until, moderation_reason, chat_muted_until, chat_strikes
      FROM accounts WHERE id = $1`,
     [accountId],
   );
   const row = res.rows[0];
   if (!row) {
-    return { locked: false, banned: false, suspendedUntil: null, reason: '', message: '' };
+    return { locked: false, banned: false, suspendedUntil: null, reason: '', message: '', chatMutedUntil: null, chatStrikes: 0 };
   }
+  const mutedUntilDate = row.chat_muted_until ? new Date(row.chat_muted_until) : null;
+  const chatMutedUntil = mutedUntilDate && mutedUntilDate.getTime() > Date.now()
+    ? mutedUntilDate.toISOString()
+    : null;
+  const chatStrikes = Number(row.chat_strikes ?? 0);
   if (row.banned_at) {
     return {
       locked: true,
@@ -236,6 +285,8 @@ export async function moderationStatusForAccount(accountId: number): Promise<Acc
       suspendedUntil: null,
       reason: row.moderation_reason ?? '',
       message: 'This account has been banned.',
+      chatMutedUntil,
+      chatStrikes,
     };
   }
   const suspendedUntil = row.suspended_until ? new Date(row.suspended_until) : null;
@@ -246,9 +297,11 @@ export async function moderationStatusForAccount(accountId: number): Promise<Acc
       suspendedUntil: suspendedUntil.toISOString(),
       reason: row.moderation_reason ?? '',
       message: `This account is suspended until ${suspendedUntil.toUTCString()}.`,
+      chatMutedUntil,
+      chatStrikes,
     };
   }
-  return { locked: false, banned: false, suspendedUntil: null, reason: '', message: '' };
+  return { locked: false, banned: false, suspendedUntil: null, reason: '', message: '', chatMutedUntil, chatStrikes };
 }
 
 export async function chatMuteStatusForAccount(accountId: number): Promise<AccountChatMuteStatus> {

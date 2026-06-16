@@ -757,6 +757,7 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
     for (const sample of net.consumeInputEchoSamples()) perf.markInputEcho(sample);
     net.pendingFacingDelta = 0; // superseded by the interpolated follow below
     perf.time('events', () => hud.handleEvents(net.drainEvents()));
+    if (net.consumeProfanityChanged()) hud.setProfanityWords(net.profanityWords);
     if (net.consumeInventoryChanged()) hud.onInventoryChanged();
     const alpha = net.lastSnapAt > 0
       ? Math.min(1.25, (performance.now() - net.lastSnapAt) / Math.max(20, net.snapInterval))

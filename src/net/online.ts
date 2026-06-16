@@ -275,6 +275,11 @@ export class ClientWorld implements IWorld {
   // inventory deltas arrive in snapshots, separate from the event frames the
   // HUD redraws on — the frame loop polls this so open panels re-render
   private invChanged = false;
+  // Soft (cosmetic) profanity terms the server sends in `hello` and pushes via
+  // `censor` frames when an admin edits the list. The HUD drains these to mask
+  // chat locally when the player's filter is on. Hard words never arrive here.
+  profanityWords: string[] = [];
+  private profanityDirty = false;
   private pendingQuestCommands = new Map<string, 'accept' | 'turnin'>();
   private mouselookFacing: number | null = null;
   private sendTimer: number | undefined;
@@ -440,7 +445,19 @@ export class ClientWorld implements IWorld {
       this.playerId = msg.pid;
       this.cfg.seed = msg.seed;
       if (typeof msg.realm === 'string') this.realm = msg.realm;
+      if (Array.isArray(msg.softWords)) {
+        this.profanityWords = msg.softWords.filter((w: unknown): w is string => typeof w === 'string');
+        this.profanityDirty = true;
+      }
       this.connected = true;
+      return;
+    }
+    if (msg.t === 'censor') {
+      // live word-list update pushed after an admin edits the filter
+      this.profanityWords = Array.isArray(msg.words)
+        ? msg.words.filter((w: unknown): w is string => typeof w === 'string')
+        : [];
+      this.profanityDirty = true;
       return;
     }
     if (msg.t === 'error') {
@@ -482,6 +499,12 @@ export class ClientWorld implements IWorld {
   consumeSocialChanged(): boolean {
     const v = this.socialDirty;
     this.socialDirty = false;
+    return v;
+  }
+
+  consumeProfanityChanged(): boolean {
+    const v = this.profanityDirty;
+    this.profanityDirty = false;
     return v;
   }
 

@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import type { WebSocket } from 'ws';
 import { Sim } from '../src/sim/sim';
 import type { PlayerMeta } from '../src/sim/sim';
@@ -8,6 +7,8 @@ import { stealthDetectionRadius, threatEntries } from '../src/sim/threat';
 import { zoneAt, DUNGEONS } from '../src/sim/data';
 import { saveCharacterState, openPlaySession, closePlaySession, insertChatLogs, pool, loadMarketState, saveMarketState } from './db';
 import type { AccountChatMuteStatus, RequestMetadata } from './db';
+import { ChatFilter } from './chat_filter';
+import { loadChatFilterState, applyChatStrike, recordChatViolation } from './chat_filter_db';
 import { ChatLogger } from './chat_log';
 import { SocialService } from './social';
 import type { Presence, PresenceStatus, SocialActor, SocialEvent, SocialTransport } from './social';
@@ -71,6 +72,9 @@ export interface ClientSession {
   chatCooldownUntil: number;
   chatMutedUntil: number | null;
   chatMuteReason: string;
+  // Hard-word enforcement strike count driving the mute ladder. Account-scoped:
+  // seeded from the DB at join, kept live by enforcement/admin actions.
+  chatStrikes: number;
   // character ids this player has ignored; chat from them is dropped before
   // delivery. Loaded from the DB on join, kept in sync by social commands.
   blockedIds: Set<number>;
@@ -250,67 +254,30 @@ function logSocialErr(err: unknown): void {
   console.error('social command failed:', err);
 }
 
-const CONFUSABLE_CHARS: Record<string, string> = {
-  '0': 'o',
-  '1': 'i',
-  '!': 'i',
-  '|': 'i',
-  '3': 'e',
-  '4': 'a',
-  '@': 'a',
-  '5': 's',
-  '$': 's',
-  '7': 't',
-  '+': 't',
-  '8': 'b',
-};
-
-function normalizedCensorTerm(term: string): string {
-  return term
-    .toLowerCase()
-    .replace(/[0134578!|@$+]/g, (ch) => CONFUSABLE_CHARS[ch] ?? ch)
-    .replace(/[^a-z]/g, '');
+// Human-readable mute duration for player-facing notices ("10 minutes").
+function formatDuration(seconds: number): string {
+  const s = Math.max(1, Math.round(seconds));
+  if (s < 60) return `${s} second${s === 1 ? '' : 's'}`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} minute${m === 1 ? '' : 's'}`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h} hour${h === 1 ? '' : 's'}`;
+  const d = Math.round(h / 24);
+  return `${d} day${d === 1 ? '' : 's'}`;
 }
 
-function parseCensorList(raw: string | undefined): string[] {
-  return (raw ?? '')
-    .split(/[\s,]+/)
-    .map((term) => normalizedCensorTerm(term))
-    .filter((term) => term.length > 0);
-}
-
-let censorCacheKey: string | null = null;
-let censorCacheTerms: string[] = [];
-
-function configuredChatCensorTerms(): string[] {
-  const rawList = process.env.CHAT_CENSOR_LIST ?? '';
-  const file = process.env.CHAT_CENSOR_FILE ?? '';
-  const cacheKey = `${rawList}\0${file}`;
-  if (cacheKey === censorCacheKey) return censorCacheTerms;
-
-  const terms = parseCensorList(rawList);
-  if (!file) {
-    censorCacheTerms = terms;
-    censorCacheKey = cacheKey;
-    return censorCacheTerms;
-  }
-  try {
-    censorCacheTerms = terms.concat(parseCensorList(readFileSync(file, 'utf8')));
-  } catch (err) {
-    console.warn(`could not read CHAT_CENSOR_FILE (${file}):`, err);
-    return terms;
-  }
-  censorCacheKey = cacheKey;
-  return censorCacheTerms;
-}
-
-export function censorChatText(text: string): string {
-  const terms = configuredChatCensorTerms();
-  if (terms.length === 0) return text;
-  return text.replace(/[A-Za-z0-9_@$!|+]+/g, (token) => {
-    const normalized = normalizedCensorTerm(token);
-    return terms.some((term) => normalized.includes(term)) ? '*'.repeat(token.length) : token;
-  });
+// Best-effort channel label for the violation log: the hard-word gate runs
+// before the message is routed, so infer the channel from its command prefix
+// (falling back to the player's last-used channel).
+function chatChannelHint(session: ClientSession, text: string): string {
+  if (/^\/(?:g|gu|guild)\s/i.test(text)) return 'guild';
+  if (/^\/(?:o|officer)\s/i.test(text)) return 'officer';
+  if (/^\/(?:w|whisper|t|tell|r|reply)\s/i.test(text)) return 'whisper';
+  if (/^\/(?:y|yell)\s/i.test(text)) return 'yell';
+  if (/^\/(?:p|party)\s/i.test(text)) return 'party';
+  if (/^\/(?:general|world)\s/i.test(text)) return 'general';
+  if (/^\/(?:s|say)\s/i.test(text)) return 'say';
+  return session.rememberedChat.channel;
 }
 
 export class GameServer {
@@ -318,6 +285,9 @@ export class GameServer {
   clients = new Map<number, ClientSession>(); // by pid
   private readonly sessionsByCharacterId = new Map<number, ClientSession>();
   readonly chatLog = new ChatLogger(insertChatLogs);
+  // Admin-managed soft/hard word lists + escalation config. Loaded from the DB
+  // at boot (loadChatFilter) and refreshed whenever an admin edits the lists.
+  readonly chatFilter = new ChatFilter();
   private readonly socialDb = new PgSocialDb(pool);
   readonly social: SocialService;
   private wireCache = new Map<number, EntityWireCache>();
@@ -489,7 +459,7 @@ export class GameServer {
     cls: import('../src/sim/types').PlayerClass,
     state: import('../src/sim/sim').CharacterState | null,
     isGm = false,
-    meta: RequestMetadata & Partial<AccountChatMuteStatus> = {},
+    meta: RequestMetadata & Partial<AccountChatMuteStatus> & { chatStrikes?: number } = {},
   ): ClientSession | { error: string } {
     if (this.sessionsByCharacterId.has(characterId)) return { error: 'character already in world' };
     const pid = this.sim.addPlayer(cls, name, { state: state ?? undefined });
@@ -507,6 +477,7 @@ export class GameServer {
       chatRateViolations: 0, chatCooldownUntil: 0,
       chatMutedUntil: meta.mutedUntil ? new Date(meta.mutedUntil).getTime() : null,
       chatMuteReason: meta.reason ?? '',
+      chatStrikes: meta.chatStrikes ?? 0,
       blockedIds: new Set(),
       blockListLoaded: false,
       lastWhisperFrom: null,
@@ -537,6 +508,12 @@ export class GameServer {
       name,
       cls,
       realm: REALM,
+      // Soft (cosmetic) words the client masks locally when its profanity
+      // filter is on. Hard words are never sent — they're enforced server-side.
+      softWords: this.chatFilter.softWords(),
+      // Epoch ms of an active chat mute, or null. Lets the client show status
+      // at login; sending is still gated server-side regardless.
+      chatMutedUntil: session.chatMutedUntil ?? null,
     });
     this.broadcastSystem(`${name} has entered World of Claudecraft.`);
     void this.initSocial(session);
@@ -715,6 +692,45 @@ export class GameServer {
   }
 
   // -------------------------------------------------------------------------
+  // Chat filter: load at boot, refresh + push to clients on admin edits, and
+  // sync admin mute/strike actions to any live sessions of the target account.
+  // -------------------------------------------------------------------------
+
+  async loadChatFilter(): Promise<void> {
+    try {
+      this.chatFilter.load(await loadChatFilterState());
+    } catch (err) {
+      console.error('failed to load chat filter:', err);
+    }
+  }
+
+  /** Reload word lists/config from the DB and push the new soft list to clients. */
+  async reloadChatFilter(): Promise<void> {
+    await this.loadChatFilter();
+    const words = this.chatFilter.softWords();
+    for (const session of this.clients.values()) {
+      this.send(session, { t: 'censor', words });
+    }
+  }
+
+  /** Reflect an admin "lift mute" on any live sessions so chat unlocks at once. */
+  liftChatMuteLive(accountId: number): void {
+    for (const session of this.clients.values()) {
+      if (session.accountId === accountId) {
+        session.chatMutedUntil = null;
+        session.chatMuteReason = '';
+      }
+    }
+  }
+
+  /** Reflect an admin "reset strikes" on any live sessions. */
+  resetChatStrikesLive(accountId: number): void {
+    for (const session of this.clients.values()) {
+      if (session.accountId === accountId) session.chatStrikes = 0;
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Input & commands
   // -------------------------------------------------------------------------
 
@@ -796,6 +812,10 @@ export class GameServer {
           this.sendWhoRoster(session);
           break;
         }
+        // Hard-word + mute enforcement gate, applied to every channel before the
+        // message is routed anywhere. Soft (cosmetic) words are NOT touched here
+        // — clients mask those locally when their profanity filter is on.
+        if (this.enforceChatPolicy(session, text)) break;
         // guild and officer chat are persistent + cross-zone, so they live in
         // the server's SocialService rather than the sim (no guild concept).
         // MMO convention: /g is guild; /general remains world chat.
@@ -803,7 +823,7 @@ export class GameServer {
         const om = gm ? null : /^\/(?:o|officer)\s+([\s\S]+)$/i.exec(text);
         if (gm || om) {
           const channel = gm ? 'guild' : 'officer';
-          const body = censorChatText((gm ?? om!)[1]);
+          const body = (gm ?? om!)[1];
           session.rememberedChat = { channel };
           const route = gm ? this.social.guildChat(this.actorFor(session), body)
             : this.social.officerChat(this.actorFor(session), body);
@@ -825,7 +845,7 @@ export class GameServer {
             break;
           }
           session.rememberedChat = { channel: 'whisper', target: session.lastWhisperFrom };
-          this.logChat(session, sim.chat(`/w ${session.lastWhisperFrom} ${censorChatText(rm[1])}`, pid));
+          this.logChat(session, sim.chat(`/w ${session.lastWhisperFrom} ${rm[1]}`, pid));
           break;
         }
         this.logChat(session, this.routeRememberedChat(session, text, pid));
@@ -1235,7 +1255,7 @@ export class GameServer {
     const text = rawText.trim();
     if (!text) return null;
     if (!text.startsWith('/')) {
-      const body = censorChatText(text);
+      const body = text;
       if (!body.trim()) return null;
       switch (session.rememberedChat.channel) {
         case 'guild':
@@ -1271,7 +1291,7 @@ export class GameServer {
       }
     }
 
-    const sent = this.sim.chat(censorChatText(text), pid);
+    const sent = this.sim.chat(text, pid);
     if (sent) {
       if (sent.channel === 'whisper') {
         const wm = /^\/(?:w|whisper|t|tell)\s+(\S+)\s+[\s\S]+$/i.exec(text);
@@ -1292,6 +1312,72 @@ export class GameServer {
       channel: sent.channel,
       message: sent.message,
     });
+  }
+
+  // One-off, player-facing chat notice (reuses the generic error event path the
+  // client already renders for rate-limit / cooldown messages).
+  private sendChatNotice(session: ClientSession, text: string): void {
+    this.send(session, { t: 'events', list: [{ type: 'error', text }] });
+  }
+
+  /**
+   * Enforce the hard-word + mute policy on an outgoing chat message. Returns
+   * true when the message must be dropped (sender is muted, or it contained a
+   * slur). Soft/cosmetic words are deliberately untouched here — those are a
+   * client-side display choice. Applies to every channel because it runs before
+   * the message is routed.
+   */
+  private enforceChatPolicy(session: ClientSession, text: string): boolean {
+    const now = Date.now();
+    if ((session.chatMutedUntil ?? 0) > now) {
+      this.sendChatNotice(
+        session,
+        `You are muted and can't chat for another ${formatDuration(((session.chatMutedUntil ?? now) - now) / 1000)}.`,
+      );
+      return true;
+    }
+    const hit = this.chatFilter.findHardHit(text);
+    if (!hit) return false;
+
+    const outcome = this.chatFilter.escalate(session.chatStrikes);
+    const channel = chatChannelHint(session, text);
+    // Optimistically advance the session so a rapid follow-up is already gated;
+    // the DB write below returns the authoritative values and corrects any drift
+    // (e.g. a second character on the same account raising strikes concurrently).
+    session.chatStrikes = outcome.strikes;
+    if (outcome.kind === 'mute') {
+      session.chatMutedUntil = now + outcome.muteSeconds * 1000;
+      session.chatMuteReason = 'Chat filter enforcement';
+      this.sendChatNotice(
+        session,
+        `That language isn't allowed here. You're muted for ${formatDuration(outcome.muteSeconds)}.`,
+      );
+    } else {
+      this.sendChatNotice(
+        session,
+        `Warning: that language isn't allowed here. Continued use will mute you.`,
+      );
+    }
+
+    void applyChatStrike(session.accountId, outcome.muteSeconds)
+      .then((applied) => {
+        session.chatStrikes = applied.strikes;
+        session.chatMutedUntil = applied.chatMutedUntil
+          ? new Date(applied.chatMutedUntil).getTime()
+          : session.chatMutedUntil;
+      })
+      .catch((err) => console.error('applyChatStrike failed:', err));
+    void recordChatViolation({
+      accountId: session.accountId,
+      characterId: session.characterId,
+      characterName: session.name,
+      term: hit,
+      channel,
+      message: text,
+      action: outcome.kind,
+      muteSeconds: outcome.muteSeconds,
+    }).catch((err) => console.error('recordChatViolation failed:', err));
+    return true;
   }
 
   private consumeChatToken(session: ClientSession): boolean {

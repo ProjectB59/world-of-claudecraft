@@ -1,6 +1,3 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the db layer so no Postgres is needed; snapshot logic is under test.
@@ -12,7 +9,7 @@ vi.mock('../server/db', () => ({
   insertChatLogs: vi.fn(async () => {}),
 }));
 
-import { censorChatText, GameServer, ClientSession } from '../server/game';
+import { GameServer, ClientSession } from '../server/game';
 import { saveCharacterState } from '../server/db';
 import { ClientWorld } from '../src/net/online';
 import { DT, type PlayerClass } from '../src/sim/types';
@@ -86,27 +83,6 @@ function bareClient(pid: number): ClientWorld {
   c.ackedInputSeq = 0;
   c.inputEchoSamples = [];
   return c;
-}
-
-function withChatCensorConfig(list: string | undefined, file: string | undefined, test: () => void): void {
-  const prev = process.env.CHAT_CENSOR_LIST;
-  const prevFile = process.env.CHAT_CENSOR_FILE;
-  if (list === undefined) delete process.env.CHAT_CENSOR_LIST;
-  else process.env.CHAT_CENSOR_LIST = list;
-  if (file === undefined) delete process.env.CHAT_CENSOR_FILE;
-  else process.env.CHAT_CENSOR_FILE = file;
-  try {
-    test();
-  } finally {
-    if (prev === undefined) delete process.env.CHAT_CENSOR_LIST;
-    else process.env.CHAT_CENSOR_LIST = prev;
-    if (prevFile === undefined) delete process.env.CHAT_CENSOR_FILE;
-    else process.env.CHAT_CENSOR_FILE = prevFile;
-  }
-}
-
-function withChatCensorList(list: string | undefined, test: () => void): void {
-  withChatCensorConfig(list, undefined, test);
 }
 
 describe('delta snapshots', () => {
@@ -360,67 +336,58 @@ describe('chat moderation', () => {
     }));
   });
 
-  it('censors configured terrible words while still sending chat', () => {
-    withChatCensorList('blockedterm', () => {
-      expect(censorChatText('hello blockedterm and bl0ckedt3rm')).toBe('hello *********** and ***********');
+  it('blocks hard-word (slur) messages and escalates warning -> mute', () => {
+    const server = new GameServer();
+    server.chatFilter.load({ soft: [], hard: ['slurword'], config: { warningsBeforeMute: 1, muteLadderSeconds: [600] } });
+    const fc = fakeWs();
+    const session = joinServer(server, fc, 1, 'Testa');
 
-      const server = new GameServer();
-      const fc = fakeWs();
-      const session = joinServer(server, fc, 1, 'Testa');
-      fc.sent.length = 0;
-      server.handleMessage(session, JSON.stringify({ t: 'cmd', cmd: 'chat', text: 'hello blockedterm' }));
-      (server as any).routeEvents(server.sim.tick());
+    // First offense: blocked entirely + warning; it never becomes a chat event.
+    fc.sent.length = 0;
+    server.handleMessage(session, JSON.stringify({ t: 'cmd', cmd: 'chat', text: 'you are a slurword' }));
+    (server as any).routeEvents(server.sim.tick());
+    let events = fc.sent.flatMap((msg) => msg.t === 'events' ? msg.list : []);
+    expect(events.some((ev) => ev.type === 'chat')).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'error', text: expect.stringContaining('Warning') }));
 
-      const events = fc.sent.flatMap((msg) => msg.t === 'events' ? msg.list : []);
-      expect(events).toContainEqual(expect.objectContaining({
-        type: 'chat',
-        text: 'hello ***********',
-      }));
-    });
+    // Second offense: escalates to a timed mute.
+    fc.sent.length = 0;
+    server.handleMessage(session, JSON.stringify({ t: 'cmd', cmd: 'chat', text: 'slurword strikes again' }));
+    events = fc.sent.flatMap((msg) => msg.t === 'events' ? msg.list : []);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'error', text: expect.stringContaining('muted') }));
+
+    // Now muted: even a clean message is dropped until the mute expires.
+    fc.sent.length = 0;
+    server.handleMessage(session, JSON.stringify({ t: 'cmd', cmd: 'chat', text: 'hello everyone' }));
+    (server as any).routeEvents(server.sim.tick());
+    events = fc.sent.flatMap((msg) => msg.t === 'events' ? msg.list : []);
+    expect(events.some((ev) => ev.type === 'chat')).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'error', text: expect.stringContaining('muted') }));
   });
 
-  it('caches file-backed censor terms until censor env changes', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'claudecraft-censor-'));
-    const firstFile = join(dir, 'first.txt');
-    const secondFile = join(dir, 'second.txt');
-    writeFileSync(firstFile, 'fileterm\n');
-    writeFileSync(secondFile, 'otherterm\n');
-
-    try {
-      withChatCensorConfig(undefined, firstFile, () => {
-        expect(censorChatText('fileterm again')).toBe('******** again');
-        writeFileSync(firstFile, 'changedterm\n');
-        expect(censorChatText('fileterm changedterm')).toBe('******** changedterm');
-
-        process.env.CHAT_CENSOR_FILE = secondFile;
-        expect(censorChatText('fileterm otherterm')).toBe('fileterm *********');
-
-        delete process.env.CHAT_CENSOR_FILE;
-        expect(censorChatText('otherterm')).toBe('otherterm');
-      });
-    } finally {
-      rmSync(dir, { force: true, recursive: true });
-    }
+  it('leaves soft (cosmetic) words untouched server-side — clients mask them', () => {
+    const server = new GameServer();
+    server.chatFilter.load({ soft: ['darn'], hard: [], config: { warningsBeforeMute: 1, muteLadderSeconds: [600] } });
+    const fc = fakeWs();
+    const session = joinServer(server, fc, 1, 'Testa');
+    fc.sent.length = 0;
+    server.handleMessage(session, JSON.stringify({ t: 'cmd', cmd: 'chat', text: 'oh darn it' }));
+    (server as any).routeEvents(server.sim.tick());
+    const events = fc.sent.flatMap((msg) => msg.t === 'events' ? msg.list : []);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'chat', text: 'oh darn it' }));
   });
 
-  it('retries file-backed censor terms after a failed read', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'claudecraft-censor-missing-'));
-    const missingFile = join(dir, 'missing.txt');
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
-    try {
-      withChatCensorConfig(undefined, missingFile, () => {
-        expect(censorChatText('laterterm')).toBe('laterterm');
-        expect(warn).toHaveBeenCalledOnce();
-
-        writeFileSync(missingFile, 'laterterm\n');
-        expect(censorChatText('laterterm')).toBe('*********');
-      });
-    } finally {
-      warn.mockRestore();
-      rmSync(dir, { force: true, recursive: true });
-    }
+  it('ships the soft word list to clients in the hello payload', () => {
+    const server = new GameServer();
+    server.chatFilter.load({ soft: ['darn', 'heck'], hard: ['slurword'], config: { warningsBeforeMute: 1, muteLadderSeconds: [600] } });
+    const fc = fakeWs();
+    joinServer(server, fc, 1, 'Testa');
+    const hello = fc.sent.find((msg) => msg.t === 'hello');
+    expect(hello.softWords).toEqual(['darn', 'heck']);
+    // Hard words are enforcement-only and must never be shipped to the client.
+    expect(JSON.stringify(hello)).not.toContain('slurword');
   });
+
 });
 
 describe('autosaves', () => {

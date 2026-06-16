@@ -28,6 +28,7 @@ import { Settings, GameSettings, BoolSettingKey, NumericSettingKey, SETTING_RANG
 import { isPhoneTouchDevice } from '../game/mobile_controls';
 import { chatPlayerContextActions } from './player_context_menu';
 import { TouchPeekGuard, TOOLTIP_PEEK_MS } from './touch_peek';
+import { maskProfanity } from './profanity';
 import {
   talentsFor, computeTalentModifiers, validateAllocation, dormantNodes, pointsSpent,
   exportBuild, importBuild, cloneAllocation, talentPointsAtLevel, FIRST_TALENT_LEVEL,
@@ -112,6 +113,9 @@ export class Hud {
   private dragAction: { action: Exclude<HotbarAction, null>; sourceIndex: number | null } | null = null;
   private optionsHooks: OptionsHooks | null = null;
   private reportHooks: ReportHooks | null = null;
+  // Soft swear terms from the server (online only), masked in chat when the
+  // player's "Filter Profanity" setting is on. Fed by main.ts from ClientWorld.
+  private profanityWords: string[] = [];
   private optionsView: 'main' | 'keybinds' | 'graphics' | 'audio' = 'main';
   private capturingKey: { action: string; index: number } | null = null; // binding awaiting a key
   private keybindNote = '';
@@ -2126,7 +2130,8 @@ export class Hud {
             default: this.chatLogFrom(ev.from, ev.text, '#f0ead8', '', ' says: '); break;
           }
           if ((ev.channel === 'say' || ev.channel === 'yell' || ev.channel === 'emote') && ev.entityId !== undefined) {
-            const bubble = ev.channel === 'emote' ? `${ev.from} ${ev.text}` : ev.text;
+            const masked = this.maskChat(ev.text);
+            const bubble = ev.channel === 'emote' ? `${ev.from} ${masked}` : masked;
             this.renderer.showChatBubble(ev.entityId, bubble, ev.channel === 'yell');
           }
           break;
@@ -2266,10 +2271,24 @@ export class Hud {
       ev.preventDefault();
       this.openChatPlayerContextMenu(name, ev.clientX, ev.clientY);
     });
-    div.append(sender, document.createTextNode(`${separator}${text}`));
+    div.append(sender, document.createTextNode(`${separator}${this.maskChat(text)}`));
     this.chatLogEl.appendChild(div);
     while (this.chatLogEl.children.length > 200) this.chatLogEl.removeChild(this.chatLogEl.firstChild!);
     if (wasNearBottom) this.chatLogEl.scrollTop = this.chatLogEl.scrollHeight;
+  }
+
+  /** Replace the server-supplied soft word list (online play only). */
+  setProfanityWords(words: string[]): void {
+    this.profanityWords = words;
+  }
+
+  // Mask a chat body with **** when the player's profanity filter is on. The
+  // filter defaults on; turning it off in Options shows the raw text the server
+  // sent. Slurs are blocked server-side and never reach this path.
+  private maskChat(text: string): string {
+    if (this.profanityWords.length === 0) return text;
+    if (!(this.optionsHooks?.settings.get('filterProfanity') ?? true)) return text;
+    return maskProfanity(text, this.profanityWords);
   }
 
   private combatLog(text: string, color = '#ccc'): void {
@@ -4716,10 +4735,11 @@ export class Hud {
     this.settingToggleKeybind(el, 'Click to Move', 'clickToMove');
     this.clickMoveMouseButtonRow(el);
     this.settingToggleKeybind(el, 'Left-handed Touch', 'leftHandedTouch');
+    this.settingToggleKeybind(el, 'Filter Profanity', 'filterProfanity');
     const note = document.createElement('div');
     note.className = 'kb-note';
     note.textContent = this.keybindNote
-      || 'Mouse Camera off: A/D turns, drag to orbit (classic). On: camera-relative WASD, A/D strafes. Click to Move: choose Left Click or Right Click as the movement command. Left-handed Touch mirrors the on-screen joysticks for touch devices. Click a key cell to rebind; Esc cancels.';
+      || 'Mouse Camera off: A/D turns, drag to orbit (classic). On: camera-relative WASD, A/D strafes. Click to Move: choose Left Click or Right Click as the movement command. Left-handed Touch mirrors the on-screen joysticks for touch devices. Filter Profanity masks swear words in chat with ****. Click a key cell to rebind; Esc cancels.';
     el.appendChild(note);
     const rows = document.createElement('div');
     rows.className = 'kb-rows';

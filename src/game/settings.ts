@@ -37,6 +37,10 @@ export const BOOL_SETTINGS = {
   // the right and the camera joystick on the left, for left-thumb-dominant
   // players. CSS-only swap gated on body.mobile-left-handed; ignored on desktop.
   leftHandedTouch: { def: false },
+  // on by default: mask configured swear words in chat with ****. Purely a
+  // local display choice; the server sends raw text and each client decides.
+  // (Slurs are blocked server-side regardless and never reach here.)
+  filterProfanity: { def: true },
 } as const;
 
 export type NumericSettingKey = keyof typeof SETTING_RANGES;

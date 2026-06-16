@@ -145,7 +145,43 @@ export interface ReportDetail {
   }[];
 }
 
+export interface ChatViolationRow {
+  id: number;
+  characterName: string;
+  term: string;
+  channel: string;
+  message: string;
+  action: string;
+  muteSeconds: number;
+  createdAt: string;
+}
+
+export interface ChatModerationDetail {
+  chatMutedUntil: string | null;
+  chatStrikes: number;
+  violations: ChatViolationRow[];
+}
+
 export interface ModerationAccountDetail {
   account: AccountDetail;
   reports: ReportDetail[];
+  chat: ChatModerationDetail;
+}
+
+export interface FilterWord {
+  id: number;
+  word: string;
+  tier: 'soft' | 'hard';
+  createdAt: string;
+}
+
+export interface EscalationConfig {
+  warningsBeforeMute: number;
+  muteLadderSeconds: number[];
+}
+
+export interface ChatFilterData {
+  soft: FilterWord[];
+  hard: FilterWord[];
+  config: EscalationConfig;
 }
