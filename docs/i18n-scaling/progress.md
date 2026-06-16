@@ -5,7 +5,7 @@
 |---|---|---|---|
 | 0 - Layer rename (pre-packet) | DONE | - | (on branch `refactor/i18n-phase-naming`) |
 | 1 - Foundation & split | DONE | 2026-06-16 | 2026-06-16 |
-| 1 QA | NOT STARTED | | |
+| 1 QA | DONE (PASS) | 2026-06-16 | 2026-06-16 |
 | 2 - Resolved artifact | NOT STARTED | | |
 | 2 QA | NOT STARTED | | |
 | 3 - Flatten overlays | NOT STARTED | | |
@@ -86,6 +86,14 @@ Baseline: SHA-256 `d9db528bea1c7a1e02835c4d3edb3fabcee3687aad2186608f1f1d2ac83b3
 
 ## QA-phase checklists (fixes applied, tests added, dead code removed)
 Filled in by each QA session.
+
+### Phase 1 QA - PASS (2026-06-16)
+Verdict: PASS. Issues found: 6, all NICE-TO-HAVE; fixed: 0; deferred: 6. No BLOCKING or SHOULD-FIX. No source changes were needed, so no fix commit.
+- Method: 1 context loader + 5 parallel read-only audits (correctness, dead-code/cleanup, privacy-security-review, cross-platform-sync, qa-checklist), all PASS, plus a test-coverage mutation proof run directly in the main loop.
+- Validation matrix, all green: `tsc --noEmit`; `vitest run` of localization_fixes + localization_coverage + server_i18n + i18n_resolved_equivalence (4 files, 75 tests); byte-equivalence gate SHA `d9db528bea1c7a1e02835c4d3edb3fabcee3687aad2186608f1f1d2ac83b3b9b` (14 locales, 1,584,856 bytes); `npm run build` (client + admin).
+- Mutation proof (the gate is meaningful, not vacuous): temporarily changed one inline `es` value (`nav.home` "Inicio" to "InicioQA"); the resolved SHA changed to `e2f70bc8...`, `--check` exited 1, and both equivalence tests went red. Reverted via explicit-path `git checkout`; SHA and tests green again.
+- Behavior-preserving confirmed against pre-work commit `a9a1a67`: the `./i18n` public export surface is unchanged name-for-name and signature-for-signature (only additive new export `DeepPartial`); thin-runtime function bodies (t, tOptional, hasTranslation, interpolate, formatMoney/moneyParts, getLanguage/setLanguage, formatNumber/formatDateTime) are byte-identical to the monolith; `en` still nested and authoritative; 13 locales still nested `: typeof en`; `src/sim` import invariant intact (`world_entity_i18n` imports only `../sim/data`).
+- Deferred NICE-TO-HAVE for later phases: (1) shared content layers + per-locale gameStrings variants + `DeepPartial` are now `export` on `i18n.en` (necessary so locale files can spread them; NOT on the public `./i18n` barrel, so the surface stays unchanged); (2) `tsconfig` `noUnusedLocals:false` will not catch a future orphaned layer import once Phase 3 churns the locale files; (3) hash script `data:`-URL import is safe but obscures parse errors and skips the module cache (dev/CI tooling only); (4) the byte-equivalence gate covers locale data only, not the runtime function/type surface (tsc covers that); (5) cosmetic `./` vs `../` worldNames import path differs between the en base and the locale files (same module).
 
 ## Notes (per phase, post-completion)
 - Phase 0: pure rename, verified byte-identical resolved table (SHA-256), 73 localization tests green. Prerequisite readability step, already on the branch.
