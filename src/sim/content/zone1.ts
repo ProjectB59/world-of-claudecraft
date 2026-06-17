@@ -155,6 +155,7 @@ export const ZONE1_MOBS: Record<string, MobTemplate> = {
     aoePulse: { min: 14, max: 20, radius: 8, every: 10, name: 'Ground Pound', school: 'physical' },
     summonAdds: { mobId: 'mogger_lackey', count: 2, atHpPct: [0.70] },
     enrage: { belowHpPct: 0.30, dmgMult: 1.6, hasteMult: 1.3 },
+    wardAllies: { radius: 12, every: 12, amount: 70, duration: 8, name: 'Bracing Order', school: 'physical' },
     loot: [
       { copper: 180, chance: 1 },
       { itemId: 'linen_scrap', chance: 1 },

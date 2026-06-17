@@ -4052,6 +4052,7 @@ export class Sim {
     mob.healedThisPull = false;
     mob.stompTimer = MOBS[mob.templateId]?.stomp?.every ?? 0;
     mob.mendTimer = MOBS[mob.templateId]?.mendAlly?.every ?? 0;
+    mob.wardTimer = MOBS[mob.templateId]?.wardAllies?.every ?? 0;
     mob.wanderTimer = this.rng.range(2, 8);
   }
 
@@ -4519,6 +4520,7 @@ export class Sim {
     mob.healedThisPull = false;
     mob.stompTimer = MOBS[mob.templateId]?.stomp?.every ?? 0;
     mob.mendTimer = MOBS[mob.templateId]?.mendAlly?.every ?? 0;
+    mob.wardTimer = MOBS[mob.templateId]?.wardAllies?.every ?? 0;
     mob.wanderTimer = this.rng.range(2, 8);
     for (const meta of this.players.values()) {
       const e = this.entities.get(meta.entityId);
@@ -4612,7 +4614,7 @@ export class Sim {
   // and reset on evade/respawn.
   private updateBossMechanics(mob: Entity): void {
     const tmpl = MOBS[mob.templateId];
-    if (!tmpl || (!tmpl.summonAdds && !tmpl.enrage && !tmpl.desperateHeal && !tmpl.mendAlly)) return;
+    if (!tmpl || (!tmpl.summonAdds && !tmpl.enrage && !tmpl.desperateHeal && !tmpl.mendAlly && !tmpl.wardAllies)) return;
     const hpFrac = mob.hp / Math.max(1, mob.maxHp);
     if (tmpl.summonAdds) {
       const thresholds = tmpl.summonAdds.atHpPct;
@@ -4658,6 +4660,35 @@ export class Sim {
           for (const ally of wounded) {
             const amount = Math.round(this.rng.range(tmpl.mendAlly.healMin, tmpl.mendAlly.healMax));
             this.applyHeal(mob, ally, amount, tmpl.mendAlly.name);
+          }
+        }
+      }
+    }
+    // Support "Ward": the defensive twin of Mend. Periodically wrap every living
+    // friendly mob in range (including the caster) in an absorb shield. Unlike
+    // Mend it targets healthy allies too — a barrier pre-empts the next blows.
+    // Refreshes each interval, replacing any partially-soaked ward (same aura id).
+    if (tmpl.wardAllies) {
+      mob.wardTimer -= DT;
+      if (mob.wardTimer <= 0) {
+        mob.wardTimer = tmpl.wardAllies.every;
+        const allies: Entity[] = [];
+        for (const ally of this.entities.values()) {
+          if (ally.kind !== 'mob' || ally.dead || ally.ownerId !== null) continue; // skip players, pets, corpses
+          if (ally.hostile !== mob.hostile) continue; // same-faction mobs only
+          if (dist2d(ally.pos, mob.pos) > tmpl.wardAllies.radius) continue;
+          allies.push(ally);
+        }
+        if (allies.length > 0) {
+          const school = tmpl.wardAllies.school ?? 'holy';
+          this.emit({ type: 'spellfx', sourceId: mob.id, targetId: mob.id, school, fx: 'nova' });
+          this.emit({ type: 'log', text: `${mob.name} channels ${tmpl.wardAllies.name}.`, color: '#aad4ff', entityId: mob.id });
+          for (const ally of allies) {
+            this.applyAura(ally, {
+              id: `ward_${mob.templateId}`, name: tmpl.wardAllies.name, kind: 'absorb',
+              remaining: tmpl.wardAllies.duration, duration: tmpl.wardAllies.duration,
+              value: tmpl.wardAllies.amount, sourceId: mob.id, school,
+            });
           }
         }
       }

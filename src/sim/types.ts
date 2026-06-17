@@ -191,6 +191,14 @@ export interface MobTemplate {
   // opens. Resets on evade/respawn. Routes through the normal heal path, so it
   // shows green floating text and grants no threat to the menders themselves.
   mendAlly?: { healMin: number; healMax: number; radius: number; every: number; name: string; school?: Aura['school'] };
+  // Support mechanic ("Ward"): the defensive twin of `mendAlly`. While in combat,
+  // periodically wrap every living friendly mob within `radius` (incl. itself) in
+  // a damage-absorbing barrier soaking a flat `amount` for `duration`s — a leader
+  // shielding the crew. Rides the existing `absorb` aura (soaked in dealDamage
+  // before any HP loss), so there is no new aura kind or combat math. Telegraphed:
+  // the first ward lands one full `every` interval after combat opens. Resets on
+  // evade/respawn. Refreshes each interval, replacing any partially-soaked ward.
+  wardAllies?: { radius: number; every: number; amount: number; duration: number; name: string; school?: Aura['school'] };
   // Boss mechanic ("War Stomp"): periodic ground slam that stuns nearby players
   // for `duration`s (and optionally deals min..max damage). Telegraphed: the
   // first slam only lands one full `every` interval after combat starts.
@@ -582,6 +590,7 @@ export interface Entity {
   stompTimer: number; // boss War Stomp stun-pulse countdown
   detonateTimer: number; // Death Throes fuse on a volatile corpse; Infinity = no pending detonation
   mendTimer: number; // mendAlly support-heal cast countdown
+  wardTimer: number; // wardAllies support-shield cast countdown
   firedSummons: number; // summonAdds thresholds already triggered
   summonedIds: number[]; // live adds this boss summoned; despawned on reset
   enraged: boolean; // enrage mechanic active
