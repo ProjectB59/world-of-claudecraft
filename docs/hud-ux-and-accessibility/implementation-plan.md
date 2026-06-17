@@ -74,8 +74,10 @@ diff for correctness, a11y-spec conformance, and requirement gaps before done.
 | 27 | impl | Edit Mode: named layouts, save/load/reset, localStorage persistence | capstone | Phase 25 |
 | 28 | QA | Final QA + packet teardown offer | | |
 
-Phases 1 and 5 can run as concurrent sessions early (no modular-seam dependency).
-Phase 3 needs the refactor's HudContext. The per-window passes (9-18) can run
+Phases 1 and 5 can be CODED early as concurrent sessions (no modular-seam
+dependency), but their visual-validation step requires the refactor packet's
+Phase 5 (`playwright.config.ts` + `tests/visual/` baselines + the CI Playwright job)
+to have landed. Phase 3 needs the refactor's HudContext. The per-window passes (9-18) can run
 concurrently across sessions once each window is extracted and the foundation
 (1/3/5) has landed; each owns a disjoint window module. The capstone (25-27) is last.
 
@@ -105,8 +107,12 @@ where feasible.
 
 - The HUD presents the premium dark-fantasy aesthetic via a primitive/semantic
   token system; `QUALITY_COLOR` is tokenized and the canvas painter reads cached tokens.
-- WCAG 2.2 AA holds across the HUD with AAA where feasible, verified by axe-core in
-  CI and a manual screen-reader pass; Reader Mode ships as an opt-in mode.
+- WCAG 2.2 AA holds across the HUD with AAA where feasible, verified by axe-core and
+  a manual screen-reader pass; Reader Mode ships as an opt-in mode. The axe UNIT
+  tests (`tests/a11y/*.test.ts`, Vitest) ride `npm test` and so run in CI; the
+  `@axe-core/playwright` AAA SWEEP runs as a separate CI job that EXTENDS the
+  Playwright job introduced in the refactor packet's Phase 5, so it is gated on that
+  job landing.
 - Keyboard navigation, focus management, roving tabindex, and single-pointer
   alternatives cover every interactive surface; mobile scale lock removed and safe
   areas honored.

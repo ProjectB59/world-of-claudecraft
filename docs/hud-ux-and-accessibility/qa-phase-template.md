@@ -165,6 +165,14 @@ surface is online-only) and drive the running game:
   - Confirm the Playwright DOM visual baselines changed ONLY where the phase
     intended: review the visual diff. An unintended pixel change is a regression,
     not a re-baseline; do not accept a snapshot update that masks one.
+  - ONLINE MODE (ClientWorld): for any phase that touches HUD behavior (player/
+    target frames, nameplates, cast bar, auras, window open/update, Social online
+    announcements, live regions), run the surface against `npm run server` IN
+    ADDITION to the offline `Sim` walkthrough, mirroring the refactor packet. Confirm
+    window open/update and live regions behave correctly across interest-scoped
+    (~120 yd) partial-snapshot churn and target loss (entities entering/leaving
+    interest mid-run), and that offline `Sim` and online `ClientWorld` reach parity
+    through `IWorld` (no concrete `Sim`/`ClientWorld` reach).
   - For an a11y-heavy phase (3, 7, the 9-18 window passes, 19, 21, 23, 25, 27) do a
     MANUAL screen-reader pass with VoiceOver or NVDA and RECORD exactly what was
     and was not announced (target change, cast start/interrupt, cooldown ready,

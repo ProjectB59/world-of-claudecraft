@@ -54,7 +54,8 @@ STEP 2 - CHOOSE ORCHESTRATION + EXECUTE
 Request fan-out explicitly. Two parallel Agents, each owning a complete vertical slice. Hand each ONLY the Explore summary and the web-research verified-facts (not raw docs):
 
 Agent A - Playwright config + DOM HUD visual specs + bundle-footprint proof. Deliverables:
-  - package.json: add `@playwright/test` to devDependencies ONLY (never dependencies). Keep the dependency set tiny. If a Playwright runner script helps (for example `"test:visual": "playwright test"`), add it, but do NOT wire Playwright into the Vitest `test` script or vite.config.ts; the PR-tier `npm test` must stay Vitest-only and Playwright runs as its own pre-merge step.
+  - package.json: add `@playwright/test` to devDependencies ONLY (never dependencies). Keep the dependency set tiny. If a Playwright runner script helps (for example `"test:visual": "playwright test"`), add it, but do NOT wire Playwright into the Vitest `test` script; the PR-tier `npm test` must stay Vitest-only and Playwright runs as its own pre-merge step.
+  - vite.config.ts: this is the ONE exception to the "do not touch vite.config.ts" rule (see Out of scope below) and it is REQUIRED, not optional. Add `'**/tests/visual/**'` to the Vitest `test.exclude` array. Without it, the Vitest default include glob matches `tests/visual/*.spec.ts` (the Playwright `testDir` scopes only the Playwright runner, NOT Vitest collection), so `npm test` collects the Playwright specs and exits non-zero the moment a spec imports `@playwright/test`. Do NOT add a DOM env or any other Vitest config here; this single exclude line is the only edit. Acceptance: `npm test` collects ZERO Playwright specs.
   - playwright.config.ts at repo root: a `desktop` project and a `mobile` project (use the SAME phone viewport the repo's mobile_*_shot.mjs scripts already use, re-grep it; do not invent one); `expect.toHaveScreenshot` defaults with `animations: 'disabled'`, a sane `maxDiffPixelRatio` (use the web-research value; if unverified, pick a conservative starting value and add a comment marking it OPEN/tunable), and a `webServer` that boots `npm run dev` so the run is self-contained; a pinned, explicit viewport per project (no device auto-sizing surprises); a dedicated `testDir` of `tests/visual`; an explicit snapshot location so baselines land in a committed folder. Pin the environment so baselines are reproducible (fixed viewport, deviceScaleFactor, color-scheme, disabled animations).
   - tests/visual/*.spec.ts: baseline the KEY DOM HUD screens on the CURRENT pre-refactor HUD, both desktop and mobile projects:
       * the login / auth screen,
@@ -64,6 +65,11 @@ Agent A - Playwright config + DOM HUD visual specs + bundle-footprint proof. Del
     MASK every live-changing region so baselines are stable: HP/resource numbers, timers and cast bars, money/copper, the clock, FCT, latency, anything that ticks. Use `mask` (and `stylePath` if a region cannot be masked by locator). The baseline must capture LAYOUT and CHROME, not volatile values.
     The WebGL canvas is flaky across machines: do NOT baseline canvas pixels. Where layout sits over the canvas, mask the canvas region. Verify canvas STATE (camera/player/target/zone) via a documented `page.evaluate(() => window.__game...)` assertion helper, not pixels. Include that state-assertion helper pattern in the specs (a small reusable function) and reference it from the runbook (Agent B documents the pattern).
   - Bundle-footprint proof: run `npm run build` and confirm the game (`main`) Vite bundle does NOT pull in `@playwright/test` (it is dev-only). Capture the evidence (the build output / the absence of any playwright chunk in the emitted manifest) for the final report. If Playwright leaks into the main bundle, STOP (see stopping rules).
+  - CI integration (THIS PHASE OWNS IT): this is the single place CI learns about Playwright. Without it the new browser/visual gates are local-only and the program's "no visual regression" definition of done is unenforced. Edit `.github/workflows/ci.yml` and add a Playwright job to BOTH the `pr-gate` and the `release-gate`:
+      * The job runs `npx playwright install` (or `--with-deps` on CI) then `npx playwright test` for the DOM-HUD visual specs in `tests/visual/`. Playwright boots its own dev server via the `webServer` config, so the job needs no separate `npm run dev` step; do NOT set `ALLOW_DEV_COMMANDS=1` (the offline boot does not need it).
+      * Structure the job so the later UX/a11y packet can extend it with the `@axe-core/playwright` AAA sweep without re-plumbing CI: give it a clear name (for example `playwright-gates`), keep the install + run steps factored, and leave a comment noting where the axe Playwright specs slot in.
+      * In the SAME ci.yml edit, add an explicit assertion that the Vitest-hosted browser/perf gates run under `npm test` in CI: the DOM HUD harness (Phase 1) and the perf-budget gate (`tests/hud_perf_budget.test.ts`) must be covered by the existing `npm test` step. If they already are (they ride Vitest by design), state that in a comment so a later reader does not re-add them; if a path filter would skip them, fix it.
+    Note for the final report: this phase is the ONLY one that touches CI for the browser/visual tier. Editing a CI yml means the review-dispatch (Step 3) now ALSO triggers `privacy-security-review`.
 
 Agent B - the MCP QA runbook doc. Deliverable: docs/ui-architecture-hud-modularization/mcp-qa-runbook.md, a reusable procedure every QA phase follows to drive the LIVE game via Playwright MCP. It must document, concretely and copy-pasteably:
   - Prereqs: `npm run dev` running (and `npm run server` only when an online path is under test); dev commands gate behind ALLOW_DEV_COMMANDS=1 and are DEV ONLY, never production.
@@ -93,7 +99,7 @@ OUT OF SCOPE (do not do these; prevent scope creep)
 - Do NOT migrate or delete the existing puppeteer-core scripts. They stay.
 - Do NOT touch src/ui/hud.ts or any HUD source. This phase only baselines the CURRENT HUD; it changes no behavior.
 - Do NOT gate canvas pixels in CI, and do NOT add a Docker/GPU WebGL pixel pipeline (state.md OPEN item, off the critical path).
-- Do NOT wire Playwright into the Vitest `npm test` script or vite.config.ts; do NOT add a DOM env here (that is Phase 1). Playwright is its own pre-merge step.
+- Do NOT wire Playwright INTO the Vitest run: the only vite.config.ts edit permitted is the `'**/tests/visual/**'` entry in `test.exclude` (Agent A above), which keeps Vitest from collecting the Playwright specs. Do NOT add a DOM env here (that is Phase 1) or any other Vitest config. Playwright is its own pre-merge step that this phase wires into CI as a separate job (see the CI-integration deliverable in Agent A).
 - Do NOT add any runtime dependency or any framework. No sim/server/net/IWorld changes (a new IWorld member is a stop-and-surface event).
 
 ----------------------------------------------------------------
@@ -103,11 +109,11 @@ Run the exact validation for a Visual + dep-adding change from the state.md matr
   1. `npx playwright test`  (first run generates the baselines with `--update-snapshots`, the second run verifies them green). Run it once with the update flag to author baselines, then a clean `npx playwright test` to prove they pass.
   2. `npm run build`  (proves the game `main` bundle does NOT pull in Playwright; this is the bundle-footprint check the matrix requires for any dep-adding phase). Capture the evidence.
   3. `npx tsc --noEmit`  (playwright.config.ts and the spec files are TypeScript; keep the tree compiling).
-Sanity: confirm `npm test` (Vitest) still runs and is NOT trying to execute the Playwright specs (the testDir scoping must keep them separate).
+Sanity: confirm `npm test` (Vitest) still runs and collects ZERO Playwright specs (the `'**/tests/visual/**'` Vitest `exclude` in vite.config.ts is what enforces this; the Playwright `testDir` alone does NOT). Confirm the DOM HUD harness and `tests/hud_perf_budget.test.ts` still run under `npm test`.
 
-Review-dispatch (state.md matrix): check `git diff --name-only` against the phase-start commit and spawn ONLY the agents whose surface the diff touches. This diff is package.json + playwright.config.ts + tests/visual/* + a doc, so it triggers:
+Review-dispatch (state.md matrix): check `git diff --name-only` against the phase-start commit and spawn ONLY the agents whose surface the diff touches. This diff is package.json + playwright.config.ts + vite.config.ts + tests/visual/* + .github/workflows/ci.yml + a doc, so it triggers:
   - qa-checklist  (the completion gate; ALWAYS).
-  - privacy-security-review ONLY IF you ended up editing a CI yml or an E2E script that toggles ALLOW_DEV_COMMANDS. If you did not, do NOT spawn it.
+  - privacy-security-review (ALWAYS for this phase, because it edits `.github/workflows/ci.yml`; confirm the Playwright CI job does NOT set `ALLOW_DEV_COMMANDS=1` and leaks no secrets).
 Do NOT spawn migration-safety or cross-platform-sync (no server/persistence, no IWorld/sim/wire/matcher changes).
 
 Prompt every review agent for COVERAGE not filtering: "Report every issue including low-severity and uncertain ones; ranking is a later step. Format: BLOCKING / SHOULD-FIX / NICE-TO-HAVE / VERDICT." If an agent truncates, resume it with EXACTLY: "Stop reading more files. Output the full report now based on what you've already seen. No more tool calls. Format: BLOCKING / SHOULD-FIX / NICE-TO-HAVE / VERDICT." Do not commit until each spawned agent reports no BLOCKING issues.
@@ -118,10 +124,11 @@ Opus self-verify: before declaring done, have a fresh subagent review your own d
 STEP 4 - COMMIT CADENCE (explicit paths only, never git add -A)
 ----------------------------------------------------------------
 2 to 5 commits, Conventional Commits with a scope, explicit paths only:
-  1. `test(ui): add @playwright/test dev dep + playwright.config.ts (desktop+mobile, animations disabled, masks)`  -> git add package.json package-lock.json playwright.config.ts
+  1. `test(ui): add @playwright/test dev dep + playwright.config.ts (desktop+mobile, animations disabled, masks)`  -> git add package.json package-lock.json playwright.config.ts vite.config.ts
   2. `test(ui): baseline DOM HUD visual screens desktop+mobile on pre-refactor HUD`  -> git add tests/visual (specs + the committed baseline snapshot folder)
-  3. `docs(ui): add Playwright-MCP live-game QA runbook`  -> git add docs/ui-architecture-hud-modularization/mcp-qa-runbook.md
-  4. `docs(ui): record Phase 5 in progress.md + state.md ledger`  -> git add docs/ui-architecture-hud-modularization/progress.md docs/ui-architecture-hud-modularization/state.md
+  3. `ci(ui): add Playwright visual gate to pr-gate + release-gate; assert harness/perf gates ride npm test`  -> git add .github/workflows/ci.yml
+  4. `docs(ui): add Playwright-MCP live-game QA runbook`  -> git add docs/ui-architecture-hud-modularization/mcp-qa-runbook.md
+  5. `docs(ui): record Phase 5 in progress.md + state.md ledger`  -> git add docs/ui-architecture-hud-modularization/progress.md docs/ui-architecture-hud-modularization/state.md
 Commit the generated baseline images alongside the specs (they ARE the golden master and must be version-controlled). Never `git add -A`; stage only the paths above so a concurrent session's files are untouched.
 
 ----------------------------------------------------------------
@@ -132,7 +139,8 @@ STEP 5 - ACCEPTANCE CRITERIA (mirror progress.md Phase 5)
 - [ ] `window.__game` state-assertion helper pattern documented for canvas verification (canvas verified by STATE, not pixels).
 - [ ] `mcp-qa-runbook.md` written: a reusable Playwright-MCP QA procedure every QA phase follows (deterministic offline boot, a11y-tree i18n check, canvas screenshot + state assertion, per-window checklist, re-baselining policy).
 - [ ] `npm run build` proves the game (`main`) bundle does NOT pull in Playwright.
-- [ ] `npx playwright test` is green (baselines generated then verified); `npx tsc --noEmit` green; `npm test` (Vitest) unaffected.
+- [ ] `npx playwright test` is green (baselines generated then verified); `npx tsc --noEmit` green; `npm test` (Vitest) unaffected and collects ZERO Playwright specs (the `'**/tests/visual/**'` Vitest `exclude` is present in vite.config.ts).
+- [ ] `.github/workflows/ci.yml` gains a Playwright job in BOTH `pr-gate` and `release-gate` that runs the `tests/visual/` specs (structured so the UX/a11y packet can extend it with the `@axe-core/playwright` sweep), and the DOM HUD harness + `tests/hud_perf_budget.test.ts` are asserted to run under the CI `npm test` step. This phase is the single place CI learns about Playwright.
 
 ----------------------------------------------------------------
 STEP 6 - DOC UPDATES + MEMORY
@@ -146,8 +154,8 @@ STEP 7 - FINAL RESPONSE FORMAT
 ----------------------------------------------------------------
 Report back, concisely:
 - Phase status (complete / blocked) and the branch name.
-- Files touched (absolute paths): package.json, package-lock.json, playwright.config.ts, tests/visual/* (list the spec files and note the baseline folder), docs/ui-architecture-hud-modularization/mcp-qa-runbook.md, progress.md, state.md.
-- Validation results: `npx playwright test` (generate + verify), `npm run build` bundle-footprint proof (state the evidence Playwright is NOT in the main bundle), `npx tsc --noEmit`, and that `npm test` is unaffected.
+- Files touched (absolute paths): package.json, package-lock.json, playwright.config.ts, vite.config.ts, tests/visual/* (list the spec files and note the baseline folder), .github/workflows/ci.yml, docs/ui-architecture-hud-modularization/mcp-qa-runbook.md, progress.md, state.md.
+- Validation results: `npx playwright test` (generate + verify), `npm run build` bundle-footprint proof (state the evidence Playwright is NOT in the main bundle), `npx tsc --noEmit`, that `npm test` is unaffected and collects zero Playwright specs, and the ci.yml Playwright job wiring (pr-gate + release-gate) plus the assertion that the harness/perf gates ride `npm test`.
 - Review verdicts: qa-checklist verdict (and privacy-security-review only if it was triggered); the self-verify subagent's verdict.
 - Deferrals / OPEN items carried forward (any unverified Playwright API or MCP tool name, the maxDiffPixelRatio tuning note).
 - One-line handoff to the Phase 6 QA session (point it at mcp-qa-runbook.md and the committed baselines).

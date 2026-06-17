@@ -66,7 +66,7 @@ diff for correctness and requirement gaps (not style) before declaring done.
 | 2 | QA | - | Verify Phase 1 | 1 |
 | 3 | impl | P0-3, P0-4, P0-5 | Decouple i18n guard + IWorld read-surface parity + sim-purity boundary/ESLint | none (parallel-safe with 1) |
 | 4 | QA | - | Verify Phase 3 | 3 |
-| 5 | impl | NEW | Playwright DOM-HUD visual baselines + MCP QA runbook | 1 |
+| 5 | impl | NEW | Playwright DOM-HUD visual baselines + MCP QA runbook + CI wiring (the one place CI learns about Playwright) | 1 |
 | 6 | QA | - | Verify Phase 5 | 5 |
 | 7 | impl | P1-A | Extract `HotWriteGate` | 1, 2 |
 | 8 | QA | - | Verify Phase 7 | 7 |
@@ -80,6 +80,14 @@ diff for correctness and requirement gaps (not style) before declaring done.
 | (each) | QA | - | Verify each window (use `qa-phase-template.md`) | its impl phase |
 | 24 | impl | P3 | Per-frame core perf hardening | 1 (skip-rate gate) |
 | 25 | QA | - | Final QA + packet teardown offer | all |
+
+Phase 5 also owns the CI wiring for the new browser/visual tier: it adds the
+Playwright job to BOTH the pr-gate and release-gate in `.github/workflows/ci.yml`
+(structured so the UX packet can later extend it with the `@axe-core/playwright`
+sweep), asserts the DOM harness + perf-budget gate ride the CI `npm test`, and
+adds `'**/tests/visual/**'` to the Vitest `exclude` in vite.config.ts so `npm
+test` does not try to execute the Playwright specs. It is the single place CI
+learns about Playwright.
 
 Phases 1, 3, and 5 are mutually independent after their shared dep and can run as
 concurrent sessions (disjoint files). Phases 7 -> 9 -> 11 are sequential
@@ -120,8 +128,12 @@ This is explicitly NOT modularized for its own sake.
   `IconService`) defined once and unit-tested.
 - The HUD has behavioral tests, a skip-rate perf gate, an `IWorld` read-surface
   parity test, a sim-purity boundary check, the i18n guard asserts runtime
-  behavior not source shape, and Playwright DOM visual baselines exist. All ride
-  the PR-tier `npm test` (Playwright runs pre-merge).
+  behavior not source shape, and Playwright DOM visual baselines exist. The
+  Vitest-based gates (DOM harness, perf-budget gate, parity/purity/i18n checks,
+  and any axe UNIT tests) ride the PR-tier `npm test`. The Playwright visual sweep
+  (and, later, the `@axe-core/playwright` AAA sweep added by the UX packet) runs
+  as a SEPARATE CI job wired into the pr-gate and release-gate in Phase 5, not via
+  `npm test`.
 - Per-frame core untouched in behavior, still imperative, still above the skip floor.
 - All invariants in `state.md` hold, verified by gates not eyeball.
 - CI-equivalent gate green: `npm test && npx tsc --noEmit && npm run build:env &&

@@ -7,7 +7,10 @@ accessible, with no functional or performance regression and every change verifi
 
 ## Accessibility (the headline)
 - [ ] WCAG 2.2 AA holds across the HUD; AAA met where feasible (document where not and why).
-- [ ] axe-core automated checks are green in CI (unit + Playwright).
+- [ ] axe-core automated checks are green. The axe UNIT specs (`tests/a11y/*.test.ts`,
+      Vitest) ride `npm test` and run IN CI; the `@axe-core/playwright` sweep runs as a
+      separate CI job that EXTENDS the refactor packet's Phase 5 Playwright job (gated
+      on that job landing), not as part of `npm test`.
 - [ ] Keyboard: every interactive control reachable and operable; visible focus
       everywhere (2.4.7) and focus not obscured (2.4.11); no keyboard trap (2.1.2);
       logical focus order (2.4.3); roving tabindex on action bar + grids.
@@ -30,7 +33,9 @@ accessible, with no functional or performance regression and every change verifi
 - [ ] Visual hierarchy and legibility hold over a busy 3D scene (text outlines/
       shadows, quality colors); dense panels remain readable at default and scaled text.
 - [ ] Playwright DOM visual baselines updated DELIBERATELY with reviewed diffs;
-      no unintended drift. Desktop + mobile.
+      no unintended drift. Desktop + mobile. PREREQUISITE: the refactor packet's
+      Phase 5 (`playwright.config.ts` + `tests/visual/` baselines + the CI Playwright
+      job) must have landed before any visual-validation step can run.
 
 ## Theming and scaling
 - [ ] Default, high-contrast, and colorblind (Okabe-Ito) themes swap via a single

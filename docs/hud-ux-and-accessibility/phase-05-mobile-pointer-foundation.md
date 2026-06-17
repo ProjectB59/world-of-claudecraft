@@ -14,9 +14,11 @@ If you find the edge-anchored-element audit fans out wider than a handful of fil
 and orchestrate the two agents (A, B) plus the safe-area audit via a Workflow so the batch stays
 coherent; otherwise plain fan-out is fine.
 
-GOAL: Remove the viewport scale lock, apply safe-area insets to every edge-anchored HUD element,
-apply target-size tokens, and provide single-pointer alternatives for drags plus restore pinch-zoom,
-satisfying WCAG 1.4.4, 1.4.10, 2.5.7, 2.5.1, and 2.5.8.
+GOAL: Remove the viewport scale lock AND relax the page-level touch-action that blocks page zoom (a
+paired change - the meta unblock alone does not restore HUD pinch-zoom), apply safe-area insets to every
+edge-anchored HUD element, apply target-size tokens, and provide single-pointer alternatives for drags
+plus restore pinch-zoom over the HUD while keeping touch-action:none on the game canvas, satisfying WCAG
+1.4.4, 1.4.10, 2.5.7, 2.5.1, and 2.5.8.
 
 ------------------------------------------------------------------------
 STEP 0 - PRE-FLIGHT (do this before anything else)
@@ -84,13 +86,24 @@ AGENT A - viewport unblock + safe-area audit:
   1. In index.html, REMOVE `maximum-scale=1.0, minimum-scale=1.0, user-scalable=no` from the viewport
      meta (re-grep `user-scalable`); KEEP `width=device-width, initial-scale=1.0, viewport-fit=cover`.
      This restores browser pinch-zoom (WCAG 1.4.4 resize text, 1.4.10 reflow).
-  2. Prevent the in-game touch-look camera from conflicting with the now-restored browser pinch-zoom
-     by scoping `touch-action` on the GAME CANVAS only (the `game-canvas` element / its touch-look and
-     pinch listeners in mobile_controls.ts): the canvas owns its gestures (`touch-action: none` or the
-     minimal value that preserves canvas drag-look + the existing two-finger camera pinch), while
-     pinch over the HUD/menus/page falls through to the browser and zooms the page. Do NOT set a global
-     page touch-action that re-disables zoom. Per research-brief.md section 6 the camera-pinch listener
-     is already scoped to the canvas/joystick zones; verify and keep that scoping.
+  2. Restore HUD/page pinch-zoom AND keep the canvas camera gestures working. These are TWO PAIRED
+     changes; the viewport meta unblock in #1 is necessary but NOT sufficient on its own. Removing
+     `user-scalable=no` alone does NOT restore page pinch-zoom over the HUD: the actual blocker is the
+     CSS `touch-action: none` applied at the PAGE level. So you must ALSO relax `touch-action: none` on
+     the page-level selectors while KEEPING it on the canvas:
+       a. RELAX (drop `touch-action: none`, or set `touch-action: auto`/`manipulation`) on the
+          page-level rules `body.game-active` and `body.mobile-touch #ui` (`#ui` is the full-screen HUD
+          overlay). Re-grep `touch-action` to find these (the validation report cites `index.html:220`
+          for `body.game-active` and `index.html:3829` for `body.mobile-touch #ui`; do not trust the
+          line numbers, match the selectors). This is what lets browser pinch-zoom reach the HUD/menus.
+       b. KEEP `touch-action: none` on `#game-canvas` (the validation report cites `index.html:3828`)
+          so the in-game camera drag-look + the existing two-finger camera pinch still work and do not
+          conflict with page zoom. The canvas owns its gestures; the page/HUD does not.
+     Do NOT set a global page `touch-action: none` that re-disables zoom. The camera-pinch listeners in
+     mobile_controls.ts are already scoped to the canvas/joystick zones, so the canvas keeping
+     `touch-action: none` is correct; verify and keep that scoping. Note: the prior framing that "pinch
+     already falls through to the page" was WRONG about current behavior - the page-level
+     `touch-action: none` rules are what kill it, which is exactly why this relaxation is required.
   3. Audit EVERY edge-anchored fixed/absolute HUD element from the Explore list and apply
      `env(safe-area-inset-*)` with a fallback, unconditionally, using the
      `max(<existing px>, env(safe-area-inset-<edge>))` pattern (insets are 0 on non-notched devices, so
@@ -208,9 +221,11 @@ STEP 4 - COMMIT CADENCE (explicit paths only; never git add -A)
 ------------------------------------------------------------------------
 STEP 5 - ACCEPTANCE CRITERIA (mirror progress.md "Phase 5")
 ------------------------------------------------------------------------
-- [ ] index.html viewport scale lock (user-scalable=no, maximum/minimum-scale) removed; browser
-      pinch-zoom restored (WCAG 1.4.4 / 1.4.10) without breaking canvas touch-look or the two-finger
-      camera pinch (touch-action scoped to the canvas).
+- [ ] index.html viewport scale lock (user-scalable=no, maximum/minimum-scale) removed AND the
+      page-level `touch-action: none` relaxed on `body.game-active` and `body.mobile-touch #ui` (these
+      two changes are paired - the meta unblock alone does not restore page pinch-zoom); browser
+      pinch-zoom restored over the HUD/menus (WCAG 1.4.4 / 1.4.10) without breaking canvas touch-look or
+      the two-finger camera pinch (`touch-action: none` KEPT on `#game-canvas`).
 - [ ] env(safe-area-inset-*) applied (with max() fallback) to EVERY edge-anchored HUD element.
 - [ ] Target-size tokens applied: 24px AA floor, larger (48px) for primary touch controls,
       >=8px spacing; >=44px rows under PHONE_TOUCH_QUERY where applicable.
@@ -247,9 +262,12 @@ Report, concisely:
 STOPPING RULES
 ------------------------------------------------------------------------
 - STOP and resolve (do NOT ship a half-fix): if removing user-scalable=no makes the in-game touch-look
-  camera conflict with browser pinch-zoom. The correct fix is touch-action scoping on the canvas (canvas
-  owns its gestures; HUD/page keeps page zoom). Implement that and DOCUMENT the scoping decision; do not
-  leave page-zoom re-disabled to "fix" the conflict.
+  camera conflict with browser pinch-zoom. The correct fix is the PAIRED change - relax the page-level
+  `touch-action: none` on `body.game-active` and `body.mobile-touch #ui` so the HUD/page can zoom, while
+  KEEPING `touch-action: none` on `#game-canvas` so the canvas owns its gestures. Removing
+  user-scalable=no alone does NOT restore HUD pinch-zoom; the page-level `touch-action: none` rules are
+  the real blocker. Implement BOTH halves and DOCUMENT the scoping decision; do not leave page-zoom
+  re-disabled to "fix" the conflict, and do not assume the meta change alone is enough.
 - STOP if a single-pointer alternative would change a game-input behavior in normal play (for example a
   zoom button or pick/place that alters WASD/hotkey/touch-look behavior when accessibility is off).
   Surface it; do not regress normal play (invariant 6).

@@ -59,6 +59,7 @@ early so baselines capture the PRE-refactor HUD.
 - IWorld parity (Phase 3): `npx vitest run tests/iworld_read_surface.test.ts tests/snapshots.test.ts tests/interest.test.ts`.
 - Sim-purity boundary (Phase 3): `npx vitest run tests/architecture_boundaries.test.ts` + `npm run lint` (new).
 - Visual (Phase 5 and any window touch): `npx playwright test` (DOM HUD baselines) + a mobile screenshot script (`node scripts/mobile_visual.mjs` or a `mobile_*_shot.mjs`) against a phone viewport with `npm run dev` running.
+- Online mode (ANY HUD-behavior phase): the offline `Sim` harness drives steady state only, so also verify the surface against the online path. Start `npm run server` and log in through `ClientWorld`, then exercise the surface under interest-scoped (~120 yd) partial snapshots, latency, and target loss (open a window, move out of interest range, lose the current target). Per-frame surfaces (player/target frame, nameplates, cast bar, Social online announcements) are the ones most likely to diverge under snapshot churn. For per-frame phases this can also be simulated offline via the Phase 1 `fake_world` entity-drop path (a mutator that removes entities mid-run to mimic a partial snapshot).
 - Build / pre-merge (mirrors CI `.github/workflows/ci.yml`): `npm test && npx tsc --noEmit && npm run build:env && npm run build:server && npm run build`.
 - Bundle-footprint check (every phase adding a dep): `npm run build` must show the game (`main`) bundle does not pull in the new dep (dev-only).
 
@@ -106,6 +107,10 @@ Created by this packet (ledger; fill as phases land):
 - (Phase 7) `src/ui/hud/hot_write_gate.ts`, `tests/hot_write_gate.test.ts`
 - (Phase 9) `src/ui/hud/reactive_diff.ts`, `tests/reactive_diff.test.ts`
 - (Phase 11) `src/ui/hud/icon_service.ts`, `src/ui/hud/hud_context.ts`, `tests/icon_service.test.ts`
+  - `HudContext` carries the action-bar drag-state seam: `dragAction`,
+    `writeDraggedAction`, and `clearActionDropTargets` are expected members
+    (shared by Bags, Spellbook, and Talents; whichever extracts first
+    establishes the seam, do not single out Bags).
 - (Phase 13+) `src/ui/hud/<window>.ts` + `tests/hud_<window>.test.ts` per window
 
 ## New IWorld members / SimEvents / wire fields / endpoints / tables / i18n keys
@@ -138,3 +143,13 @@ Arena `:2064`, QuestLog `:3714`, Map `:1875`, Options `:5549`; minimap Sets `:19
 - If two sessions must touch `hud.ts` at once (two window delegations), land the
   lower-id card first and rebase; delegation edits are tiny and rebase cleanly
   when windows are disjoint.
+- Rollback strategy: the rollback unit is one card = one PR = one revertable
+  commit, so a bad merge backs out with a single `git revert`. This refactor is
+  expected to be behavior-preserving (no risky player-facing change), but the
+  rule applies generally: ship any risky player-facing change behind a
+  settings/localStorage flag where feasible so it can be disabled without a
+  redeploy. `DEPLOY.md` is the production rollback reference.
+- i18n backlog: extraction preserves existing keys, but run `npm run i18n:scan`
+  mid-program to size the pending-translation release backlog as new keys accrue
+  (the maintainer batch-fills any `pending` rows via `npm run i18n:worklist`
+  before any `release/**` push; the release-tier gate hard-fails on a pending row).

@@ -80,8 +80,14 @@ text-scale/Reader Mode, plus a manual screen-reader pass on a11y-heavy phases.
 ## Cross-packet dependency (the ui-architecture-hud-modularization refactor)
 
 Confirm these in each phase pre-flight before starting:
-- Phase 1 (tokens) and Phase 5 (mobile/pointer): can start before the refactor
-  completes (CSS/markup; no modular seam needed).
+- The Playwright visual-baseline infra (refactor Phase 5: `playwright.config.ts` +
+  `tests/visual/` + the CI Playwright job) must have landed before ANY UX phase's
+  visual-validation step can run. This is a HARD prerequisite for EVERY UX phase that
+  re-baselines visuals. UX Phase 1/5 may begin CODING early but cannot COMPLETE
+  visual validation until refactor Phase 5 lands.
+- Phase 1 (tokens) and Phase 5 (mobile/pointer): can be CODED early before the
+  refactor completes (CSS/markup; no modular seam needed), but visual validation
+  requires refactor Phase 5 to have landed (see the row above).
 - Phase 3 (a11y interaction foundation): needs the refactor's `HudContext` seam
   (refactor Phase 11). Hang the new utilities off `HudContext`.
 - Phase 7 (persistent chrome) and Phases 9-18 (per-window passes): need the
@@ -130,3 +136,11 @@ the locale overlays (the maintainer batch-fills at release). Keep
 - AAA vs aesthetic contrast conflicts: AAA legibility wins; the look adapts.
 - Re-baselining visuals is expected and deliberate here; an UNREVIEWED snapshot
   update is not allowed (always inspect the diff).
+
+## Rollback
+
+Rollback unit is one card = one PR = one revertable commit. Ship the riskiest
+user-visible behavior changes behind a settings/localStorage flag so a regression
+can be toggled OFF without a redeploy: the viewport unlock (removing
+`user-scalable=no`), the input-mode gate (highest-risk; a regression breaks WASD for
+all players), and the themes. `DEPLOY.md` is the production rollback reference.

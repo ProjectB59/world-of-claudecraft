@@ -507,12 +507,20 @@ defaults during the hud.ts migration. (https://css-tricks.com/a-complete-guide-t
 Repo-specific highest-value change (verified): move `QUALITY_COLOR`
 (`src/ui/icons.ts:1358`, the classic values poor `#9d9d9d` / common `#ffffff` /
 uncommon `#1eff00` / rare `#0070dd` / epic `#a335ee`) out of JS into `--quality-*`
-tokens. Today rarity color is baked into JS string concatenation in hud.ts, so a
-high-contrast or colorblind theme physically cannot recolor item names without a
-code change. The canvas icon layer still needs the numeric hex, so expose a tiny
-cached `readToken('--quality-epic')` helper
+tokens. Today rarity color is baked into JS string concatenation in hud.ts (the
+~8 `style="color:..."` / border-color sites), so a high-contrast or colorblind
+theme physically cannot recolor item names without a code change. Quality color
+is a DOM/CSS concern, tokenized AT the DOM sites: the canvas icon painter does
+NOT read `QUALITY_COLOR` (icons.ts ~:1331 comments that the quality border lives
+in CSS outside the painter, and the painter draws from PALETTES + FX glow/sparkle),
+so there is no per-frame getComputedStyle to solve on the canvas. Feed the JS-built
+DOM color strings through a tiny cached `readToken('--quality-epic')` helper
 (`getComputedStyle(root).getPropertyValue(...)`, invalidated on theme change)
-instead of re-importing the literal; canvas and DOM then read one source of truth.
+instead of re-importing the literal; the DOM color strings and the static `.q-*`
+quality CSS classes then read one source of truth. Note the `.q-*` classes
+currently DIVERGE from `QUALITY_COLOR` (e.g. `.q-common` is `#b8b8b8` vs the JS
+map's `#ffffff`), so reconciling both surfaces onto the tokens requires a
+deliberate one-value-per-tier decision (classic convention: common = white).
 
 ### Theming by token swap: default / high-contrast / colorblind, plus text-scale
 
@@ -593,10 +601,16 @@ aesthetic layer and the accessibility substrate are the same layer.
 Verified gap to fix first: `index.html` line 5 ships
 `maximum-scale=1.0, minimum-scale=1.0, user-scalable=no` (confirmed). This blocks
 pinch-zoom (the primary low-vision affordance on mobile web) and is a WCAG 1.4.4 /
-1.4.10 violation. Removing the scale locks is the single highest-leverage one-line
-fix; mitigate the camera-pinch conflict by keeping the camera-pinch listener
-scoped to the canvas/joystick zones (it already is) so pinch over HUD/menus zooms
-the page. (https://www.boia.org/blog/web-accessibility-tips-dont-disable-zooming-yes-even-on-mobile)
+1.4.10 violation. Removing the scale locks is necessary but NOT sufficient: page
+pinch-zoom over the HUD is ALSO killed by CSS `touch-action: none` applied at the
+page level (`body.game-active` at `index.html:220` and `body.mobile-touch #ui` at
+`:3829`, where `#ui` is the full-screen HUD overlay), so the meta change alone does
+not restore HUD pinch. The fix must relax `touch-action: none` on those page/HUD
+rules WHILE KEEPING `touch-action: none` on `#game-canvas` (`:3828`); the camera
+pinch/swipe-look listeners are bound to `#game-canvas` directly
+(`mobile_controls.ts:194-209`), so the in-game camera is unaffected and pinch over
+HUD/menus then zooms the page. Re-test that canvas camera pinch still works after
+the page-level relax. (https://www.boia.org/blog/web-accessibility-tips-dont-disable-zooming-yes-even-on-mobile)
 
 Target sizing (tiers, by surface, not blanket): WCAG 2.5.8 floor is 24x24 CSS px
 with the spacing exception (20x20 + >=4px gaps conform). (https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
@@ -751,9 +765,12 @@ Section 8 alignment):
 - Procedural canvas icons: icons/bars/slots/tooltips are drawn to canvas and are
   invisible to AT. Every widget needs a parallel hidden-but-focusable DOM host (or
   `aria-activedescendant` against hidden nodes) carrying the role + `t()` name +
-  state. The canvas tint layer reads color via a cached `readToken()` helper, not
-  re-imported JS literals, so the migrated `--quality-*` tokens are the one source
-  of truth for both canvas and DOM.
+  state. Quality color specifically is a DOM/CSS concern: the canvas icon painter
+  does NOT read `QUALITY_COLOR` (the quality border lives in CSS outside the
+  painter), so the migrated `--quality-*` tokens are the one source of truth for
+  the DOM color strings and the `.q-*` classes, read via a cached `readToken()`
+  helper rather than re-imported JS literals. Any other canvas tint that genuinely
+  reads a JS color may use the same cached `readToken()`.
 - 20Hz per-frame budget with hot-write dedup: the sim ticks at a fixed 20Hz; the
   HUD updates per animation frame through a hot-write dedup cache, so per-frame
   cost matters. Accessibility/theme settings (scale, contrast, reduced motion,
