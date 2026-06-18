@@ -49,6 +49,10 @@ export const ZONE3_MOBS: Record<string, MobTemplate> = {
     id: 'ridge_stalker', name: 'Ridge Stalker', minLevel: 13, maxLevel: 14, family: 'beast',
     hpBase: 58, hpPerLevel: 21, dmgBase: 10, dmgPerLevel: 2.5, attackSpeed: 1.9,
     armorPerLevel: 14, moveSpeed: 8, aggroRadius: 11,
+    // Rending Claws: the stalker's raking swipes can open a bleeding wound — a
+    // refreshing physical DoT (~5 every 3s for 9s). Distinct from poison: it is
+    // physical-school, so it bypasses poison cleanses and ignores nature resist.
+    bleed: { chance: 0.25, perTick: 5, interval: 3, duration: 9, name: 'Rending Claws', school: 'physical' },
     loot: [
       { copper: 60, chance: 1 },
       { itemId: 'ridge_stalker_pelt', chance: 0.6, questId: 'q_stalker_pelts' },

@@ -209,6 +209,11 @@ export interface MobTemplate {
   // On-hit debuff: a chance per landed melee swing to inflict a stacking-refresh
   // damage-over-time poison on the struck target (spiders, serpents, scorpions).
   venom?: { chance: number; perTick: number; interval: number; duration: number; name: string; school?: string };
+  // On-hit bleed: a landed melee swing has `chance` to open a refreshing PHYSICAL
+  // damage-over-time wound on the victim ("Rend"). Distinct from `venom` (a
+  // nature/poison DoT) — bleeds are physical-school, the predator/beast flavour
+  // of the same on-hit DoT seam. Refreshes (never stacks) like venom.
+  bleed?: { chance: number; perTick: number; interval: number; duration: number; name: string; school?: Aura['school'] };
   // On-death mechanic ("Death Throes"): a volatile creature does not detonate
   // the instant it dies. Its corpse destabilizes for `delay` seconds (a
   // telegraph players can run from), then bursts for min..max `school` damage

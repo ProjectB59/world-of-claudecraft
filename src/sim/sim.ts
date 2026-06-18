@@ -4164,6 +4164,20 @@ export class Sim {
         sourceId: mob.id, school: (venom.school as Aura['school']) ?? 'nature',
       });
     }
+    // bleed ("Rend"): a landed swing may open a refreshing PHYSICAL DoT wound.
+    // Same on-hit DoT seam as venom, but physical-school — the predator/beast
+    // flavour (raking claws, gore). Hostile mobs only (mobSwing is also the pet
+    // attack path, so a friendly pet must never bleed the party).
+    const bleed = MOBS[mob.templateId]?.bleed;
+    if (bleed && mob.hostile && !target.dead && this.rng.chance(bleed.chance)) {
+      this.applyAura(target, {
+        id: 'bleed_' + mob.templateId, name: bleed.name, kind: 'dot',
+        remaining: bleed.duration, duration: bleed.duration,
+        value: Math.max(1, Math.round(bleed.perTick)),
+        tickInterval: bleed.interval, tickTimer: bleed.interval,
+        sourceId: mob.id, school: (bleed.school as Aura['school']) ?? 'physical',
+      });
+    }
     // corrosive bite: a landed hit may shred the victim's armor (stacking sunder).
     // Guarded on hostile so a friendly pet (the other mobSwing caller) never debuffs an ally.
     const corrode = MOBS[mob.templateId]?.corrode;
