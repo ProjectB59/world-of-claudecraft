@@ -26,7 +26,8 @@ export const ja_JP: EnTranslations = {
       "maxLevel": "最大レベル",
       "totalXp": "総経験値",
       "lv": "Lv",
-      "toNext": "次まで"
+      "toNext": "次まで",
+      "rested": "休息"
     },
     "progression": {
       "heading": "進行",
@@ -73,7 +74,12 @@ export const ja_JP: EnTranslations = {
       "needXp": "威信までに必要な追加累計経験値"
     },
     "settings": {
-      "showOverflowXp": "超過経験値を表示"
+      "showOverflowXp": "超過経験値を表示",
+      "weather": "天候エフェクト"
+    },
+    "hud": {
+      "lowMana": "マナ低下",
+      "lowEnergy": "エネルギー低下"
     },
     "talents": {
       "title": "タレント",
@@ -132,7 +138,16 @@ export const ja_JP: EnTranslations = {
       "noBuilds": "保存ビルドなし",
       "save": "保存",
       "comingSoonTitle": "タレント準備中",
-      "comingSoonBody": "このクラスにはまだタレントツリーがありません。通常通りプレイできます。完全なツリーは今後のアップデートで追加されます。"
+      "comingSoonBody": "このクラスにはまだタレントツリーがありません。通常通りプレイできます。完全なツリーは今後のアップデートで追加されます。",
+      "readout": {
+        "noTree": "あなたのクラスにはまだタレントツリーがありません。",
+        "locked": "タレントはまだ解除されていません——レベル{level}から始まります。",
+        "noSpec": "専門化なし",
+        "summary": "タレント: {head}——{spent}/{total} ポイント使用済み（{breakdown}）。",
+        "breakdownClass": "クラス {classPts}",
+        "breakdownSpec": "クラス {classPts}、{spec} {specPts}",
+        "unspent": " 未使用 {count}。"
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const ja_JP: EnTranslations = {
       "levelLog": "レベル {level}になりました！",
       "xpGain": "{amount}の経験値を獲得しました。",
       "xpFloat": "+{amount} 経験値",
+      "xpFloatRested": "+{amount} 休息",
+      "xpGainRested": "{amount}の経験値を獲得しました（休息ボーナス {rested}）。",
       "deathTitle": "死亡しました。",
       "releaseSpirit": "霊魂を解放",
       "chatTab": "チャット",
@@ -521,6 +538,7 @@ export const ja_JP: EnTranslations = {
       "keyBindings": "キー設定",
       "graphics": "グラフィック",
       "audio": "オーディオ",
+      "interface": "インターフェース",
       "logout": "ログアウト",
       "returnToGame": "ゲームに戻る",
       "resetToDefaults": "初期設定に戻す",
@@ -544,15 +562,33 @@ export const ja_JP: EnTranslations = {
       "terrainLow": "低",
       "terrainHigh": "高",
       "touchOpacity": "タッチ操作の不透明度",
+      "invertLook": "視点反転（タッチ）",
       "graphicsReloadNote": "グラフィック品質と地形の詳細は再読み込み後に適用されます。",
       "reloadNow": "今すぐ再読み込み",
       "fullscreen": "フルスクリーン",
       "touchLookSpeed": "タッチ視点速度",
+      "joystickSize": "ジョイスティックの大きさ",
+      "buttonSize": "ボタンの大きさ",
+      "joystickDeadzone": "ジョイスティックの遊び",
       "leftHandedTouch": "左利きタッチ",
       "filterProfanity": "暴言フィルター",
       "clickMoveButton": "クリック移動ボタン",
       "clickToMove": "クリック移動",
       "graphicsNote": "カメラ速度を下げるとマウス視点が落ち着きます。描画品質を100%未満にすると、低性能環境でFPSが向上します。",
+      "fieldOfView": "視野",
+      "hudOpacity": "HUDの不透明度",
+      "tooltipScale": "ツールチップの文字サイズ",
+      "fctScale": "戦闘テキストのサイズ",
+      "chatFontScale": "チャットの文字サイズ",
+      "chatOpacity": "チャット背景の不透明度",
+      "compactChat": "コンパクトチャット",
+      "frostedPanels": "すりガラスパネル",
+      "highContrastText": "高コントラストの文字",
+      "reduceMotion": "モーションを減らす",
+      "showFps": "FPSを表示",
+      "invertLookY": "視点を反転 (Y)",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "これらのオプションは自分の表示のみを変更し、この端末に保存されます。",
       "soundEffects": "効果音",
       "musicVolume": "音楽音量",
       "music": "音楽",
@@ -1037,6 +1073,7 @@ export const ja_JP: EnTranslations = {
       "readyQuestAria": "報告可能なクエスト: {name}",
       "discussQuest": "{name}について話す。",
       "discussQuestAria": "クエストについて話す: {name}",
+      "nythraxisDeathlessKingWarning": "三つの遺物は同じ物語を語っています。アルドレンは王を守るために戦い、マルリックは死の境界を破り、ヴォスはその後に起きたことを止めようとしました。封印は弱まり、廃棄された墓所こそ地下への道です。",
       "browseGoods": "品物を見せてください。",
       "browseGoodsAria": "{name}の品物を見る",
       "worldMarket": "ワールドマーケットを見せてください。",
@@ -1044,6 +1081,7 @@ export const ja_JP: EnTranslations = {
       "accept": "受諾",
       "decline": "辞退",
       "continue": "続ける",
+      "done": "完了",
       "completeQuest": "クエスト完了",
       "turnIn": "報告",
       "back": "戻る",
@@ -1108,7 +1146,8 @@ export const ja_JP: EnTranslations = {
       "food": "食べ物",
       "drink": "飲み物",
       "tool": "道具",
-      "potion": "ポーション"
+      "potion": "ポーション",
+      "elixir": "エリクサー"
     },
     "stats": {
       "armor": "防御力",
@@ -1124,6 +1163,8 @@ export const ja_JP: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{quality} {kind}",
+      "currentlyEquipped": "現在の装備",
+      "ifYouEquip": "これを装備すると",
       "damageSpeed": "{min} - {max} ダメージ 速度 {speed}",
       "dps": "（秒間 {dps} ダメージ）",
       "dagger": "短剣",
@@ -1247,6 +1288,14 @@ export const ja_JP: EnTranslations = {
         "name": "バトルシャウト",
         "description": "2分間、攻撃力が20増加します。"
       },
+      "commanding_shout": {
+        "name": "コマンディングシャウト",
+        "description": "2分間、スタミナが6増加します。"
+      },
+      "demoralizing_shout": {
+        "name": "デモラライジングシャウト",
+        "description": "恐ろしい雄叫びを上げ、30秒間、周囲の敵すべての攻撃力を30低下させます。"
+      },
       "charge": {
         "name": "チャージ",
         "description": "敵に突撃し、怒りを9生成して1秒間スタンさせます。射程8-25yd。"
@@ -1315,6 +1364,10 @@ export const ja_JP: EnTranslations = {
         "name": "水の召喚",
         "description": "飲むとマナを回復する水の瓶を2本召喚します。高ランクではより純粋な水を召喚します。"
       },
+      "conjure_food": {
+        "name": "食料の召喚",
+        "description": "食べると体力を回復するパンを2食分召喚します。高ランクではより滋養のある食料を召喚します。"
+      },
       "fire_blast": {
         "name": "ファイアブラスト",
         "description": "敵を爆炎で打ち、{damage} の火炎ダメージを与えます。即時発動。"
@@ -1338,6 +1391,10 @@ export const ja_JP: EnTranslations = {
       "scorch": {
         "name": "スコーチ",
         "description": "敵を焼き、{damage} の火炎ダメージを与えます。詠唱が速い呪文です。"
+      },
+      "pyroblast": {
+        "name": "パイロブラスト",
+        "description": "巨大な炎の岩塊を放ち、{damage} の火炎ダメージと追加の継続ダメージを与えます。"
       },
       "ice_barrier": {
         "name": "アイスバリア",
@@ -1387,6 +1444,46 @@ export const ja_JP: EnTranslations = {
         "name": "アドレナリンラッシュ",
         "description": "血が熱くなり、即座にエネルギーを60回復します。"
       },
+      "garrote": {
+        "name": "ガロット",
+        "description": "敵を絞め、即座にダメージを与えるとともに、18秒かけて{damage}の出血ダメージを与えます。ステルス状態でなければなりません。コンボポイントを1獲得します。"
+      },
+      "cheap_shot": {
+        "name": "チープショット",
+        "description": "対象を打って4秒間スタンさせます。ステルス状態でなければなりません。コンボポイントを2獲得します。"
+      },
+      "sap": {
+        "name": "サップ",
+        "description": "対象を8秒間行動不能にします。ステルス状態かつ戦闘外でなければなりません。ダメージを受けると効果が切れます。"
+      },
+      "crippling_poison": {
+        "name": "クリップリング・ポイズン",
+        "description": "対象をクリップリング・ポイズンで攻撃し、{damage}の自然ダメージを与えるとともに、移動速度を12秒間50%低下させます。"
+      },
+      "expose_armor": {
+        "name": "エクスポーズ・アーマー",
+        "description": "対象の防御を崩し、アーマーを低下させるフィニッシュムーブです。消費したコンボポイントが多いほど、より深く切り込みます。"
+      },
+      "rupture": {
+        "name": "ラプチャー",
+        "description": "対象に傷を負わせ、16秒かけて{damage}の出血ダメージを与えるフィニッシュムーブです。"
+      },
+      "vanish": {
+        "name": "ヴァニッシュ",
+        "description": "視界から消え、戦闘中でもステルス状態に入ります。隠れている間は移動速度が30%低下します。最大10秒間持続します。"
+      },
+      "instant_poison": {
+        "name": "インスタント・ポイズン",
+        "description": "武器に30分間毒を塗り、近接攻撃ごとに8の追加自然ダメージを与えます。"
+      },
+      "deadly_poison": {
+        "name": "デッドリー・ポイズン",
+        "description": "武器に30分間毒を塗り、近接攻撃ごとに14の追加自然ダメージを与えます。"
+      },
+      "blind": {
+        "name": "ブラインド",
+        "description": "対象を盲目にし、8秒間混乱してさまよわせます。ダメージを受けると効果が切れます。"
+      },
       "seal_of_righteousness": {
         "name": "正義のシール",
         "description": "30秒間、聖なる力で満たされ、近接攻撃ごとに4の追加神聖ダメージを与えます。ジャッジメントで解放します。"
@@ -1435,6 +1532,10 @@ export const ja_JP: EnTranslations = {
         "name": "正義の怒り",
         "description": "30分間、あなたの神聖ダメージが生成する脅威が60%増加します。タンク役パラディンの要です。"
       },
+      "retribution_aura": {
+        "name": "リトリビューションオーラ",
+        "description": "30分間、聖なる力で身を包み、近接攻撃をしてきた敵に5の神聖ダメージを与えます。"
+      },
       "tame_beast": {
         "name": "獣の調教",
         "description": "獣を仲間にするための調教を始めます。獣はあなたのレベル以下で、エリートであってはなりません。ペットはあなたに従い、敵を攻撃し、独自の脅威を保ちます。同時に連れられるペットは1体だけです。"
@@ -1470,6 +1571,10 @@ export const ja_JP: EnTranslations = {
       "wing_clip": {
         "name": "ウィングクリップ",
         "description": "傷を負わせ、10秒間、敵の移動速度を40%低下させます。"
+      },
+      "aspect_of_the_monkey": {
+        "name": "猿の相",
+        "description": "猿の相を取り、30分間、回避率を8%増加させます。"
       },
       "aspect_of_the_cheetah": {
         "name": "チーターの相",
@@ -1547,9 +1652,17 @@ export const ja_JP: EnTranslations = {
         "name": "フレイムショック",
         "description": "対象を炎で焼き、25ダメージに加えて12秒間で {damage} のダメージを与えます。"
       },
+      "flametongue_weapon": {
+        "name": "フレイムタングウェポン",
+        "description": "元素の炎を武器に込めます。5分間、各スイングが8の追加火炎ダメージを与えます。"
+      },
       "frost_shock": {
         "name": "フロストショック",
         "description": "対象を冷気で即座に打ち、{damage} の冷気ダメージを与え、8秒間、移動速度を50%低下させます。"
+      },
+      "frostbrand_weapon": {
+        "name": "フロストブランドウェポン",
+        "description": "刺すような冷気を武器に込めます。5分間、各スイングが8の追加ダメージを与えます。"
       },
       "ghost_wolf": {
         "name": "ゴーストウルフ",
@@ -1667,6 +1780,46 @@ export const ja_JP: EnTranslations = {
         "name": "スターファイア",
         "description": "星の炎を呼び下ろし、{damage} の秘術ダメージを与えます。"
       },
+      "travel_form": {
+        "name": "トラベルフォーム",
+        "description": "素早い移動形態になり、移動速度を40%上昇させます。戦闘中は使用できません。"
+      },
+      "enrage": {
+        "name": "激怒",
+        "description": "即座にレイジを20生成します。ベアフォーム専用。"
+      },
+      "bash": {
+        "name": "殴打",
+        "description": "対象を2秒間スタンさせます。ベアフォーム専用。"
+      },
+      "faerie_fire": {
+        "name": "フェアリーファイア",
+        "description": "対象の防御力を40秒間35低下させます。"
+      },
+      "hibernate": {
+        "name": "ハイバネート",
+        "description": "対象を最大8秒間深い眠りに落とします。ダメージを受けると目を覚まします。"
+      },
+      "dash": {
+        "name": "ダッシュ",
+        "description": "前方へ駆け出し、移動速度を15秒間50%上昇させます。キャットフォーム専用。"
+      },
+      "pounce": {
+        "name": "パウンス",
+        "description": "隠密状態から放つ先制攻撃で、対象を2秒間スタンさせます。コンボポイントを1獲得します。キャットフォーム専用。"
+      },
+      "insect_swarm": {
+        "name": "インセクトスウォーム",
+        "description": "敵が虫の群れに襲われ、12秒かけて{damage}の自然ダメージを受けます。"
+      },
+      "tigers_fury": {
+        "name": "タイガーフューリー",
+        "description": "攻撃力を6秒間40上昇させます。キャットフォーム専用。"
+      },
+      "rip": {
+        "name": "リップ",
+        "description": "12秒かけて出血ダメージを与えるフィニッシュムーブです。コンボポイントを消費します。キャットフォーム専用。"
+      },
       "mortal_strike": {
         "name": "致死打撃",
         "description": "凶悪な一撃で武器ダメージに加えて {damage} のダメージを与えます。（武器シグネチャー）"
@@ -1694,6 +1847,26 @@ export const ja_JP: EnTranslations = {
       "summon_voidwalker": {
         "name": "ヴォイドウォーカーの召喚",
         "description": "ウォーロックの命令に従うヴォイドウォーカーを召喚します。ヴォイドウォーカーは敵を挑発し攻撃を受け止める頑強な悪魔です。新たな悪魔を召喚すると現在の悪魔は解放されます。悪魔は一度に1体しか従えられません。"
+      },
+      "summon_succubus": {
+        "name": "サキュバスの召喚",
+        "description": "ウォーロックの命令に従うサキュバスを召喚します。サキュバスは素早く攻撃し近接戦闘で大きなダメージを与える脆い悪魔です。新たな悪魔を召喚すると現在の悪魔は解放されます。悪魔は一度に1体しか従えられません。"
+      },
+      "summon_felhunter": {
+        "name": "フェルハンターの召喚",
+        "description": "ウォーロックの命令に従うフェルハンターを召喚します。フェルハンターはシャドウバイトで遠くから敵を悩ませ、呪文の使い手を狩るのに長けています。新たな悪魔を召喚すると現在の悪魔は解放されます。悪魔は一度に1体しか従えられません。"
+      },
+      "summon_felguard": {
+        "name": "フェルガードの召喚",
+        "description": "ウォーロックの命令に従うフェルガードを召喚します。フェルガードは戦場に踏み込んで持ちこたえる頑丈な近接悪魔です。新たな悪魔を召喚すると現在の悪魔は解放されます。悪魔は一度に1体しか従えられません。"
+      },
+      "summon_infernal": {
+        "name": "インファーナルの召喚",
+        "description": "インファーナルを意のままに束縛します。圧倒的な近接攻撃と、あらゆる悪魔の中で最も深い生命力と防御力を備えた巨大な破壊兵器です。長い再使用時間がその純然たる力を制限します。新たな悪魔を召喚すると現在の悪魔は解放されます。悪魔は一度に1体しか従えられません。"
+      },
+      "summon_doomguard": {
+        "name": "ドゥームガードの召喚",
+        "description": "ドゥームガードを意のままに束縛します。遠方から強力なシャドウダメージを降らせるエリート悪魔です。長い再使用時間がその破壊的な力を制限します。新たな悪魔を召喚すると現在の悪魔は解放されます。悪魔は一度に1体しか従えられません。"
       },
       "bear_charge": {
         "name": "ベアチャージ",
@@ -2146,6 +2319,51 @@ export const ja_JP: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "割れたワームの鱗"
       },
+      "conjured_bread": {
+        "name": "魔法のパン"
+      },
+      "conjured_bread2": {
+        "name": "魔法のライ麦パン"
+      },
+      "conjured_bread3": {
+        "name": "魔法の菓子パン"
+      },
+      "roadwardens_helm": {
+        "name": "道守りの兜"
+      },
+      "wayfarers_hood": {
+        "name": "旅人のフード"
+      },
+      "acolytes_circlet": {
+        "name": "見習いのサークレット"
+      },
+      "reinforced_pauldrons": {
+        "name": "強化された肩当て"
+      },
+      "embroidered_mantle": {
+        "name": "刺繍のマント"
+      },
+      "sturdy_belt": {
+        "name": "丈夫な旅人のベルト"
+      },
+      "silk_sash": {
+        "name": "織絹のサッシュ"
+      },
+      "roughspun_gloves": {
+        "name": "粗布の手袋"
+      },
+      "bristlehide_spaulders": {
+        "name": "剛毛革の肩当て"
+      },
+      "sableweb_cord": {
+        "name": "セーブルウェブの紐"
+      },
+      "gorraks_cleaver": {
+        "name": "ゴラクのクリーバー"
+      },
+      "mossy_handwraps": {
+        "name": "苔むした手甲"
+      },
       "bristleback_maul": {
         "name": "ブリストルバックの大槌"
       },
@@ -2293,6 +2511,96 @@ export const ja_JP: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "ワーム影の足具"
       },
+      "glimmerfin_koi": {
+        "name": "きらめきヒレの錦鯉"
+      },
+      "raw_bog_eel": {
+        "name": "生の沼ウナギ"
+      },
+      "raw_frostgill_trout": {
+        "name": "生の霜エラマス"
+      },
+      "raw_marsh_pike": {
+        "name": "生の沼カワカマス"
+      },
+      "raw_river_perch": {
+        "name": "生の川スズキ"
+      },
+      "raw_stonescale_carp": {
+        "name": "生の石鱗コイ"
+      },
+      "soggy_boot": {
+        "name": "ずぶ濡れのブーツ"
+      },
+      "elixir_of_the_bear": {
+        "name": "熊のエリクサー"
+      },
+      "lesser_healing_potion": {
+        "name": "下級回復のポーション"
+      },
+      "lesser_mana_potion": {
+        "name": "下級マナのポーション"
+      },
+      "healing_potion": {
+        "name": "回復のポーション"
+      },
+      "mana_potion": {
+        "name": "マナのポーション"
+      },
+      "tunnelkings_spade": {
+        "name": "トンネルキングのスペード"
+      },
+      "brutoks_maul": {
+        "name": "ブルトークの大槌"
+      },
+      "cracked_ogre_tusk": {
+        "name": "ひびの入ったオーガの牙"
+      },
+      "crag_warden_cudgel": {
+        "name": "岩壁の番人の棍棒"
+      },
+      "cragmaw_prowlboots": {
+        "name": "クラッグモウの忍び歩きブーツ"
+      },
+      "drowned_tide_scepter": {
+        "name": "溺れた潮の笏"
+      },
+      "emberfang_warblade": {
+        "name": "燃え牙の戦刃"
+      },
+      "emberwing_cinderscale": {
+        "name": "燃え翼の燼鱗"
+      },
+      "emberwing_legguards": {
+        "name": "燃え翼の脚甲"
+      },
+      "gravewardens_shiv": {
+        "name": "墓守りの短刀"
+      },
+      "hollow_vigil_staff": {
+        "name": "虚ろな守夜の杖"
+      },
+      "maldrecs_soulbinder": {
+        "name": "マルドレクの魂縛り"
+      },
+      "oathbound_greaves": {
+        "name": "誓約の具足"
+      },
+      "skullsmasher_warbelt": {
+        "name": "頭蓋砕きの戦帯"
+      },
+      "skullsplitter_dirk": {
+        "name": "頭蓋割りのダーク"
+      },
+      "sloomtooth_tidefang": {
+        "name": "スルームトゥースの潮牙"
+      },
+      "tidereaver_gaff": {
+        "name": "潮裂きのギャフ"
+      },
+      "verlans_oathblade": {
+        "name": "ヴァーランの誓約刃"
+      },
       "briny_idol": {
         "name": "潮辛の偶像"
       },
@@ -2408,13 +2716,13 @@ export const ja_JP: EnTranslations = {
         "name": "古代の地下墓所の扉"
       },
       "captains_crest": {
-        "name": "隊長の紋章"
+        "name": "墓所の要石上部"
       },
       "priests_sigil": {
-        "name": "司祭の印章"
+        "name": "墓所の要石下部"
       },
       "royal_seal": {
-        "name": "王家の印章"
+        "name": "古い日誌"
       },
       "crypt_keystone": {
         "name": "地下墓所の要石"
@@ -2424,12 +2732,6 @@ export const ja_JP: EnTranslations = {
       },
       "kings_signet": {
         "name": "王の印章指輪"
-      },
-      "nythraxis_vision": {
-        "name": "ニスラクシスの幻視"
-      },
-      "aldrics_seal": {
-        "name": "アルドリックの印章"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const ja_JP: EnTranslations = {
       },
       "voidwalker": {
         "name": "ヴォイドウォーカー"
+      },
+      "succubus": {
+        "name": "サキュバス"
+      },
+      "grix_the_tunnelking": {
+        "name": "トンネルキングのグリックス"
+      },
+      "brutok_skullsmasher": {
+        "name": "頭蓋砕きブルトーク"
+      },
+      "captain_verlan": {
+        "name": "ヴァーラン隊長"
+      },
+      "old_cragmaw": {
+        "name": "老いたるクラッグモウ"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "溺れし者スルームトゥース"
+      },
+      "voskar_emberwing": {
+        "name": "燃え翼のヴォスカル"
+      },
+      "wraithbinder_maldrec": {
+        "name": "魂縛りマルドレク"
+      },
+      "felhunter": {
+        "name": "フェルハンター"
+      },
+      "felguard": {
+        "name": "フェルガード"
+      },
+      "infernal": {
+        "name": "インファーナル"
+      },
+      "doomguard": {
+        "name": "ドゥームガード"
       },
       "choirmother_selthe": {
         "name": "聖歌母セルセ"
@@ -3445,9 +3783,9 @@ export const ja_JP: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "安らがぬ死者",
-        "text": "Thornpeakのアンデッドには、私の知らぬルーンが刻まれています、{playerName}。何が彼らを目覚めさせているのか読むため、ルーン刻みの骨片を十個持ってきてください。",
-        "completion": "どの欠片にも同じ印がある。王冠です。Eastbrookのどの血筋にも属しません。",
+        "title": "骨原の異変",
+        "text": "Thornpeak Heightsで何かが変わりました、{playerName}。死者たちはもはや当てもなくさまよっていません。Highwatchの北、古い戦場と崖道が交わる骨原で集まり、行軍しています。そこへ向かい、骨鎧の亡者たちの異変を調べ、彼らを動かしているものの証拠を持ち帰ってください。",
+        "completion": "すべての欠片に同じ印があります... 王冠です。Eastbrookの記録には残っていない古い墓に刻まれているのを見たことがあります。",
         "objectives": {
           "0": {
             "label": "ルーン刻みの骨片"
@@ -3456,8 +3794,8 @@ export const ja_JP: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "忘れられし者の墓",
-        "text": "その王冠は、Eastbrookの記録に今も名を残すどの血筋のものでもありません。北の戦場近くに、隊長オルドレン、大祭司マルリック、王家の暗殺者ヴォスの古い記念碑が三つ立っています。それぞれの石に触れ、耳を澄ませてください、{playerName}。",
-        "completion": "オルドレンは忠誠を保ち、マルリックは死を受け入れず、ヴォスは誰よりも先に危険を見抜きました。三人ともニスラクシス王に仕えていました。",
+        "text": "この印を以前にも見ました。北の戦場を囲む三つの古い墓です。アルドレン隊長は東の高台に、大神官マルリックは中央の壊れた道の近くに、王家の暗殺者ヴォスは西の崖のそばに眠っています。それぞれの墓に触れて耳を澄ませてください、{playerName}。死者は生者が忘れたことを覚えているかもしれません。",
+        "completion": "アルドレンは忠義を守り、マルリックは死を受け入れず、ヴォスは誰よりも早く危険を見抜きました。三人は同じ忘れられた王に仕えていました。",
         "objectives": {
           "0": {
             "label": "隊長オルドレンの墓での幻視"
@@ -3472,24 +3810,24 @@ export const ja_JP: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "放棄された地下墓所",
-        "text": "幻視は古い廃墟の下にある放棄された地下墓所を指しています。中の腐敗した遺骸から隊長の紋章、司祭の印章、王家の印章を回収してください。",
-        "completion": "これらの遺物は、ニスラクシスに最も近かった者たちのものです。今も彼の転落の重みを宿しています。",
+        "text": "幻視は、西の崖にある廃棄された墓所を示しています。その墓所には王がいたという古い伝説があります。マルリックの儀式が王を死なぬものへ歪めた後、Thornpeakが彼を地下に封じたのかもしれません。墓所へ入り、中に何が残っているか確かめてください。",
+        "completion": "要石の二つの半分が合わさり、ヴォスの日誌はそれらが封じたものの名を示しています。ニスラクシス王の印章指輪です。日誌が真実なら、その指輪こそ彼の墓への鍵です。",
         "objectives": {
           "0": {
-            "label": "隊長の紋章"
+            "label": "墓所の要石上部"
           },
           "1": {
-            "label": "司祭の印章"
+            "label": "墓所の要石下部"
           },
           "2": {
-            "label": "王家の印章"
+            "label": "古い日誌"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "縛られし守護者",
-        "text": "Thornpeakの生存者たちは封印を守るため、骨の守護者を作りました。地下墓所の要石を儀式の円へ運び、そこで使い、踏みとどまってください。",
-        "completion": "その印章指輪が証です。Eastbrookの下に眠る忘れられた王はニスラクシスでした。",
+        "text": "ヴォスは、生存者たちが偶然や野心でニスラクシスの墓に辿り着く者を防ぐため、王の印章指輪を古代の守護者の奥に封じたと記しています。墓所の要石を、廃棄された墓所の東、西の墓の南東にある平地の儀式陣へ持っていってください。そこで使い、守護者を破り、指輪を持ち帰ってください。",
+        "completion": "三つの遺物は同じ物語を語っています。アルドレンは王を守るために戦い、マルリックは死の境界を破り、ヴォスはその後に起きたことを止めようとしました。封印は弱まり、この指輪こそニスラクシスの墓への鍵です。あなたは今、ニスラクシスの墓所へ入るための調律を終えました。",
         "objectives": {
           "0": {
             "label": "儀式の円で地下墓所の要石を使用"
@@ -3499,19 +3837,6 @@ export const ja_JP: EnTranslations = {
           },
           "2": {
             "label": "王の印章指輪"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "ニスラクシス、Eastbrookの災厄",
-        "text": "ニスラクシス王は瀕死で故郷へ運ばれましたが、マルリックは彼を眠らせようとしませんでした。私のそばにいてください、{playerName}。封印の記憶を見届けるのです。",
-        "completion": "何世紀もの間、封印は保たれていました。今、それは弱まっています。ニスラクシスが再び立ち上がれば、Eastbrookは死者の王国となるでしょう。あなたは今、ニスラクシスの地下墓所へ入るための調律を終えました。",
-        "objectives": {
-          "0": {
-            "label": "ニスラクシスの幻視を目撃"
-          },
-          "1": {
-            "label": "ブラザー・アルドリックと話した"
           }
         }
       },

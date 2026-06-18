@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { isBlocked, pathCrossesFence, resolveMovement, resolvePosition } from '../src/sim/colliders';
 import { Sim } from '../src/sim/sim';
-import { findPath, findPlayerPath, resolvePlayerDestination } from '../src/sim/pathfind';
-import { groundHeight } from '../src/sim/world';
+import { findPath, findPlayerPath, PLAYER_SWIM_DEPTH, resolvePlayerDestination } from '../src/sim/pathfind';
+import { groundHeight, WATER_LEVEL } from '../src/sim/world';
 import { PROPS } from '../src/sim/data';
 
 describe('player pathfinding', () => {
@@ -42,6 +42,36 @@ describe('player pathfinding', () => {
     expect(isBlocked(seed, target.x, target.z)).toBe(false);
     expect(Math.hypot(target.x - 10, target.z - 12)).toBeGreaterThan(0.5);
     expect(Math.hypot(target.x - 10, target.z - 12)).toBeLessThan(6);
+  });
+
+  it('snaps a water click to shore for walkers but keeps it for swimmers', () => {
+    const seed = 20061;
+    const water = { x: -108, z: 84 }; // deep lake cell on this seed (ground -8.5)
+    const deepThreshold = WATER_LEVEL - PLAYER_SWIM_DEPTH;
+    expect(groundHeight(water.x, water.z, seed)).toBeLessThan(deepThreshold);
+
+    // Default (walker): shoved out of the water to the nearest dry/wadeable cell.
+    const walked = resolvePlayerDestination(seed, water);
+    expect(groundHeight(walked.x, walked.z, seed)).toBeGreaterThanOrEqual(deepThreshold);
+    expect(Math.hypot(walked.x - water.x, walked.z - water.z)).toBeGreaterThan(0.5);
+
+    // Swimmer: the click lands where you clicked, still over deep water.
+    const swum = resolvePlayerDestination(seed, water, true);
+    expect(Math.hypot(swum.x - water.x, swum.z - water.z)).toBeLessThan(0.5);
+    expect(groundHeight(swum.x, swum.z, seed)).toBeLessThan(deepThreshold);
+  });
+
+  it('routes a swimming player into deep water instead of stopping at the bank', () => {
+    const seed = 20061;
+    const from = { x: -120, z: 85 }; // land beside the lake
+    const water = { x: -108, z: 84 }; // deep lake cell
+    const deepThreshold = WATER_LEVEL - PLAYER_SWIM_DEPTH;
+
+    const path = findPlayerPath(seed, from, water, 128, true, true);
+    const end = path[path.length - 1];
+    expect(end).toEqual(water);
+    // The route actually finishes in the water, not snapped short onto the shore.
+    expect(groundHeight(end.x, end.z, seed)).toBeLessThan(deepThreshold);
   });
 
   it('treats fence runs as movement blockers', () => {

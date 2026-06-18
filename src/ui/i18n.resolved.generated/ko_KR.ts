@@ -26,7 +26,8 @@ export const ko_KR: EnTranslations = {
       "maxLevel": "최대 레벨",
       "totalXp": "총 경험치",
       "lv": "레벨",
-      "toNext": "다음까지"
+      "toNext": "다음까지",
+      "rested": "휴식"
     },
     "progression": {
       "heading": "진행도",
@@ -73,7 +74,12 @@ export const ko_KR: EnTranslations = {
       "needXp": "명예 승급까지 필요한 추가 누적 경험치"
     },
     "settings": {
-      "showOverflowXp": "초과 경험치 표시"
+      "showOverflowXp": "초과 경험치 표시",
+      "weather": "날씨 효과"
+    },
+    "hud": {
+      "lowMana": "마나 부족",
+      "lowEnergy": "기력 부족"
     },
     "talents": {
       "title": "특성",
@@ -132,7 +138,16 @@ export const ko_KR: EnTranslations = {
       "noBuilds": "저장한 빌드 없음",
       "save": "저장",
       "comingSoonTitle": "특성 준비 중",
-      "comingSoonBody": "이 직업은 아직 특성 트리가 없습니다. 계속 정상적으로 플레이할 수 있으며 전체 트리는 향후 업데이트에 추가됩니다."
+      "comingSoonBody": "이 직업은 아직 특성 트리가 없습니다. 계속 정상적으로 플레이할 수 있으며 전체 트리는 향후 업데이트에 추가됩니다.",
+      "readout": {
+        "noTree": "이 직업은 아직 특성 트리가 없습니다.",
+        "locked": "아직 특성을 해제하지 않았습니다 — 특성은 {level}레벨부터 시작됩니다.",
+        "noSpec": "전문화 없음",
+        "summary": "특성: {head} — {spent}/{total} 점 사용 ({breakdown}).",
+        "breakdownClass": "직업 {classPts}",
+        "breakdownSpec": "직업 {classPts}, {spec} {specPts}",
+        "unspent": " {count}점 미사용."
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const ko_KR: EnTranslations = {
       "levelLog": "{level} 레벨이 되었습니다!",
       "xpGain": "경험치 {amount}을 획득했습니다.",
       "xpFloat": "+{amount} 경험치",
+      "xpFloatRested": "+{amount} 휴식",
+      "xpGainRested": "경험치 {amount}을 획득했습니다 (휴식 보너스 {rested}).",
       "deathTitle": "사망했습니다.",
       "releaseSpirit": "영혼 풀어주기",
       "chatTab": "채팅",
@@ -521,6 +538,7 @@ export const ko_KR: EnTranslations = {
       "keyBindings": "키 설정",
       "graphics": "그래픽",
       "audio": "오디오",
+      "interface": "인터페이스",
       "logout": "로그아웃",
       "returnToGame": "게임으로 돌아가기",
       "resetToDefaults": "기본값 복원",
@@ -544,15 +562,33 @@ export const ko_KR: EnTranslations = {
       "terrainLow": "낮음",
       "terrainHigh": "높음",
       "touchOpacity": "터치 조작 투명도",
+      "invertLook": "시점 반전 (터치)",
       "graphicsReloadNote": "그래픽 품질과 지형 세부 묘사는 새로고침 후 적용됩니다.",
       "reloadNow": "지금 새로고침",
       "fullscreen": "전체 화면",
       "touchLookSpeed": "터치 시점 속도",
+      "joystickSize": "조이스틱 크기",
+      "buttonSize": "버튼 크기",
+      "joystickDeadzone": "조이스틱 무반응 구간",
       "leftHandedTouch": "왼손잡이 터치",
       "filterProfanity": "비속어 필터",
       "clickMoveButton": "클릭 이동 버튼",
       "clickToMove": "클릭하여 이동",
       "graphicsNote": "카메라 속도를 낮추면 마우스 시점이 더 안정됩니다. 렌더 품질을 100% 아래로 낮추면 낮은 사양 장치에서 FPS가 향상됩니다.",
+      "fieldOfView": "시야각",
+      "hudOpacity": "HUD 투명도",
+      "tooltipScale": "툴팁 글자 크기",
+      "fctScale": "전투 문자 크기",
+      "chatFontScale": "채팅 글자 크기",
+      "chatOpacity": "채팅 배경 투명도",
+      "compactChat": "간결한 채팅",
+      "frostedPanels": "반투명 패널",
+      "highContrastText": "고대비 문자",
+      "reduceMotion": "움직임 줄이기",
+      "showFps": "FPS 표시",
+      "invertLookY": "시점 반전 (Y)",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "이 옵션은 자신의 화면에만 적용되며 이 기기에 저장됩니다.",
       "soundEffects": "효과음",
       "musicVolume": "음악 음량",
       "music": "음악",
@@ -1037,6 +1073,7 @@ export const ko_KR: EnTranslations = {
       "readyQuestAria": "완료 보고 가능한 퀘스트: {name}",
       "discussQuest": "{name}에 대해 이야기합니다.",
       "discussQuestAria": "퀘스트 논의: {name}",
+      "nythraxisDeathlessKingWarning": "세 유물은 같은 이야기를 전합니다. 알드렌은 왕을 지키기 위해 싸웠고, 말릭은 죽음의 경계를 깨뜨렸으며, 보스는 그 뒤에 일어난 일을 막으려 했습니다. 봉인은 약해지고 있고, 버려진 묘실이 아래로 향하는 길입니다.",
       "browseGoods": "물건을 보여 주세요.",
       "browseGoodsAria": "{name}의 물건 보기",
       "worldMarket": "세계 시장을 보여 주세요.",
@@ -1044,6 +1081,7 @@ export const ko_KR: EnTranslations = {
       "accept": "수락",
       "decline": "거절",
       "continue": "계속",
+      "done": "완료",
       "completeQuest": "퀘스트 완료",
       "turnIn": "보고",
       "back": "뒤로",
@@ -1108,7 +1146,8 @@ export const ko_KR: EnTranslations = {
       "food": "음식",
       "drink": "음료",
       "tool": "도구",
-      "potion": "물약"
+      "potion": "물약",
+      "elixir": "비약"
     },
     "stats": {
       "armor": "방어도",
@@ -1124,6 +1163,8 @@ export const ko_KR: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{quality} {kind}",
+      "currentlyEquipped": "현재 착용 중",
+      "ifYouEquip": "이것을 착용하면",
       "damageSpeed": "{min} - {max} 피해 속도 {speed}",
       "dps": "(초당 피해 {dps})",
       "dagger": "단검",
@@ -1247,6 +1288,14 @@ export const ko_KR: EnTranslations = {
         "name": "전투의 외침",
         "description": "2분 동안 전투력이 20만큼 증가합니다."
       },
+      "commanding_shout": {
+        "name": "지휘의 외침",
+        "description": "2분 동안 체력이 6만큼 증가합니다."
+      },
+      "demoralizing_shout": {
+        "name": "사기의 외침",
+        "description": "무시무시한 외침을 내질러 30초 동안 주위 모든 적의 전투력을 30만큼 감소시킵니다."
+      },
       "charge": {
         "name": "돌진",
         "description": "적에게 돌진하여 분노 9를 생성하고 1초 동안 기절시킵니다. 사거리 8-25yd."
@@ -1315,6 +1364,10 @@ export const ko_KR: EnTranslations = {
         "name": "물 창조",
         "description": "마시면 마나를 회복하는 물병 2개를 창조합니다. 높은 등급은 더 순수한 물을 창조합니다."
       },
+      "conjure_food": {
+        "name": "음식 창조",
+        "description": "먹으면 생명력을 회복하는 빵 2개를 창조합니다. 높은 등급은 더 든든한 음식을 창조합니다."
+      },
       "fire_blast": {
         "name": "화염 작열",
         "description": "적에게 {damage}의 화염 피해를 입힙니다. 즉시 시전됩니다."
@@ -1338,6 +1391,10 @@ export const ko_KR: EnTranslations = {
       "scorch": {
         "name": "불태우기",
         "description": "적을 불태워 {damage}의 화염 피해를 입힙니다. 빠르게 시전합니다."
+      },
+      "pyroblast": {
+        "name": "화염 폭발",
+        "description": "거대한 불덩이를 던져 {damage}의 화염 피해와 추가 지속 피해를 입힙니다."
       },
       "ice_barrier": {
         "name": "얼음 보호막",
@@ -1387,6 +1444,46 @@ export const ko_KR: EnTranslations = {
         "name": "아드레날린 촉진",
         "description": "피가 끓어올라 즉시 기력 60을 회복합니다."
       },
+      "garrote": {
+        "name": "목조르기",
+        "description": "적의 목을 졸라 즉시 피해를 입히고 18초에 걸쳐 {damage}의 출혈 피해를 입힙니다. 은신 상태여야 합니다. 연계 점수 1점을 얻습니다."
+      },
+      "cheap_shot": {
+        "name": "비열한 습격",
+        "description": "대상을 가격해 4초 동안 기절시킵니다. 은신 상태여야 합니다. 연계 점수 2점을 얻습니다."
+      },
+      "sap": {
+        "name": "관자놀이 가격",
+        "description": "대상을 8초 동안 무력화합니다. 은신 상태이며 전투 중이 아니어야 합니다. 피해를 받으면 효과가 해제됩니다."
+      },
+      "crippling_poison": {
+        "name": "무력화 독",
+        "description": "대상을 무력화 독으로 가격해 {damage}의 자연 피해를 입히고 12초 동안 이동 속도를 50%만큼 감소시킵니다."
+      },
+      "expose_armor": {
+        "name": "방어구 노출",
+        "description": "대상의 약점을 드러내 방어도를 감소시키는 결정타입니다. 연계 점수를 많이 소모할수록 더 깊게 베어 들어갑니다."
+      },
+      "rupture": {
+        "name": "파열",
+        "description": "대상에게 상처를 입혀 16초에 걸쳐 {damage}의 출혈 피해를 입히는 결정타입니다."
+      },
+      "vanish": {
+        "name": "소멸",
+        "description": "시야에서 사라져 전투 중에도 은신 상태가 됩니다. 숨어 있는 동안 이동 속도가 30% 감소합니다. 최대 10초 동안 지속됩니다."
+      },
+      "instant_poison": {
+        "name": "속효성 독",
+        "description": "30분 동안 무기에 독을 발라 근접 공격마다 8의 추가 자연 피해를 입힙니다."
+      },
+      "deadly_poison": {
+        "name": "맹독",
+        "description": "30분 동안 무기에 독을 발라 근접 공격마다 14의 추가 자연 피해를 입힙니다."
+      },
+      "blind": {
+        "name": "실명",
+        "description": "대상의 눈을 멀게 해 8초 동안 방향을 잃고 헤매게 만듭니다. 피해를 받으면 효과가 해제됩니다."
+      },
       "seal_of_righteousness": {
         "name": "정의의 문장",
         "description": "30초 동안 신성한 힘으로 가득 차 근접 공격마다 4의 추가 신성 피해를 입힙니다. 심판으로 해방할 수 있습니다."
@@ -1435,6 +1532,10 @@ export const ko_KR: EnTranslations = {
         "name": "정의의 격노",
         "description": "30분 동안 자신의 신성 피해가 생성하는 위협 수준이 60%만큼 증가합니다. 방어 성기사의 핵심입니다."
       },
+      "retribution_aura": {
+        "name": "응징의 오라",
+        "description": "30분 동안 신성한 기운으로 자신을 감싸 근접 공격으로 자신을 타격하는 모든 적에게 5의 신성 피해를 입힙니다."
+      },
       "tame_beast": {
         "name": "야수 길들이기",
         "description": "야수를 길들여 동료로 삼기 시작합니다. 야수는 자신의 레벨 이하이며 정예가 아니어야 합니다. 소환수는 주인을 따르고 적을 공격하며 자체 위협 수준을 유지합니다. 한 번에 하나의 소환수만 둘 수 있습니다."
@@ -1470,6 +1571,10 @@ export const ko_KR: EnTranslations = {
       "wing_clip": {
         "name": "날개 절단",
         "description": "상처를 내어 10초 동안 적의 이동 속도를 40%만큼 감소시킵니다."
+      },
+      "aspect_of_the_monkey": {
+        "name": "원숭이의 상",
+        "description": "원숭이의 상을 취해 30분 동안 회피 확률이 8%만큼 증가합니다."
       },
       "aspect_of_the_cheetah": {
         "name": "치타의 상",
@@ -1547,9 +1652,17 @@ export const ko_KR: EnTranslations = {
         "name": "화염 충격",
         "description": "대상을 불태워 25의 피해를 입히고 12초에 걸쳐 추가로 {damage}의 피해를 입힙니다."
       },
+      "flametongue_weapon": {
+        "name": "화염의 무기",
+        "description": "원소의 불꽃으로 무기를 강화합니다. 5분 동안 매 공격마다 8의 추가 화염 피해를 입힙니다."
+      },
       "frost_shock": {
         "name": "냉기 충격",
         "description": "대상을 즉시 냉기로 강타해 {damage}의 냉기 피해를 입히고 8초 동안 이동 속도를 50%만큼 감소시킵니다."
+      },
+      "frostbrand_weapon": {
+        "name": "냉기의 무기",
+        "description": "살을 에는 냉기로 무기를 강화합니다. 5분 동안 매 공격마다 8의 추가 피해를 입힙니다."
       },
       "ghost_wolf": {
         "name": "늑대 정령",
@@ -1667,6 +1780,46 @@ export const ko_KR: EnTranslations = {
         "name": "별빛 화살",
         "description": "별의 불꽃을 불러 내려 {damage}의 비전 피해를 입힙니다."
       },
+      "travel_form": {
+        "name": "여행 형태",
+        "description": "날렵한 여행 형태로 변신하여 이동 속도를 40% 증가시킵니다. 전투 중에는 사용할 수 없습니다."
+      },
+      "enrage": {
+        "name": "격노",
+        "description": "즉시 분노 20을 생성합니다. 곰 변신 전용."
+      },
+      "bash": {
+        "name": "곤봉 세례",
+        "description": "대상을 2초 동안 기절시킵니다. 곰 변신 전용."
+      },
+      "faerie_fire": {
+        "name": "요정의 불꽃",
+        "description": "대상의 방어도를 40초 동안 35만큼 감소시킵니다."
+      },
+      "hibernate": {
+        "name": "동면",
+        "description": "대상을 최대 8초 동안 깊은 잠에 빠뜨립니다. 피해를 입으면 깨어납니다."
+      },
+      "dash": {
+        "name": "질주",
+        "description": "앞으로 돌진하여 이동 속도를 15초 동안 50% 증가시킵니다. 표범 변신 전용."
+      },
+      "pounce": {
+        "name": "덮치기",
+        "description": "은신 상태에서 사용하는 시작 공격으로 대상을 2초 동안 기절시킵니다. 연계 점수 1점을 얻습니다. 표범 변신 전용."
+      },
+      "insect_swarm": {
+        "name": "곤충 떼",
+        "description": "적이 곤충 떼에 휩싸여 12초에 걸쳐 {damage}의 자연 피해를 입습니다."
+      },
+      "tigers_fury": {
+        "name": "호랑이의 분노",
+        "description": "공격력을 6초 동안 40만큼 증가시킵니다. 표범 변신 전용."
+      },
+      "rip": {
+        "name": "찢기",
+        "description": "12초에 걸쳐 출혈 피해를 입히는 결정타입니다. 연계 점수를 소모합니다. 표범 변신 전용."
+      },
       "mortal_strike": {
         "name": "죽음의 일격",
         "description": "잔혹한 일격으로 무기 피해에 {damage}의 피해를 더합니다. (무기 특화 대표 기술)"
@@ -1694,6 +1847,26 @@ export const ko_KR: EnTranslations = {
       "summon_voidwalker": {
         "name": "공허추적자 소환",
         "description": "흑마법사의 명령을 따르는 공허추적자를 소환합니다. 공허추적자는 적을 도발하고 피해를 견뎌내는 튼튼한 악마입니다. 새로운 악마를 소환하면 현재 악마는 사라집니다. 한 번에 하나의 악마만 부릴 수 있습니다."
+      },
+      "summon_succubus": {
+        "name": "서큐버스 소환",
+        "description": "흑마법사의 명령을 따르는 서큐버스를 소환합니다. 서큐버스는 연약한 악마이지만 빠르게 공격하며 근접전에서 강력한 피해를 입힙니다. 새로운 악마를 소환하면 현재 악마는 사라집니다. 한 번에 하나의 악마만 부릴 수 있습니다."
+      },
+      "summon_felhunter": {
+        "name": "지옥사냥개 소환",
+        "description": "흑마법사의 명령을 따르는 지옥사냥개를 소환합니다. 지옥사냥개는 어둠의 이빨로 멀리서 적을 괴롭히며 시전자를 사냥하는 데 능합니다. 새로운 악마를 소환하면 현재 악마는 사라집니다. 한 번에 하나의 악마만 부릴 수 있습니다."
+      },
+      "summon_felguard": {
+        "name": "지옥수호병 소환",
+        "description": "흑마법사의 명령을 따르는 지옥수호병을 소환합니다. 지옥수호병은 전장에 뛰어들어 굳건히 버티는 튼튼한 근접 악마입니다. 새로운 악마를 소환하면 현재 악마는 사라집니다. 한 번에 하나의 악마만 부릴 수 있습니다."
+      },
+      "summon_infernal": {
+        "name": "지옥불정령 소환",
+        "description": "지옥불정령을 당신의 의지에 결속합니다. 지옥불정령은 모든 악마 중 가장 높은 생명력과 방어도를 지닌 거대한 파괴자로, 강력한 근접 공격을 가합니다. 긴 재사용 대기시간이 그 막강한 힘을 제한합니다. 새로운 악마를 소환하면 현재 악마는 사라집니다. 한 번에 하나의 악마만 부릴 수 있습니다."
+      },
+      "summon_doomguard": {
+        "name": "파멸의 수호병 소환",
+        "description": "파멸의 수호병을 당신의 의지에 결속합니다. 파멸의 수호병은 멀리서 강력한 암흑 피해를 퍼붓는 정예 악마입니다. 긴 재사용 대기시간이 그 파괴적인 힘을 제한합니다. 새로운 악마를 소환하면 현재 악마는 사라집니다. 한 번에 하나의 악마만 부릴 수 있습니다."
       },
       "bear_charge": {
         "name": "곰 돌진",
@@ -2146,6 +2319,51 @@ export const ko_KR: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "갈라진 고룡 비늘"
       },
+      "conjured_bread": {
+        "name": "마력의 빵"
+      },
+      "conjured_bread2": {
+        "name": "마력의 호밀빵"
+      },
+      "conjured_bread3": {
+        "name": "마력의 단빵"
+      },
+      "roadwardens_helm": {
+        "name": "도로 수호자의 투구"
+      },
+      "wayfarers_hood": {
+        "name": "방랑자의 두건"
+      },
+      "acolytes_circlet": {
+        "name": "수습 사제의 머리띠"
+      },
+      "reinforced_pauldrons": {
+        "name": "강화된 어깨보호구"
+      },
+      "embroidered_mantle": {
+        "name": "자수 망토"
+      },
+      "sturdy_belt": {
+        "name": "튼튼한 여행자의 허리띠"
+      },
+      "silk_sash": {
+        "name": "직조 비단 띠"
+      },
+      "roughspun_gloves": {
+        "name": "거친 장갑"
+      },
+      "bristlehide_spaulders": {
+        "name": "뻣뻣한 가죽 어깨보호구"
+      },
+      "sableweb_cord": {
+        "name": "검은거미줄 끈"
+      },
+      "gorraks_cleaver": {
+        "name": "고라크의 고기칼"
+      },
+      "mossy_handwraps": {
+        "name": "이끼 낀 손싸개"
+      },
       "bristleback_maul": {
         "name": "뻣센등뼈 철퇴"
       },
@@ -2293,6 +2511,96 @@ export const ko_KR: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "고룡그림자 발보호구"
       },
+      "glimmerfin_koi": {
+        "name": "반짝이는 지느러미 코이"
+      },
+      "raw_bog_eel": {
+        "name": "날 늪지 뱀장어"
+      },
+      "raw_frostgill_trout": {
+        "name": "날 서리아가미 송어"
+      },
+      "raw_marsh_pike": {
+        "name": "날 늪지 강꼬치고기"
+      },
+      "raw_river_perch": {
+        "name": "날 강농어"
+      },
+      "raw_stonescale_carp": {
+        "name": "날 돌비늘 잉어"
+      },
+      "soggy_boot": {
+        "name": "흠뻑 젖은 장화"
+      },
+      "elixir_of_the_bear": {
+        "name": "곰의 비약"
+      },
+      "lesser_healing_potion": {
+        "name": "하급 치유 물약"
+      },
+      "lesser_mana_potion": {
+        "name": "하급 마나 물약"
+      },
+      "healing_potion": {
+        "name": "치유 물약"
+      },
+      "mana_potion": {
+        "name": "마나 물약"
+      },
+      "tunnelkings_spade": {
+        "name": "굴왕의 삽"
+      },
+      "brutoks_maul": {
+        "name": "브루톡의 망치"
+      },
+      "cracked_ogre_tusk": {
+        "name": "금 간 오우거 엄니"
+      },
+      "crag_warden_cudgel": {
+        "name": "바위 수호자의 곤봉"
+      },
+      "cragmaw_prowlboots": {
+        "name": "크래그모의 잠행 장화"
+      },
+      "drowned_tide_scepter": {
+        "name": "익사한 조수의 셉터"
+      },
+      "emberfang_warblade": {
+        "name": "잿불송곳니 전투검"
+      },
+      "emberwing_cinderscale": {
+        "name": "잿불날개의 잿비늘"
+      },
+      "emberwing_legguards": {
+        "name": "잿불날개의 다리보호구"
+      },
+      "gravewardens_shiv": {
+        "name": "무덤지기의 단도"
+      },
+      "hollow_vigil_staff": {
+        "name": "공허한 불침번의 지팡이"
+      },
+      "maldrecs_soulbinder": {
+        "name": "말드렉의 영혼결속기"
+      },
+      "oathbound_greaves": {
+        "name": "맹세로 묶인 정강이받이"
+      },
+      "skullsmasher_warbelt": {
+        "name": "해골분쇄자의 전투 허리띠"
+      },
+      "skullsplitter_dirk": {
+        "name": "두개골 쪼개기 단검"
+      },
+      "sloomtooth_tidefang": {
+        "name": "슬룸투스의 조수송곳니"
+      },
+      "tidereaver_gaff": {
+        "name": "조수가르기의 갈고리"
+      },
+      "verlans_oathblade": {
+        "name": "베를란의 맹세검"
+      },
       "briny_idol": {
         "name": "소금기 어린 우상"
       },
@@ -2408,13 +2716,13 @@ export const ko_KR: EnTranslations = {
         "name": "고대 납골당 문"
       },
       "captains_crest": {
-        "name": "대장의 문장"
+        "name": "묘실 열쇠돌 상부"
       },
       "priests_sigil": {
-        "name": "사제의 인장"
+        "name": "묘실 열쇠돌 하부"
       },
       "royal_seal": {
-        "name": "왕실 인장"
+        "name": "오래된 일지"
       },
       "crypt_keystone": {
         "name": "납골당 쐐기돌"
@@ -2424,12 +2732,6 @@ export const ko_KR: EnTranslations = {
       },
       "kings_signet": {
         "name": "왕의 인장 반지"
-      },
-      "nythraxis_vision": {
-        "name": "니트락시스 환영"
-      },
-      "aldrics_seal": {
-        "name": "알드릭의 인장"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const ko_KR: EnTranslations = {
       },
       "voidwalker": {
         "name": "공허추적자"
+      },
+      "succubus": {
+        "name": "서큐버스"
+      },
+      "grix_the_tunnelking": {
+        "name": "땅굴왕 그릭스"
+      },
+      "brutok_skullsmasher": {
+        "name": "해골분쇄자 브루톡"
+      },
+      "captain_verlan": {
+        "name": "베를란 대장"
+      },
+      "old_cragmaw": {
+        "name": "늙은 크래그모"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "익사한 슬룸투스"
+      },
+      "voskar_emberwing": {
+        "name": "잿불날개 보스카르"
+      },
+      "wraithbinder_maldrec": {
+        "name": "영혼결속자 말드렉"
+      },
+      "felhunter": {
+        "name": "지옥사냥개"
+      },
+      "felguard": {
+        "name": "지옥수호병"
+      },
+      "infernal": {
+        "name": "지옥불정령"
+      },
+      "doomguard": {
+        "name": "파멸의 수호병"
       },
       "choirmother_selthe": {
         "name": "성가대모 셀세"
@@ -3445,9 +3783,9 @@ export const ko_KR: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "불안한 망자",
-        "text": "Thornpeak의 언데드에게 내가 알아보지 못하는 룬이 새겨져 있습니다, {playerName}. 그들을 깨우는 것이 무엇인지 읽을 수 있도록 룬 새긴 뼈 조각 열 개를 가져오십시오.",
-        "completion": "모든 조각에 같은 표식이 있습니다. 왕관입니다. Eastbrook의 어떤 혈통에도 속하지 않습니다.",
+        "title": "뼈 들판의 소요",
+        "text": "Thornpeak Heights에 변화가 생겼습니다, {playerName}. 죽은 자들이 더는 정처 없이 떠돌지 않습니다. 그들은 Highwatch 너머 북쪽 뼈 들판, 옛 전장과 절벽길이 만나는 곳에서 모여 행군합니다. 그곳으로 가서 뼈갑옷 망령들의 소요를 조사하고, 무엇이 그들을 움직이는지 보여 줄 증거를 가져오십시오.",
+        "completion": "모든 조각에 같은 표식이 있습니다... 왕관입니다. Eastbrook 기록이 기억하지 못하는 오래된 무덤에 새겨진 것을 본 적이 있습니다.",
         "objectives": {
           "0": {
             "label": "룬 새긴 뼈 조각"
@@ -3456,8 +3794,8 @@ export const ko_KR: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "잊힌 자들의 무덤",
-        "text": "그 왕관은 Eastbrook 기록에 남은 어떤 혈통의 것도 아닙니다. 북쪽 전장 근처에는 대장 알드렌, 대사제 말릭, 왕실 암살자 보스의 오래된 기념비 세 개가 서 있습니다. 각각의 돌을 만지고 귀 기울이십시오, {playerName}.",
-        "completion": "알드렌은 충성을 지켰고, 말릭은 죽음을 받아들이지 않았으며, 보스는 누구보다 먼저 위험을 보았습니다. 세 사람 모두 니트락시스 왕을 섬겼습니다.",
+        "text": "북쪽 전장 둘레의 세 오래된 무덤에서 이 표식을 본 적이 있습니다. 알드렌 대장은 동쪽 언덕에, 대사제 말릭은 가운데 부서진 길 근처에, 왕실 암살자 보스는 서쪽 절벽 곁에 묻혀 있습니다. 각 무덤을 만지고 귀 기울이십시오, {playerName}. 죽은 자들은 산 자들이 잊은 것을 기억할지도 모릅니다.",
+        "completion": "알드렌은 충성을 지켰고, 말릭은 죽음을 받아들이지 않았으며, 보스는 누구보다 먼저 위험을 보았습니다. 셋 모두 같은 잊힌 왕을 섬겼습니다.",
         "objectives": {
           "0": {
             "label": "대장 알드렌의 무덤에서 본 환영"
@@ -3472,24 +3810,24 @@ export const ko_KR: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "버려진 납골당",
-        "text": "환영은 오래된 폐허 아래 버려진 납골당을 가리킵니다. 그 안의 타락한 유해에서 대장의 문장, 사제의 인장, 왕실 인장을 되찾으십시오.",
-        "completion": "이 유물들은 니트락시스와 가장 가까웠던 자들의 것입니다. 아직도 그의 몰락의 무게를 품고 있습니다.",
+        "text": "환영은 서쪽 절벽의 버려진 묘실을 가리킵니다. 그 묘실에 한 왕이 있었다는 옛 전설이 있습니다. 말릭의 의식이 그를 죽지 않는 존재로 뒤틀어 놓은 뒤 Thornpeak가 그를 아래에 봉인했을지도 모릅니다. 묘실에 들어가 안에 무엇이 남아 있는지 확인하십시오.",
+        "completion": "열쇠돌의 두 조각이 맞물리고, 보스의 일지는 그것들이 봉인한 것을 밝힙니다. 니트락시스 왕의 인장 반지입니다. 일지가 사실이라면 그 반지가 그의 무덤으로 가는 열쇠입니다.",
         "objectives": {
           "0": {
-            "label": "대장의 문장"
+            "label": "묘실 열쇠돌 상부"
           },
           "1": {
-            "label": "사제의 인장"
+            "label": "묘실 열쇠돌 하부"
           },
           "2": {
-            "label": "왕실 인장"
+            "label": "오래된 일지"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "속박된 수호자",
-        "text": "Thornpeak의 생존자들은 봉인을 지키기 위해 뼈의 수호자를 만들었습니다. 납골당 쐐기돌을 의식 원으로 가져가 그곳에서 사용하고 버티십시오.",
-        "completion": "그 인장 반지가 증거입니다. Eastbrook 아래 잊힌 왕은 니트락시스였습니다.",
+        "text": "보스는 생존자들이 니트락시스의 무덤에 우연이나 야심으로 닿는 일을 막기 위해 왕의 인장 반지를 고대 수호자 뒤에 봉인했다고 썼습니다. 묘실 열쇠돌을 버려진 묘실 동쪽, 서쪽 무덤 남동쪽 평지의 의식진으로 가져가십시오. 그곳에서 사용하고, 수호자를 쓰러뜨린 뒤 반지를 가져오십시오.",
+        "completion": "세 유물은 같은 이야기를 전합니다. 알드렌은 왕을 지키려 싸웠고, 말릭은 죽음의 경계를 깨뜨렸으며, 보스는 그 뒤에 벌어진 일을 막으려 했습니다. 봉인이 약해지고 있으며, 이 반지는 니트락시스의 무덤으로 가는 열쇠입니다. 이제 당신은 니트락시스의 묘실에 들어갈 수 있도록 조율되었습니다.",
         "objectives": {
           "0": {
             "label": "의식 원에서 납골당 쐐기돌 사용"
@@ -3499,19 +3837,6 @@ export const ko_KR: EnTranslations = {
           },
           "2": {
             "label": "왕의 인장 반지"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "니트락시스, Eastbrook의 재앙",
-        "text": "니트락시스 왕은 죽어 가며 고향으로 옮겨졌지만, 말릭은 그를 쉬게 두지 않았습니다. 내 곁에 머무르십시오, {playerName}. 봉인의 기억을 들여다보십시오.",
-        "completion": "수백 년 동안 봉인은 버텼습니다. 이제 약해지고 있습니다. 니트락시스가 다시 일어나면 Eastbrook은 죽은 자들의 왕국이 될 것입니다. 이제 당신은 니트락시스의 납골당에 들어갈 조율을 마쳤습니다.",
-        "objectives": {
-          "0": {
-            "label": "니트락시스의 환영 목격"
-          },
-          "1": {
-            "label": "알드릭 수사와 대화함"
           }
         }
       },

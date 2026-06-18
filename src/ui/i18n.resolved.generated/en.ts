@@ -26,7 +26,8 @@ export const en: EnTranslations = {
       "maxLevel": "MAX LEVEL",
       "totalXp": "total XP",
       "lv": "Lv",
-      "toNext": "to next"
+      "toNext": "to next",
+      "rested": "Rested"
     },
     "progression": {
       "heading": "Progression",
@@ -73,7 +74,12 @@ export const en: EnTranslations = {
       "needXp": "more lifetime XP to prestige"
     },
     "settings": {
-      "showOverflowXp": "Show Overflow XP"
+      "showOverflowXp": "Show Overflow XP",
+      "weather": "Weather Effects"
+    },
+    "hud": {
+      "lowMana": "Low Mana",
+      "lowEnergy": "Low Energy"
     },
     "talents": {
       "title": "Talents",
@@ -132,7 +138,16 @@ export const en: EnTranslations = {
       "noBuilds": "No saved builds",
       "save": "Save",
       "comingSoonTitle": "Talents coming soon",
-      "comingSoonBody": "This class does not have talent trees yet. You can keep playing normally; full trees will arrive in a future update."
+      "comingSoonBody": "This class does not have talent trees yet. You can keep playing normally; full trees will arrive in a future update.",
+      "readout": {
+        "noTree": "Your class has no talent tree yet.",
+        "locked": "You have not unlocked talents yet — they begin at level {level}.",
+        "noSpec": "no specialization",
+        "summary": "Talents: {head} — {spent}/{total} points spent ({breakdown}).",
+        "breakdownClass": "Class {classPts}",
+        "breakdownSpec": "Class {classPts}, {spec} {specPts}",
+        "unspent": " {count} unspent."
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const en: EnTranslations = {
       "levelLog": "You have reached level {level}!",
       "xpGain": "You gain {amount} experience.",
       "xpFloat": "+{amount} XP",
+      "xpFloatRested": "+{amount} rested",
+      "xpGainRested": "You gain {amount} experience ({rested} bonus from resting).",
       "deathTitle": "You have died.",
       "releaseSpirit": "Release Spirit",
       "chatTab": "Chat",
@@ -500,7 +517,7 @@ export const en: EnTranslations = {
       "communityLinks": "Community links",
       "mobileControls": "Mobile controls",
       "mobileMove": "Move",
-      "mobileCamera": "Camera",
+      "mobileCamera": "Camera — double-tap to recenter",
       "mobileAttack": "Attack",
       "mobileTarget": "Target",
       "mobileChat": "Chat",
@@ -521,6 +538,7 @@ export const en: EnTranslations = {
       "keyBindings": "Key Bindings",
       "graphics": "Graphics",
       "audio": "Audio",
+      "interface": "Interface",
       "logout": "Logout",
       "returnToGame": "Return to Game",
       "resetToDefaults": "Reset to Defaults",
@@ -544,15 +562,33 @@ export const en: EnTranslations = {
       "terrainLow": "Low",
       "terrainHigh": "High",
       "touchOpacity": "Touch Controls Opacity",
+      "invertLook": "Invert Look (Touch)",
       "graphicsReloadNote": "Graphics Quality and Terrain Detail apply after a reload.",
       "reloadNow": "Reload Now",
       "fullscreen": "Fullscreen",
       "touchLookSpeed": "Touch Look Speed",
+      "joystickSize": "Joystick Size",
+      "buttonSize": "Button Size",
+      "joystickDeadzone": "Joystick Deadzone",
       "leftHandedTouch": "Left-handed Touch",
       "filterProfanity": "Filter Profanity",
       "clickMoveButton": "Click Move Button",
       "clickToMove": "Click to Move",
       "graphicsNote": "Lower Camera Speed for a calmer mouselook. Render Quality below 100% boosts FPS on weaker machines.",
+      "fieldOfView": "Field of View",
+      "hudOpacity": "HUD Opacity",
+      "tooltipScale": "Tooltip Text Size",
+      "fctScale": "Combat Text Size",
+      "chatFontScale": "Chat Text Size",
+      "chatOpacity": "Chat Background Opacity",
+      "compactChat": "Compact Chat",
+      "frostedPanels": "Frosted Panels",
+      "highContrastText": "High-Contrast Text",
+      "reduceMotion": "Reduce Motion",
+      "showFps": "Show FPS",
+      "invertLookY": "Invert Look (Y)",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "These options change only your own view and are saved on this device.",
       "soundEffects": "Sound Effects",
       "musicVolume": "Music Volume",
       "music": "Music",
@@ -1037,6 +1073,7 @@ export const en: EnTranslations = {
       "readyQuestAria": "Quest ready to turn in: {name}",
       "discussQuest": "Discuss {name}.",
       "discussQuestAria": "Discuss quest: {name}",
+      "nythraxisDeathlessKingWarning": "The three relics tell the same story: Aldren fought to defend his king, Malric broke the boundary of death, and Voss tried to stop what followed. The seal is weakening, and the abandoned crypt is the way down.",
       "browseGoods": "Let me browse your goods.",
       "browseGoodsAria": "Browse goods from {name}",
       "worldMarket": "Show me the World Market.",
@@ -1044,6 +1081,7 @@ export const en: EnTranslations = {
       "accept": "Accept",
       "decline": "Decline",
       "continue": "Continue",
+      "done": "Done",
       "completeQuest": "Complete Quest",
       "turnIn": "Turn In",
       "back": "Back",
@@ -1108,7 +1146,8 @@ export const en: EnTranslations = {
       "food": "Food",
       "drink": "Drink",
       "tool": "Tool",
-      "potion": "Potion"
+      "potion": "Potion",
+      "elixir": "Elixir"
     },
     "stats": {
       "armor": "Armor",
@@ -1124,6 +1163,8 @@ export const en: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{quality} {kind}",
+      "currentlyEquipped": "Currently equipped",
+      "ifYouEquip": "If you equip this",
       "damageSpeed": "{min} - {max} Damage Speed {speed}",
       "dps": "({dps} damage per second)",
       "dagger": "Dagger",
@@ -1247,6 +1288,14 @@ export const en: EnTranslations = {
         "name": "Battle Shout",
         "description": "Increases your attack power by 20 for 2 min."
       },
+      "commanding_shout": {
+        "name": "Commanding Shout",
+        "description": "Increases your Stamina by 6 for 2 min."
+      },
+      "demoralizing_shout": {
+        "name": "Demoralizing Shout",
+        "description": "Lets out a fearsome shout, reducing the attack power of all nearby enemies by 30 for 30 sec."
+      },
       "charge": {
         "name": "Charge",
         "description": "Charges an enemy, generating 9 rage and stunning it for 1 sec. 8-25 yd range."
@@ -1315,6 +1364,10 @@ export const en: EnTranslations = {
         "name": "Conjure Water",
         "description": "Conjures 2 bottles of water, restoring mana when drunk. Higher ranks conjure purer water."
       },
+      "conjure_food": {
+        "name": "Conjure Food",
+        "description": "Conjures 2 servings of bread, restoring health when eaten. Higher ranks conjure heartier fare."
+      },
       "fire_blast": {
         "name": "Fire Blast",
         "description": "Blasts the enemy for {damage} Fire damage. Instant."
@@ -1338,6 +1391,10 @@ export const en: EnTranslations = {
       "scorch": {
         "name": "Scorch",
         "description": "Scorches the enemy for {damage} Fire damage. Quick to cast."
+      },
+      "pyroblast": {
+        "name": "Pyroblast",
+        "description": "Hurls an immense fiery boulder that causes {damage} Fire damage plus additional damage over time."
       },
       "ice_barrier": {
         "name": "Ice Barrier",
@@ -1387,6 +1444,46 @@ export const en: EnTranslations = {
         "name": "Adrenaline Rush",
         "description": "Your blood runs hot, instantly restoring 60 energy."
       },
+      "garrote": {
+        "name": "Garrote",
+        "description": "Garrote the enemy, causing damage now and bleeding it for {damage} over 18 sec. Must be stealthed. Awards 1 combo point."
+      },
+      "cheap_shot": {
+        "name": "Cheap Shot",
+        "description": "Strike the target, stunning it for 4 sec. Must be stealthed. Awards 2 combo points."
+      },
+      "sap": {
+        "name": "Sap",
+        "description": "Incapacitates the target for 8 sec. Must be stealthed and out of combat. Any damage breaks the effect."
+      },
+      "crippling_poison": {
+        "name": "Crippling Poison",
+        "description": "Strikes the target with a crippling poison, dealing {damage} Nature damage and slowing its movement speed by 50% for 12 sec."
+      },
+      "expose_armor": {
+        "name": "Expose Armor",
+        "description": "Finishing move that exposes the target, reducing its armor. More combo points spent build into a deeper cut."
+      },
+      "rupture": {
+        "name": "Rupture",
+        "description": "Finishing move that wounds the target, causing it to bleed for {damage} over 16 sec."
+      },
+      "vanish": {
+        "name": "Vanish",
+        "description": "Vanish from sight, entering Stealth even in combat. You move 30% slower while hidden. Lasts up to 10 sec."
+      },
+      "instant_poison": {
+        "name": "Instant Poison",
+        "description": "Coats your weapon for 30 min, causing each of your melee swings to deal 8 additional Nature damage."
+      },
+      "deadly_poison": {
+        "name": "Deadly Poison",
+        "description": "Coats your weapon for 30 min, causing each of your melee swings to deal 14 additional Nature damage."
+      },
+      "blind": {
+        "name": "Blind",
+        "description": "Blinds the target, causing it to wander disoriented for 8 sec. Any damage breaks the effect."
+      },
       "seal_of_righteousness": {
         "name": "Seal of Righteousness",
         "description": "Fills you with Holy power for 30 sec, causing each of your melee swings to deal 4 additional Holy damage. Unleash with Judgement."
@@ -1435,6 +1532,10 @@ export const en: EnTranslations = {
         "name": "Righteous Fury",
         "description": "Increases the threat generated by your Holy damage by 60% for 30 min. The tanking paladin's cornerstone."
       },
+      "retribution_aura": {
+        "name": "Retribution Aura",
+        "description": "Surrounds you with holy energy for 30 min, dealing 5 Holy damage to any enemy that strikes you in melee."
+      },
       "tame_beast": {
         "name": "Tame Beast",
         "description": "Begins taming a beast to be your companion. It must be your level or lower and not an elite. Your pet follows you, attacks your enemies, and holds threat of its own. You may have one pet at a time."
@@ -1470,6 +1571,10 @@ export const en: EnTranslations = {
       "wing_clip": {
         "name": "Wing Clip",
         "description": "Inflicts a wound that slows the enemy by 40% for 10 sec."
+      },
+      "aspect_of_the_monkey": {
+        "name": "Aspect of the Monkey",
+        "description": "Take on the aspect of the monkey, increasing your dodge chance by 8% for 30 min."
       },
       "aspect_of_the_cheetah": {
         "name": "Aspect of the Cheetah",
@@ -1547,9 +1652,17 @@ export const en: EnTranslations = {
         "name": "Flame Shock",
         "description": "Sears the target with fire for 25 damage plus {damage} over 12 sec."
       },
+      "flametongue_weapon": {
+        "name": "Flametongue Weapon",
+        "description": "Imbues your weapon with elemental fire: each swing deals 8 additional Fire damage for 5 min."
+      },
       "frost_shock": {
         "name": "Frost Shock",
         "description": "Instantly shocks the target with frost for {damage} Frost damage and slows its movement by 50% for 8 sec."
+      },
+      "frostbrand_weapon": {
+        "name": "Frostbrand Weapon",
+        "description": "Imbues your weapon with biting frost: each swing deals 8 additional damage for 5 min."
       },
       "ghost_wolf": {
         "name": "Ghost Wolf",
@@ -1667,6 +1780,46 @@ export const en: EnTranslations = {
         "name": "Starfire",
         "description": "Calls down a bolt of stellar fire, causing {damage} Arcane damage."
       },
+      "travel_form": {
+        "name": "Travel Form",
+        "description": "Take on a swift travel form, increasing movement speed by 40%. Cannot be used in combat."
+      },
+      "enrage": {
+        "name": "Enrage",
+        "description": "Generates 20 rage instantly. Bear Form only."
+      },
+      "bash": {
+        "name": "Bash",
+        "description": "Stuns the target for 2 sec. Bear Form only."
+      },
+      "faerie_fire": {
+        "name": "Faerie Fire",
+        "description": "Decreases the target's armor by 35 for 40 sec."
+      },
+      "hibernate": {
+        "name": "Hibernate",
+        "description": "Forces the target into a deep sleep for up to 8 sec. Any damage will awaken it."
+      },
+      "dash": {
+        "name": "Dash",
+        "description": "Sprint forward, increasing movement speed by 50% for 15 sec. Wolf Form only."
+      },
+      "pounce": {
+        "name": "Pounce",
+        "description": "A stealth opener that stuns the target for 2 sec. Awards 1 combo point. Wolf Form only."
+      },
+      "insect_swarm": {
+        "name": "Insect Swarm",
+        "description": "The enemy is swarmed by insects, taking {damage} Nature damage over 12 sec."
+      },
+      "tigers_fury": {
+        "name": "Tiger's Fury",
+        "description": "Increases attack power by 40 for 6 sec. Wolf Form only."
+      },
+      "rip": {
+        "name": "Rip",
+        "description": "Finishing move that causes Bleed damage over 12 sec. Consumes combo points. Wolf Form only."
+      },
       "mortal_strike": {
         "name": "Mortal Strike",
         "description": "A vicious strike dealing weapon damage plus {damage}. (Arms signature)"
@@ -1694,6 +1847,26 @@ export const en: EnTranslations = {
       "summon_voidwalker": {
         "name": "Summon Voidwalker",
         "description": "Summons a Voidwalker under the command of the Warlock. The Voidwalker is a sturdy demon that taunts your enemies and soaks up punishment. Summoning a new demon dismisses your current one. You may have one demon at a time."
+      },
+      "summon_succubus": {
+        "name": "Summon Succubus",
+        "description": "Summons a Succubus under the command of the Warlock. The Succubus is a fragile demon that strikes quickly and hits hard in melee. Summoning a new demon dismisses your current one. You may have one demon at a time."
+      },
+      "summon_felhunter": {
+        "name": "Summon Felhunter",
+        "description": "Summons a Felhunter under the command of the Warlock. The Felhunter harries enemies from range with Shadow Bite and excels at hunting spellcasters. Summoning a new demon dismisses your current one. You may have one demon at a time."
+      },
+      "summon_felguard": {
+        "name": "Summon Felguard",
+        "description": "Summons a Felguard under the command of the Warlock. The Felguard is a durable melee demon that wades into battle and holds its own. Summoning a new demon dismisses your current one. You may have one demon at a time."
+      },
+      "summon_infernal": {
+        "name": "Summon Infernal",
+        "description": "Binds an Infernal to your will — a hulking juggernaut with crushing melee and the deepest health and armor of any demon. A long cooldown gates its raw power. Summoning a new demon dismisses your current one. You may have one demon at a time."
+      },
+      "summon_doomguard": {
+        "name": "Summon Doomguard",
+        "description": "Binds a Doomguard to your will — an elite demon that rains heavy Shadow damage from afar. A long cooldown gates its devastating power. Summoning a new demon dismisses your current one. You may have one demon at a time."
       },
       "bear_charge": {
         "name": "Bear Charge",
@@ -2146,6 +2319,51 @@ export const en: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "Cracked Wyrm Scale"
       },
+      "conjured_bread": {
+        "name": "Conjured Bread"
+      },
+      "conjured_bread2": {
+        "name": "Conjured Pumpernickel"
+      },
+      "conjured_bread3": {
+        "name": "Conjured Sweet Roll"
+      },
+      "roadwardens_helm": {
+        "name": "Roadwarden's Helm"
+      },
+      "wayfarers_hood": {
+        "name": "Wayfarer's Hood"
+      },
+      "acolytes_circlet": {
+        "name": "Acolyte's Circlet"
+      },
+      "reinforced_pauldrons": {
+        "name": "Reinforced Pauldrons"
+      },
+      "embroidered_mantle": {
+        "name": "Embroidered Mantle"
+      },
+      "sturdy_belt": {
+        "name": "Sturdy Traveler's Belt"
+      },
+      "silk_sash": {
+        "name": "Woven Silk Sash"
+      },
+      "roughspun_gloves": {
+        "name": "Roughspun Gloves"
+      },
+      "bristlehide_spaulders": {
+        "name": "Bristlehide Spaulders"
+      },
+      "sableweb_cord": {
+        "name": "Sableweb Cord"
+      },
+      "gorraks_cleaver": {
+        "name": "Gorrak's Cleaver"
+      },
+      "mossy_handwraps": {
+        "name": "Mossgrown Handwraps"
+      },
       "bristleback_maul": {
         "name": "Bristleback Maul"
       },
@@ -2293,6 +2511,96 @@ export const en: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "Wyrmshadow Treads"
       },
+      "glimmerfin_koi": {
+        "name": "Glimmerfin Koi"
+      },
+      "raw_bog_eel": {
+        "name": "Raw Bog Eel"
+      },
+      "raw_frostgill_trout": {
+        "name": "Raw Frostgill Trout"
+      },
+      "raw_marsh_pike": {
+        "name": "Raw Marsh Pike"
+      },
+      "raw_river_perch": {
+        "name": "Raw River Perch"
+      },
+      "raw_stonescale_carp": {
+        "name": "Raw Stonescale Carp"
+      },
+      "soggy_boot": {
+        "name": "Soggy Boot"
+      },
+      "elixir_of_the_bear": {
+        "name": "Elixir of the Bear"
+      },
+      "lesser_healing_potion": {
+        "name": "Lesser Healing Potion"
+      },
+      "lesser_mana_potion": {
+        "name": "Lesser Mana Potion"
+      },
+      "healing_potion": {
+        "name": "Healing Potion"
+      },
+      "mana_potion": {
+        "name": "Mana Potion"
+      },
+      "tunnelkings_spade": {
+        "name": "Tunnelking's Spade"
+      },
+      "brutoks_maul": {
+        "name": "Brutok's Maul"
+      },
+      "cracked_ogre_tusk": {
+        "name": "Cracked Ogre Tusk"
+      },
+      "crag_warden_cudgel": {
+        "name": "Crag Warden Cudgel"
+      },
+      "cragmaw_prowlboots": {
+        "name": "Cragmaw Prowlboots"
+      },
+      "drowned_tide_scepter": {
+        "name": "Drowned Tide Scepter"
+      },
+      "emberfang_warblade": {
+        "name": "Emberfang Warblade"
+      },
+      "emberwing_cinderscale": {
+        "name": "Emberwing Cinderscale"
+      },
+      "emberwing_legguards": {
+        "name": "Emberwing Legguards"
+      },
+      "gravewardens_shiv": {
+        "name": "Gravewarden's Shiv"
+      },
+      "hollow_vigil_staff": {
+        "name": "Staff of the Hollow Vigil"
+      },
+      "maldrecs_soulbinder": {
+        "name": "Maldrec's Soulbinder"
+      },
+      "oathbound_greaves": {
+        "name": "Oathbound Greaves"
+      },
+      "skullsmasher_warbelt": {
+        "name": "Skullsmasher's Warbelt"
+      },
+      "skullsplitter_dirk": {
+        "name": "Skullsplitter Dirk"
+      },
+      "sloomtooth_tidefang": {
+        "name": "Sloomtooth's Tidefang"
+      },
+      "tidereaver_gaff": {
+        "name": "Tidereaver Gaff"
+      },
+      "verlans_oathblade": {
+        "name": "Verlan's Oathblade"
+      },
       "briny_idol": {
         "name": "Briny Idol"
       },
@@ -2408,13 +2716,13 @@ export const en: EnTranslations = {
         "name": "Ancient Crypt Door"
       },
       "captains_crest": {
-        "name": "Captain's Crest"
+        "name": "Crypt Keystone Upper"
       },
       "priests_sigil": {
-        "name": "Priest's Sigil"
+        "name": "Crypt Keystone Lower"
       },
       "royal_seal": {
-        "name": "Royal Seal"
+        "name": "Ancient Diary"
       },
       "crypt_keystone": {
         "name": "Crypt Keystone"
@@ -2424,12 +2732,6 @@ export const en: EnTranslations = {
       },
       "kings_signet": {
         "name": "King's Signet"
-      },
-      "nythraxis_vision": {
-        "name": "Nythraxis Vision"
-      },
-      "aldrics_seal": {
-        "name": "Aldric's Seal"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const en: EnTranslations = {
       },
       "voidwalker": {
         "name": "Voidwalker"
+      },
+      "succubus": {
+        "name": "Succubus"
+      },
+      "grix_the_tunnelking": {
+        "name": "Grix the Tunnelking"
+      },
+      "brutok_skullsmasher": {
+        "name": "Brutok Skullsmasher"
+      },
+      "captain_verlan": {
+        "name": "Captain Verlan"
+      },
+      "old_cragmaw": {
+        "name": "Old Cragmaw"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "Sloomtooth the Drowned"
+      },
+      "voskar_emberwing": {
+        "name": "Voskar the Emberwing"
+      },
+      "wraithbinder_maldrec": {
+        "name": "Wraithbinder Maldrec"
+      },
+      "felhunter": {
+        "name": "Felhunter"
+      },
+      "felguard": {
+        "name": "Felguard"
+      },
+      "infernal": {
+        "name": "Infernal"
+      },
+      "doomguard": {
+        "name": "Doomguard"
       },
       "choirmother_selthe": {
         "name": "Choirmother Selthe"
@@ -3445,9 +3783,9 @@ export const en: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "The Restless Dead",
-        "text": "Something has changed in Thornpeak Heights, {playerName}. The dead no longer wander aimlessly. They gather, they march, and these runes carved into their bones point to a kingdom that stood here long before Eastbrook. Bring me ten Runed Bone Shards from the Boneclad Revenants in the northern reaches.",
-        "completion": "The same mark appears on every shard... a crown. Thornpeak was not only a mountain. It was a kingdom.",
+        "title": "Unrest in the Bonefields",
+        "text": "Something has changed in Thornpeak Heights, {playerName}. The dead no longer wander aimlessly. They gather and march through the northern bonefields beyond Highwatch, where the old battlefield meets the cliff road. Go there, investigate the unrest among the Boneclad Revenants, and bring back any proof of what is driving them.",
+        "completion": "The same mark appears on every shard... a crown. I have seen this before, cut into old graves no Eastbrook record remembers.",
         "objectives": {
           "0": {
             "label": "Runed Bone Shard"
@@ -3456,8 +3794,8 @@ export const en: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "Graves of the Forgotten",
-        "text": "The crown belongs to no line still named in Eastbrook records. Three old memorials stand near the northern battlefield: Captain Aldren, High Priest Malric, and Royal Assassin Voss. Touch each stone and listen, {playerName}. The dead may remember what the living erased.",
-        "completion": "Aldren remained loyal, Malric refused to accept death, and Voss saw the danger before anyone else. All three served King Nythraxis.",
+        "text": "I have seen these marks before, on three old graves around the northern battlefield. Captain Aldren lies on the eastern rise, High Priest Malric near the central broken road, and Royal Assassin Voss by the western cliff. Touch each grave and listen, {playerName}. The dead may remember what the living forgot.",
+        "completion": "Aldren remained loyal, Malric refused to accept death, and Voss saw the danger before anyone else. All three served the same forgotten king.",
         "objectives": {
           "0": {
             "label": "Vision at the Grave of Captain Aldren"
@@ -3472,24 +3810,24 @@ export const en: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "The Abandoned Crypt",
-        "text": "The visions point to an abandoned crypt beneath the old ruins. If the records are true, Thornpeak sealed Nythraxis below after Malric's ritual twisted him into a deathless ruler. Recover the Captain's Crest, the Priest's Sigil, and the Royal Seal from the corrupted remains within.",
-        "completion": "These relics are bound to the seal. Something beneath Eastbrook is beginning to wake.",
+        "text": "The visions point to the abandoned crypt in the western cliff. There is an old legend that the crypt housed a king. Perhaps Thornpeak sealed him below after Malric's ritual twisted him into something deathless. Enter the crypt and see what remains inside.",
+        "completion": "The keystone halves fit together, and Voss's diary names what they sealed: the signet of King Nythraxis. If the diary is true, that signet is the key to his tomb.",
         "objectives": {
           "0": {
-            "label": "Captain's Crest"
+            "label": "Crypt Keystone Upper"
           },
           "1": {
-            "label": "Priest's Sigil"
+            "label": "Crypt Keystone Lower"
           },
           "2": {
-            "label": "Royal Seal"
+            "label": "Ancient Diary"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "The Bound Guardian",
-        "text": "The survivors of Thornpeak feared someone would try to break the seal, so they made a guardian from the bones of warriors who died in the kingdom's final days. Take the Crypt Keystone to the ritual circle above the abandoned crypt. Use it there, then stand fast.",
-        "completion": "The signet proves it. The forgotten king beneath Eastbrook was Nythraxis.",
+        "text": "Voss wrote that the survivors sealed the King's Signet behind an ancient guardian, so no one could reach the tomb of Nythraxis by accident or ambition. Take the Crypt Keystone to the ritual circle on the flat ground east of the abandoned crypt and south-east of the western grave. Use it there, break the guardian, and bring back the signet.",
+        "completion": "The three relics tell the same story: Aldren fought to defend his king, Malric broke the boundary of death, and Voss tried to stop what followed. The seal is weakening, and this signet is the key to Nythraxis's tomb. You are now attuned to enter The Crypt of Nythraxis.",
         "objectives": {
           "0": {
             "label": "Crypt Keystone used at the ritual circle"
@@ -3499,19 +3837,6 @@ export const en: EnTranslations = {
           },
           "2": {
             "label": "King's Signet"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "Nythraxis, Scourge of Eastbrook",
-        "text": "King Nythraxis was carried home from his final battle dying, but Malric would not let him rest. The ritual returned a tyrant bound to dark magic, and Thornpeak fell into chaos. Stand with me, {playerName}. Look into the memory of the seal and learn what now stirs beneath Eastbrook.",
-        "completion": "For centuries the seal held. Now it weakens. If Nythraxis rises again, Eastbrook will become a kingdom of the dead. You are now attuned to enter The Crypt of Nythraxis.",
-        "objectives": {
-          "0": {
-            "label": "Vision of Nythraxis witnessed"
-          },
-          "1": {
-            "label": "Brother Aldric spoken to"
           }
         }
       },

@@ -13,6 +13,7 @@ import type { MoveInput } from '../sim/types';
 const BASE_LOOK_SENS = 0.0045;
 const TOUCH_LOOK_YAW_RATE = 3.2;
 const TOUCH_LOOK_PITCH_RATE = 2.2;
+const TOUCH_JUMP_LATCH_MS = 220;
 const CAMERA_DRAG_START_DISTANCE = 18;
 const CAMERA_DRAG_START_MS = 140;
 
@@ -86,6 +87,8 @@ export class Input {
   private dragDistance = 0;
   private cameraDragActive = false;
   private clickMoveMouseButton: 0 | 2 | null = null;
+  // +1 normal, -1 inverts the vertical mouselook axis (settings: invertLookY).
+  private lookPitchSign = 1;
   private downButton = -1;
   private pointerLockRequestedForDrag = false;
   private downX = 0;
@@ -101,12 +104,14 @@ export class Input {
   // was BASE_LOOK_SENS — setCameraSpeed scales it from the settings menu
   private lookSensitivity = BASE_LOOK_SENS;
   private touchMove: TouchMoveInput = { forward: false, back: false, strafeLeft: false, strafeRight: false };
-  private touchJump = false;
+  private touchJumpUntil = 0;
   private touchLookActive = false;
   private touchLookVector = { x: 0, y: 0 };
   // multiplier on the touch look (camera joystick) rate; setTouchLookSpeed
   // drives it from the settings menu. Mouselook uses lookSensitivity instead.
   private touchLookSpeed = 1;
+  // +1 normal, -1 when the player inverts the touch camera's vertical axis
+  private touchPitchSign = 1;
 
   constructor(private canvas: HTMLCanvasElement, private cb: InputCallbacks, private keybinds: Keybinds) {
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
@@ -238,6 +243,12 @@ export class Input {
     this.touchLookSpeed = mult;
   }
 
+  // Invert the vertical mouselook/touch-look axis. Applied to every pitch delta
+  // so the preference is consistent across mouse drag, pointer-lock, and touch.
+  setInvertLookY(on: boolean): void {
+    this.lookPitchSign = on ? -1 : 1;
+  }
+
   setTouchMove(move: TouchMoveInput): void {
     const changed = move.forward !== this.touchMove.forward || move.back !== this.touchMove.back
       || move.strafeLeft !== this.touchMove.strafeLeft || move.strafeRight !== this.touchMove.strafeRight;
@@ -252,11 +263,11 @@ export class Input {
     if (changed) this.noteIntent('move');
   }
 
-  // A touch jump is momentary: the on-screen button arms this flag and the next
-  // readMoveInput() poll consumes it, yielding a single frame of jump=true (the
-  // sim only launches when grounded, so one frame is enough — same as a Space tap).
+  // A touch jump is momentary, but readMoveInput() is also used by camera/HUD
+  // helpers between sim ticks. Latch the tap briefly so those reads cannot eat
+  // the jump before the grounded movement tick sees it.
   triggerTouchJump(): void {
-    this.touchJump = true;
+    this.touchJumpUntil = Math.max(this.touchJumpUntil, performance.now() + TOUCH_JUMP_LATCH_MS);
   }
 
   // Touch-reachable autorun toggle (the keyboard path is the 'autorun' edge action).
@@ -276,16 +287,28 @@ export class Input {
     this.touchLookVector = v;
   }
 
+  // Flip the vertical axis of the touch camera (joystick + swipe-look) only;
+  // mouselook is unaffected. Off by default (see BOOL_SETTINGS.touchInvertLook).
+  setTouchInvertLook(on: boolean): void {
+    this.touchPitchSign = on ? -1 : 1;
+  }
+
   applyTouchLookDelta(dx: number, dy: number): void {
     this.camYaw -= dx * this.lookSensitivity;
-    this.camPitch = Math.min(1.35, Math.max(-0.4, this.camPitch + dy * this.lookSensitivity));
+    this.camPitch = Math.min(1.35, Math.max(-0.4, this.camPitch + this.touchPitchSign * dy * this.lookSensitivity));
     if (dx !== 0 || dy !== 0) this.noteIntent('look');
   }
 
   updateTouchLook(dt: number): void {
     if (!this.touchLookActive) return;
     this.camYaw -= this.touchLookVector.x * TOUCH_LOOK_YAW_RATE * this.touchLookSpeed * dt;
-    this.camPitch = Math.min(1.35, Math.max(-0.4, this.camPitch + this.touchLookVector.y * TOUCH_LOOK_PITCH_RATE * this.touchLookSpeed * dt));
+    this.camPitch = Math.min(1.35, Math.max(-0.4, this.camPitch + this.touchPitchSign * this.touchLookVector.y * TOUCH_LOOK_PITCH_RATE * this.touchLookSpeed * dt));
+  }
+
+  /** Snap the orbit camera back behind the character (mobile recenter gesture). */
+  recenterCameraBehind(facing: number): void {
+    if (Number.isFinite(facing)) this.camYaw = facing;
+    this.camPitch = 0.32;
   }
 
   isMouselookActive(): boolean {
@@ -544,7 +567,7 @@ export class Input {
       this.canvas.requestPointerLock?.();
     }
     this.camYaw -= mx * this.lookSensitivity;
-    this.camPitch = Math.min(1.35, Math.max(-0.4, this.camPitch + my * this.lookSensitivity));
+    this.camPitch = Math.min(1.35, Math.max(-0.4, this.camPitch + my * this.lookSensitivity * this.lookPitchSign));
     if (mx !== 0 || my !== 0) this.noteIntent('look');
   }
 
@@ -567,8 +590,7 @@ export class Input {
     const forward = held('forward') || bothButtons || this.autorun || this.touchMove.forward;
     const back = held('back') || this.touchMove.back;
     // Jump is not a WASD key, so it keeps working in Attack Move mode.
-    const jump = this.keybinds.codesForAction('jump').some((c) => k.has(c)) || this.touchJump;
-    this.touchJump = false;
+    const jump = this.keybinds.codesForAction('jump').some((c) => k.has(c)) || performance.now() <= this.touchJumpUntil;
 
     if (this.mouseCameraEnabled) {
       return {

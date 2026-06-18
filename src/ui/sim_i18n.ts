@@ -12,7 +12,7 @@
 // every player-facing emit site, and fails if any is no longer recognized by a client
 // matcher — so a new unhandled sim string cannot ship silently.
 import { ITEMS, MOBS } from '../sim/data';
-import { getLanguage, supportedLanguages, t, formatNumber, type InterpolationValues, type SupportedLanguage } from './i18n';
+import { getLanguage, supportedLanguages, t, formatNumber, type InterpolationValues, type SupportedLanguage, type TranslationKey } from './i18n';
 import { tEntity } from './entity_i18n';
 
 const baseEnTable = {
@@ -69,6 +69,7 @@ const baseEnTable = {
   "log.discarded": "Discarded {item}.",
   "log.equipped": "Equipped {item}.",
   "log.noFish": "No fish are biting.",
+  "log.rareCatch": "A rare catch! Something gleams on your line.",
   "log.sitEat": "You sit down to eat.",
   "log.sitDrink": "You sit down to drink.",
   "log.quaff": "You quaff {item}.",
@@ -79,6 +80,7 @@ const baseEnTable = {
   "loot.rollWin": "{winner} wins {item} ({roll})",
   "aura.tamed": "Tamed",
   "aura.causticSpores": "Caustic Spores",
+  "aura.elixirBear": "Might of the Bear",
 } as const;
 
 const petEnTable = {
@@ -180,6 +182,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "Discarded {item}.",
     "log.equipped": "Equipped {item}.",
     "log.noFish": "No fish are biting.",
+    "log.rareCatch": "A rare catch! Something gleams on your line.",
     "log.sitEat": "You sit down to eat.",
     "log.sitDrink": "You sit down to drink.",
     "log.quaff": "You quaff {item}.",
@@ -190,6 +193,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} wins {item} ({roll})",
     "aura.tamed": "Tamed",
     "aura.causticSpores": "Caustic Spores",
+    "aura.elixirBear": "Might of the Bear",
   },
   es: {
     "error.lineOfSight": "Sin línea de visión.",
@@ -245,6 +249,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "Has desechado {item}.",
     "log.equipped": "Has equipado {item}.",
     "log.noFish": "No pican los peces.",
+    "log.rareCatch": "¡Una captura rara! Algo brilla en tu sedal.",
     "log.sitEat": "Te sientas a comer.",
     "log.sitDrink": "Te sientas a beber.",
     "log.quaff": "Bebes {item}.",
@@ -255,6 +260,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} gana {item} ({roll})",
     "aura.tamed": "Domado",
     "aura.causticSpores": "Esporas Cáusticas",
+    "aura.elixirBear": "Poder del Oso",
   },
   es_ES: {
     "error.lineOfSight": "Sin línea de visión.",
@@ -310,6 +316,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "Has desechado {item}.",
     "log.equipped": "Has equipado {item}.",
     "log.noFish": "No pican los peces.",
+    "log.rareCatch": "¡Una captura rara! Algo brilla en tu sedal.",
     "log.sitEat": "Te sientas a comer.",
     "log.sitDrink": "Te sientas a beber.",
     "log.quaff": "Bebes {item}.",
@@ -320,6 +327,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} gana {item} ({roll})",
     "aura.tamed": "Domado",
     "aura.causticSpores": "Esporas Cáusticas",
+    "aura.elixirBear": "Poder del Oso",
   },
   fr_FR: {
     "error.lineOfSight": "Pas de ligne de vue.",
@@ -375,6 +383,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item} jeté.",
     "log.equipped": "{item} équipé.",
     "log.noFish": "Aucun poisson ne mord.",
+    "log.rareCatch": "Une prise rare ! Quelque chose scintille sur votre ligne.",
     "log.sitEat": "Vous vous asseyez pour manger.",
     "log.sitDrink": "Vous vous asseyez pour boire.",
     "log.quaff": "Vous buvez {item}.",
@@ -385,6 +394,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} remporte {item} ({roll})",
     "aura.tamed": "Apprivoisé",
     "aura.causticSpores": "Spores Caustiques",
+    "aura.elixirBear": "Puissance de l'Ours",
   },
   fr_CA: {
     "error.lineOfSight": "Pas de ligne de vue.",
@@ -440,6 +450,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item} jeté.",
     "log.equipped": "{item} équipé.",
     "log.noFish": "Aucun poisson ne mord.",
+    "log.rareCatch": "Une prise rare ! Quelque chose scintille sur votre ligne.",
     "log.sitEat": "Vous vous asseyez pour manger.",
     "log.sitDrink": "Vous vous asseyez pour boire.",
     "log.quaff": "Vous buvez {item}.",
@@ -450,6 +461,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} remporte {item} ({roll})",
     "aura.tamed": "Apprivoisé",
     "aura.causticSpores": "Spores Caustiques",
+    "aura.elixirBear": "Puissance de l'Ours",
   },
   en_CA: {
     "error.lineOfSight": "Line of sight.",
@@ -505,6 +517,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "Discarded {item}.",
     "log.equipped": "Equipped {item}.",
     "log.noFish": "No fish are biting.",
+    "log.rareCatch": "A rare catch! Something gleams on your line.",
     "log.sitEat": "You sit down to eat.",
     "log.sitDrink": "You sit down to drink.",
     "log.quaff": "You quaff {item}.",
@@ -515,6 +528,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} wins {item} ({roll})",
     "aura.tamed": "Tamed",
     "aura.causticSpores": "Caustic Spores",
+    "aura.elixirBear": "Might of the Bear",
   },
   it_IT: {
     "error.lineOfSight": "Nessuna linea di vista.",
@@ -570,6 +584,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item} scartato.",
     "log.equipped": "{item} equipaggiato.",
     "log.noFish": "I pesci non abboccano.",
+    "log.rareCatch": "Una cattura rara! Qualcosa luccica sulla tua lenza.",
     "log.sitEat": "Ti siedi a mangiare.",
     "log.sitDrink": "Ti siedi a bere.",
     "log.quaff": "Tracanni {item}.",
@@ -580,6 +595,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} vince {item} ({roll})",
     "aura.tamed": "Addomesticato",
     "aura.causticSpores": "Spore Caustiche",
+    "aura.elixirBear": "Potenza dell'Orso",
   },
   de_DE: {
     "error.lineOfSight": "Kein Sichtkontakt.",
@@ -635,6 +651,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item} weggeworfen.",
     "log.equipped": "{item} ausgerüstet.",
     "log.noFish": "Es beißen keine Fische.",
+    "log.rareCatch": "Ein seltener Fang! Etwas glänzt an deiner Angelschnur.",
     "log.sitEat": "Ihr setzt Euch zum Essen.",
     "log.sitDrink": "Ihr setzt Euch zum Trinken.",
     "log.quaff": "Ihr trinkt {item}.",
@@ -645,6 +662,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} gewinnt {item} ({roll})",
     "aura.tamed": "Gezähmt",
     "aura.causticSpores": "Ätzende Sporen",
+    "aura.elixirBear": "Macht des Bären",
   },
   zh_CN: {
     "error.lineOfSight": "目标不在视线内。",
@@ -700,6 +718,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "已丢弃{item}。",
     "log.equipped": "已装备{item}。",
     "log.noFish": "没有鱼上钩。",
+    "log.rareCatch": "稀有渔获！你的鱼线上有东西在闪光。",
     "log.sitEat": "你坐下来进食。",
     "log.sitDrink": "你坐下来饮水。",
     "log.quaff": "你饮下了{item}。",
@@ -710,6 +729,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner}赢得了{item}（{roll}）",
     "aura.tamed": "已驯服",
     "aura.causticSpores": "腐蚀孢子",
+    "aura.elixirBear": "巨熊之力",
   },
   zh_TW: {
     "error.lineOfSight": "目標不在視線內。",
@@ -765,6 +785,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "已丟棄 {item}。",
     "log.equipped": "已裝備 {item}。",
     "log.noFish": "沒有魚上鉤。",
+    "log.rareCatch": "稀有漁獲！你的釣線上有東西在閃光。",
     "log.sitEat": "你坐下來進食。",
     "log.sitDrink": "你坐下來飲水。",
     "log.quaff": "你喝下了 {item}。",
@@ -775,6 +796,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} 擲骰獲得 {item}（{roll}）",
     "aura.tamed": "馴服",
     "aura.causticSpores": "腐蝕孢子",
+    "aura.elixirBear": "巨熊之力",
   },
   ko_KR: {
     "error.lineOfSight": "시야가 막혀 있습니다.",
@@ -830,6 +852,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item}을(를) 버렸습니다.",
     "log.equipped": "{item}을(를) 착용했습니다.",
     "log.noFish": "입질이 없습니다.",
+    "log.rareCatch": "희귀한 낚시감! 낚싯줄에 무언가 반짝입니다.",
     "log.sitEat": "앉아서 음식을 먹습니다.",
     "log.sitDrink": "앉아서 음료를 마십니다.",
     "log.quaff": "{item}을(를) 들이켭니다.",
@@ -840,6 +863,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner}님이 {item}을(를) 획득했습니다 ({roll})",
     "aura.tamed": "길들여짐",
     "aura.causticSpores": "부식성 포자",
+    "aura.elixirBear": "곰의 힘",
   },
   ja_JP: {
     "error.lineOfSight": "視線が通っていません。",
@@ -895,6 +919,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item}を破棄しました。",
     "log.equipped": "{item}を装備しました。",
     "log.noFish": "魚がかかりません。",
+    "log.rareCatch": "珍しい釣果！糸の先で何かが光っている。",
     "log.sitEat": "座って食事を始めました。",
     "log.sitDrink": "座って水分補給を始めました。",
     "log.quaff": "{item}を飲み干しました。",
@@ -905,6 +930,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner}が{item}を獲得しました（{roll}）",
     "aura.tamed": "テイム",
     "aura.causticSpores": "腐食胞子",
+    "aura.elixirBear": "熊の力",
   },
   pt_BR: {
     "error.lineOfSight": "Sem linha de visão.",
@@ -960,6 +986,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "{item} descartado.",
     "log.equipped": "{item} equipado.",
     "log.noFish": "Os peixes não estão mordendo.",
+    "log.rareCatch": "Uma fisgada rara! Algo reluz na sua linha.",
     "log.sitEat": "Você se senta para comer.",
     "log.sitDrink": "Você se senta para beber.",
     "log.quaff": "Você bebe {item}.",
@@ -970,6 +997,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} vence {item} ({roll})",
     "aura.tamed": "Domado",
     "aura.causticSpores": "Esporos Cáusticos",
+    "aura.elixirBear": "Força do Urso",
   },
   ru_RU: {
     "error.lineOfSight": "Нет прямой видимости.",
@@ -1025,6 +1053,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "log.discarded": "Выброшено: {item}.",
     "log.equipped": "Экипировано: {item}.",
     "log.noFish": "Рыба не клюёт.",
+    "log.rareCatch": "Редкий улов! Что-то блестит на вашей леске.",
     "log.sitEat": "Вы садитесь, чтобы поесть.",
     "log.sitDrink": "Вы садитесь, чтобы попить.",
     "log.quaff": "Вы выпиваете {item}.",
@@ -1035,6 +1064,7 @@ const BASE_DICT: Record<SupportedLanguage, Record<BaseSimMessageKey, string>> = 
     "loot.rollWin": "{winner} выигрывает {item} ({roll})",
     "aura.tamed": "Приручён",
     "aura.causticSpores": "Едкие споры",
+    "aura.elixirBear": "Мощь Медведя",
   },
 };
 
@@ -1500,6 +1530,7 @@ function locPetMode(mode: string): string {
 // Flavor aura names (not abilities, not talents) shown in the buff frame / combat log.
 const AURA_NAME_KEY: Record<string, SimMessageKey> = {
   Tamed: 'aura.tamed',
+  'Might of the Bear': 'aura.elixirBear',
   Summoned: 'aura.summoned',
   Fed: 'aura.fed',
   'Caustic Spores': 'aura.causticSpores',
@@ -1747,18 +1778,27 @@ function tArenaExtra(key: ArenaExtraKey, params?: InterpolationValues): string {
 }
 
 type QuestExtraKey =
-  | 'ritualNeedsKey' | 'aldrenVision' | 'malricVision' | 'vossVision'
-  | 'ritualBreaks' | 'nythraxisVision' | 'cryptSealed' | 'awakens'
+  | 'ritualNeedsKey'
+  | 'aldrenVision1' | 'aldrenVision2' | 'aldrenVision3'
+  | 'malricVision1' | 'malricVision2' | 'malricVision3'
+  | 'vossVision1' | 'vossVision2' | 'vossVision3' | 'vossVision4'
+  | 'ritualBreaks' | 'cryptSealed' | 'awakens'
   | 'aldrenYell' | 'malricYell' | 'vossYell';
 
 const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   en: {
     ritualNeedsKey: 'The ritual circle is silent without the Crypt Keystone.',
-    aldrenVision: 'Vision: Captain Aldren says, "My king was a good man. I swore my blade to him. I would do so again."',
-    malricVision: 'Vision: High Priest Malric says, "There had to be another way. I could not let him die. I only wanted to save him."',
-    vossVision: 'Vision: Royal Assassin Voss says, "The king was already dead. Malric refused to accept it. We should have let him rest. If you find the crypt... end this."',
+    aldrenVision1: 'My king was a good man.',
+    aldrenVision2: 'I swore my blade to him.',
+    aldrenVision3: 'I would do so again.',
+    malricVision1: 'There had to be another way.',
+    malricVision2: 'I could not let him die.',
+    malricVision3: 'I only wanted to save him.',
+    vossVision1: 'The king was already dead.',
+    vossVision2: 'Malric refused to accept it.',
+    vossVision3: 'We should have let him rest.',
+    vossVision4: 'If you find the crypt... end this.',
     ritualBreaks: 'The Crypt Keystone turns cold as the seal breaks.',
-    nythraxisVision: 'Vision: Thornpeak collapses as Nythraxis rises deathless, and survivors seal him beneath the kingdom.',
     cryptSealed: 'The crypt entrance is sealed to you.',
     awakens: '{name} awakens!',
     aldrenYell: '{name} yells, "None shall disturb the king\'s rest! For Thornpeak!"',
@@ -1767,11 +1807,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   en_CA: {
     ritualNeedsKey: 'The ritual circle is silent without the Crypt Keystone.',
-    aldrenVision: 'Vision: Captain Aldren says, "My king was a good man. I swore my blade to him. I would do so again."',
-    malricVision: 'Vision: High Priest Malric says, "There had to be another way. I could not let him die. I only wanted to save him."',
-    vossVision: 'Vision: Royal Assassin Voss says, "The king was already dead. Malric refused to accept it. We should have let him rest. If you find the crypt... end this."',
+    aldrenVision1: 'My king was a good man.',
+    aldrenVision2: 'I swore my blade to him.',
+    aldrenVision3: 'I would do so again.',
+    malricVision1: 'There had to be another way.',
+    malricVision2: 'I could not let him die.',
+    malricVision3: 'I only wanted to save him.',
+    vossVision1: 'The king was already dead.',
+    vossVision2: 'Malric refused to accept it.',
+    vossVision3: 'We should have let him rest.',
+    vossVision4: 'If you find the crypt... end this.',
     ritualBreaks: 'The Crypt Keystone turns cold as the seal breaks.',
-    nythraxisVision: 'Vision: Thornpeak collapses as Nythraxis rises deathless, and survivors seal him beneath the kingdom.',
     cryptSealed: 'The crypt entrance is sealed to you.',
     awakens: '{name} awakens!',
     aldrenYell: '{name} yells, "None shall disturb the king\'s rest! For Thornpeak!"',
@@ -1780,11 +1826,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   es: {
     ritualNeedsKey: 'El circulo ritual calla sin la Piedra clave de la cripta.',
-    aldrenVision: 'Vision: sir Aldren se arrodilla ante un rey invisible. "Mi rey. Estamos listos."',
-    malricVision: 'Vision: el sumo sacerdote Malric realiza un ritual. "La muerte misma no lo reclamara."',
-    vossVision: 'Vision: Acechamuerte Voss defiende la entrada de una cripta. "El rey nunca debe despertar."',
+    aldrenVision1: 'Mi rey era un buen hombre.',
+    aldrenVision2: 'Jure mi espada a el.',
+    aldrenVision3: 'Lo volveria a hacer.',
+    malricVision1: 'Tenia que haber otra manera.',
+    malricVision2: 'No podia dejarlo morir.',
+    malricVision3: 'Solo queria salvarlo.',
+    vossVision1: 'El rey ya estaba muerto.',
+    vossVision2: 'Malric se nego a aceptarlo.',
+    vossVision3: 'Debimos dejarlo descansar.',
+    vossVision4: 'Si encuentras la cripta... acaba con esto.',
     ritualBreaks: 'La Piedra clave de la cripta se vuelve fria cuando se rompe el sello.',
-    nythraxisVision: 'Vision: Nythraxis se alza entre la vida y la muerte, y su reino cae en el caos.',
     cryptSealed: 'La entrada de la cripta esta sellada para ti.',
     awakens: '¡{name} despierta!',
     aldrenYell: '{name} grita: "¡Nadie perturbara el descanso del rey! ¡Por Thornpeak!"',
@@ -1793,11 +1845,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   es_ES: {
     ritualNeedsKey: 'El circulo ritual calla sin la Piedra clave de la cripta.',
-    aldrenVision: 'Vision: sir Aldren se arrodilla ante un rey invisible. "Mi rey. Estamos listos."',
-    malricVision: 'Vision: el sumo sacerdote Malric realiza un ritual. "La muerte misma no lo reclamara."',
-    vossVision: 'Vision: Acechamuerte Voss defiende la entrada de una cripta. "El rey nunca debe despertar."',
+    aldrenVision1: 'Mi rey era un buen hombre.',
+    aldrenVision2: 'Jure mi espada a el.',
+    aldrenVision3: 'Lo volveria a hacer.',
+    malricVision1: 'Tenia que haber otra manera.',
+    malricVision2: 'No podia dejarlo morir.',
+    malricVision3: 'Solo queria salvarlo.',
+    vossVision1: 'El rey ya estaba muerto.',
+    vossVision2: 'Malric se nego a aceptarlo.',
+    vossVision3: 'Debimos dejarlo descansar.',
+    vossVision4: 'Si encuentras la cripta... acaba con esto.',
     ritualBreaks: 'La Piedra clave de la cripta se vuelve fria cuando se rompe el sello.',
-    nythraxisVision: 'Vision: Nythraxis se alza entre la vida y la muerte, y su reino cae en el caos.',
     cryptSealed: 'La entrada de la cripta esta sellada para ti.',
     awakens: '¡{name} despierta!',
     aldrenYell: '{name} grita: "¡Nadie perturbara el descanso del rey! ¡Por Thornpeak!"',
@@ -1806,11 +1864,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   fr_FR: {
     ritualNeedsKey: 'Le cercle rituel reste muet sans la clef de la crypte.',
-    aldrenVision: 'Vision: sire Aldren s agenouille devant un roi invisible. "Mon roi. Nous sommes prets."',
-    malricVision: 'Vision: le grand pretre Malric accomplit un rituel. "La mort elle-meme ne le prendra pas."',
-    vossVision: 'Vision: Traquemort Voss defend l entree d une crypte. "Le roi ne doit jamais s eveiller."',
+    aldrenVision1: 'Mon roi etait un homme bon.',
+    aldrenVision2: 'Je lui ai jure mon epee.',
+    aldrenVision3: 'Je le referais.',
+    malricVision1: 'Il devait y avoir une autre voie.',
+    malricVision2: 'Je ne pouvais pas le laisser mourir.',
+    malricVision3: 'Je voulais seulement le sauver.',
+    vossVision1: 'Le roi etait deja mort.',
+    vossVision2: 'Malric refusait de l accepter.',
+    vossVision3: 'Nous aurions du le laisser reposer.',
+    vossVision4: 'Si vous trouvez la crypte... mettez fin a cela.',
     ritualBreaks: 'La clef de la crypte devient froide tandis que le sceau se brise.',
-    nythraxisVision: 'Vision: Nythraxis se releve entre vie et mort, et son royaume sombre dans le chaos.',
     cryptSealed: 'L entree de la crypte vous est scellee.',
     awakens: '{name} s eveille!',
     aldrenYell: '{name} crie: "Nul ne troublera le repos du roi! Pour Thornpeak!"',
@@ -1819,11 +1883,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   fr_CA: {
     ritualNeedsKey: 'Le cercle rituel reste muet sans la clef de la crypte.',
-    aldrenVision: 'Vision: sire Aldren s agenouille devant un roi invisible. "Mon roi. Nous sommes prets."',
-    malricVision: 'Vision: le grand pretre Malric accomplit un rituel. "La mort elle-meme ne le prendra pas."',
-    vossVision: 'Vision: Traquemort Voss defend l entree d une crypte. "Le roi ne doit jamais s eveiller."',
+    aldrenVision1: 'Mon roi etait un homme bon.',
+    aldrenVision2: 'Je lui ai jure mon epee.',
+    aldrenVision3: 'Je le referais.',
+    malricVision1: 'Il devait y avoir une autre voie.',
+    malricVision2: 'Je ne pouvais pas le laisser mourir.',
+    malricVision3: 'Je voulais seulement le sauver.',
+    vossVision1: 'Le roi etait deja mort.',
+    vossVision2: 'Malric refusait de l accepter.',
+    vossVision3: 'Nous aurions du le laisser reposer.',
+    vossVision4: 'Si vous trouvez la crypte... mettez fin a cela.',
     ritualBreaks: 'La clef de la crypte devient froide tandis que le sceau se brise.',
-    nythraxisVision: 'Vision: Nythraxis se releve entre vie et mort, et son royaume sombre dans le chaos.',
     cryptSealed: 'L entree de la crypte vous est scellee.',
     awakens: '{name} s eveille!',
     aldrenYell: '{name} crie: "Nul ne troublera le repos du roi! Pour Thornpeak!"',
@@ -1832,11 +1902,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   it_IT: {
     ritualNeedsKey: 'Il cerchio rituale tace senza la Chiave di volta della cripta.',
-    aldrenVision: 'Visione: sir Aldren si inginocchia davanti a un re invisibile. "Mio re. Siamo pronti."',
-    malricVision: 'Visione: l alto sacerdote Malric compie un rituale. "La morte stessa non lo reclamara."',
-    vossVision: 'Visione: Cacciamorte Voss difende l ingresso di una cripta. "Il re non deve mai svegliarsi."',
+    aldrenVision1: 'Il mio re era un brav uomo.',
+    aldrenVision2: 'Gli giurai la mia lama.',
+    aldrenVision3: 'Lo rifarei.',
+    malricVision1: 'Doveva esserci un altra via.',
+    malricVision2: 'Non potevo lasciarlo morire.',
+    malricVision3: 'Volevo solo salvarlo.',
+    vossVision1: 'Il re era gia morto.',
+    vossVision2: 'Malric rifiutava di accettarlo.',
+    vossVision3: 'Avremmo dovuto lasciarlo riposare.',
+    vossVision4: 'Se trovi la cripta... poni fine a tutto questo.',
     ritualBreaks: 'La Chiave di volta della cripta diventa fredda mentre il sigillo si spezza.',
-    nythraxisVision: 'Visione: Nythraxis si rialza tra vita e morte, e il suo regno precipita nel caos.',
     cryptSealed: 'L ingresso della cripta ti e sigillato.',
     awakens: '{name} si risveglia!',
     aldrenYell: '{name} grida: "Nessuno disturbera il riposo del re! Per Thornpeak!"',
@@ -1845,11 +1921,17 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   de_DE: {
     ritualNeedsKey: 'Der Ritualkreis schweigt ohne den Kryptenschlusselstein.',
-    aldrenVision: 'Vision: Sir Aldren kniet vor einem ungesehenen Konig. "Mein Konig. Wir stehen bereit."',
-    malricVision: 'Vision: Hohepriester Malric wirkt ein Ritual. "Der Tod selbst soll ihn nicht fordern."',
-    vossVision: 'Vision: Todespirscher Voss verteidigt einen Krypteneingang. "Der Konig darf niemals erwachen."',
+    aldrenVision1: 'Mein Konig war ein guter Mann.',
+    aldrenVision2: 'Ich schwor ihm meine Klinge.',
+    aldrenVision3: 'Ich wurde es wieder tun.',
+    malricVision1: 'Es musste einen anderen Weg geben.',
+    malricVision2: 'Ich konnte ihn nicht sterben lassen.',
+    malricVision3: 'Ich wollte ihn nur retten.',
+    vossVision1: 'Der Konig war bereits tot.',
+    vossVision2: 'Malric wollte es nicht akzeptieren.',
+    vossVision3: 'Wir hatten ihn ruhen lassen sollen.',
+    vossVision4: 'Wenn ihr die Krypta findet... beendet dies.',
     ritualBreaks: 'Der Kryptenschlusselstein wird kalt, als das Siegel bricht.',
-    nythraxisVision: 'Vision: Nythraxis erhebt sich zwischen Leben und Tod, und sein Reich sturzt ins Chaos.',
     cryptSealed: 'Der Krypteneingang ist fur dich versiegelt.',
     awakens: '{name} erwacht!',
     aldrenYell: '{name} ruft: "Niemand stort die Ruhe des Konigs! Fur Thornpeak!"',
@@ -1858,63 +1940,93 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   zh_CN: {
     ritualNeedsKey: '没有墓穴钥石，仪式法阵一片沉寂。',
-    aldrenVision: '幻象：阿尔德伦爵士跪在一位看不见的国王面前。“吾王。我们已准备就绪。”',
-    malricVision: '幻象：大祭司马尔里克正在举行仪式。“死亡本身也不得夺走他。”',
-    vossVision: '幻象：死亡追猎者沃斯守卫着一座墓穴入口。“国王绝不能醒来。”',
+    aldrenVision1: '我的国王是个好人。',
+    aldrenVision2: '我曾向他宣誓献上我的剑。',
+    aldrenVision3: '我还会再这么做。',
+    malricVision1: '一定还有别的办法。',
+    malricVision2: '我不能让他死去。',
+    malricVision3: '我只是想救他。',
+    vossVision1: '国王已经死了。',
+    vossVision2: '马尔里克拒绝接受。',
+    vossVision3: '我们本该让他安息。',
+    vossVision4: '如果你找到墓穴……结束这一切。',
     ritualBreaks: '封印破裂时，墓穴钥石变得冰冷。',
-    nythraxisVision: '幻象：尼瑟拉克西斯在生死之间起身，他的王国陷入混乱。',
     cryptSealed: '墓穴入口对你封闭着。',
     awakens: '{name}苏醒了！',
-    aldrenYell: '{name}喊道：“谁也不得惊扰国王的安眠！为了荆峰！”',
+    aldrenYell: '{name}喊道：“谁也不得惊扰国王的安眠！为了 Thornpeak！”',
     malricYell: '{name}喊道：“死亡永远不能带走我的国王！仪式必须延续！”',
     vossYell: '{name}喊道：“你们到不了他身边！国王必须延续！”',
   },
   zh_TW: {
     ritualNeedsKey: '沒有墓穴鑰石，儀式法陣一片沉寂。',
-    aldrenVision: '幻象：阿爾德倫爵士跪在一位看不見的國王面前。「吾王。我們已準備就緒。」',
-    malricVision: '幻象：大祭司馬爾里克正在舉行儀式。「死亡本身也不得奪走他。」',
-    vossVision: '幻象：死亡追獵者沃斯守衛著一座墓穴入口。「國王絕不能醒來。」',
+    aldrenVision1: '我的國王是個好人。',
+    aldrenVision2: '我曾向他宣誓獻上我的劍。',
+    aldrenVision3: '我還會再這麼做。',
+    malricVision1: '一定還有別的辦法。',
+    malricVision2: '我不能讓他死去。',
+    malricVision3: '我只是想救他。',
+    vossVision1: '國王已經死了。',
+    vossVision2: '馬爾里克拒絕接受。',
+    vossVision3: '我們本該讓他安息。',
+    vossVision4: '如果你找到墓穴……結束這一切。',
     ritualBreaks: '封印破裂時，墓穴鑰石變得冰冷。',
-    nythraxisVision: '幻象：尼瑟拉克西斯在生死之間起身，他的王國陷入混亂。',
     cryptSealed: '墓穴入口對你封閉著。',
     awakens: '{name}甦醒了！',
-    aldrenYell: '{name}喊道：「誰也不得驚擾國王的安眠！為了荊峰！」',
+    aldrenYell: '{name}喊道：「誰也不得驚擾國王的安眠！為了 Thornpeak！」',
     malricYell: '{name}喊道：「死亡永遠不能帶走我的國王！儀式必須延續！」',
     vossYell: '{name}喊道：「你們到不了他身邊！國王必須延續！」',
   },
   ko_KR: {
     ritualNeedsKey: '무덤 열쇠돌 없이는 의식진이 침묵합니다.',
-    aldrenVision: '환영: 알드렌 경이 보이지 않는 왕 앞에 무릎 꿇습니다. "나의 왕이시여. 준비되었습니다."',
-    malricVision: '환영: 대사제 말릭이 의식을 행합니다. "죽음조차 그를 데려가지 못하리라."',
-    vossVision: '환영: 죽음추적자 보스가 묘실 입구를 지킵니다. "왕은 결코 깨어나서는 안 된다."',
+    aldrenVision1: '내 왕은 선한 분이었다.',
+    aldrenVision2: '나는 그분께 검을 맹세했다.',
+    aldrenVision3: '다시라도 그렇게 하겠다.',
+    malricVision1: '다른 길이 있었어야 했다.',
+    malricVision2: '그분을 죽게 둘 수 없었다.',
+    malricVision3: '나는 그저 구하려 했을 뿐이다.',
+    vossVision1: '왕은 이미 죽어 있었다.',
+    vossVision2: '말릭은 받아들이지 않았다.',
+    vossVision3: '우리는 그분을 쉬게 했어야 했다.',
+    vossVision4: '묘실을 찾는다면... 끝내라.',
     ritualBreaks: '봉인이 깨지자 무덤 열쇠돌이 차갑게 식습니다.',
-    nythraxisVision: '환영: 니트락시스가 삶과 죽음 사이에서 일어나고, 왕국은 혼돈에 빠집니다.',
     cryptSealed: '묘실 입구가 당신에게 봉인되어 있습니다.',
     awakens: '{name} 깨어납니다!',
-    aldrenYell: '{name} 외칩니다. "누구도 왕의 안식을 방해할 수 없다! 쏜피크를 위하여!"',
+    aldrenYell: '{name} 외칩니다. "누구도 왕의 안식을 방해할 수 없다! Thornpeak를 위하여!"',
     malricYell: '{name} 외칩니다. "죽음은 결코 내 왕을 데려가지 못한다! 의식은 계속되어야 한다!"',
     vossYell: '{name} 외칩니다. "너희는 그에게 닿지 못한다! 왕은 이어져야 한다!"',
   },
   ja_JP: {
     ritualNeedsKey: '墓所の要石がなければ、儀式陣は沈黙したままです。',
-    aldrenVision: '幻視: サー・アルドレンが見えない王の前にひざまずく。「我が王。準備はできています。」',
-    malricVision: '幻視: 大祭司マルリックが儀式を行う。「死そのものにも彼は渡さぬ。」',
-    vossVision: '幻視: デスストーカー・ヴォスが墓所の入口を守る。「王を決して目覚めさせてはならない。」',
+    aldrenVision1: '我が王は善き人だった。',
+    aldrenVision2: '私はあの方に剣を誓った。',
+    aldrenVision3: 'もう一度でもそうする。',
+    malricVision1: '別の道があったはずだ。',
+    malricVision2: '彼を死なせることはできなかった。',
+    malricVision3: '救いたかっただけなのだ。',
+    vossVision1: '王はすでに死んでいた。',
+    vossVision2: 'マルリックは受け入れなかった。',
+    vossVision3: '休ませておくべきだった。',
+    vossVision4: '墓所を見つけたなら... これを終わらせろ。',
     ritualBreaks: '封印が破れると、墓所の要石が冷たくなります。',
-    nythraxisVision: '幻視: ニスラクシスが生と死の狭間で立ち上がり、王国は混沌へ沈みます。',
     cryptSealed: '墓所の入口はあなたに対して封じられています。',
     awakens: '{name}が目覚めた！',
-    aldrenYell: '{name}が叫ぶ。「王の眠りを乱す者は許さぬ！ ソーンピークのために！」',
+    aldrenYell: '{name}が叫ぶ。「王の眠りを乱す者は許さぬ！ Thornpeakのために！」',
     malricYell: '{name}が叫ぶ。「死は我が王を奪えぬ！ 儀式は続かねばならぬ！」',
     vossYell: '{name}が叫ぶ。「お前たちは王に届かぬ！ 王は永らえねばならぬ！」',
   },
   pt_BR: {
     ritualNeedsKey: 'O circulo ritual fica em silencio sem a Pedra-chave da cripta.',
-    aldrenVision: 'Visao: sir Aldren se ajoelha diante de um rei invisivel. "Meu rei. Estamos prontos."',
-    malricVision: 'Visao: o alto sacerdote Malric realiza um ritual. "A propria morte nao o levara."',
-    vossVision: 'Visao: Espreitador da Morte Voss defende a entrada de uma cripta. "O rei jamais deve despertar."',
+    aldrenVision1: 'Meu rei era um bom homem.',
+    aldrenVision2: 'Jurei minha lamina a ele.',
+    aldrenVision3: 'Eu faria isso novamente.',
+    malricVision1: 'Tinha que haver outro caminho.',
+    malricVision2: 'Eu nao podia deixa-lo morrer.',
+    malricVision3: 'Eu so queria salva-lo.',
+    vossVision1: 'O rei ja estava morto.',
+    vossVision2: 'Malric se recusou a aceitar.',
+    vossVision3: 'Deveriamos te-lo deixado descansar.',
+    vossVision4: 'Se encontrar a cripta... termine isto.',
     ritualBreaks: 'A Pedra-chave da cripta fica fria enquanto o selo se rompe.',
-    nythraxisVision: 'Visao: Nythraxis se ergue entre a vida e a morte, e seu reino cai no caos.',
     cryptSealed: 'A entrada da cripta esta selada para voce.',
     awakens: '{name} desperta!',
     aldrenYell: '{name} grita: "Ninguem perturbara o descanso do rei! Por Thornpeak!"',
@@ -1923,14 +2035,20 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
   },
   ru_RU: {
     ritualNeedsKey: 'Ритуальный круг молчит без ключ-камня крипты.',
-    aldrenVision: 'Видение: сэр Алдрен преклоняет колено перед невидимым королем. "Мой король. Мы готовы."',
-    malricVision: 'Видение: верховный жрец Малрик проводит ритуал. "Сама смерть не заберет его."',
-    vossVision: 'Видение: Смертолаз Восс защищает вход в крипту. "Король не должен проснуться."',
+    aldrenVision1: 'Мой король был хорошим человеком.',
+    aldrenVision2: 'Я поклялся ему своим клинком.',
+    aldrenVision3: 'Я сделал бы это снова.',
+    malricVision1: 'Должен был быть другой путь.',
+    malricVision2: 'Я не мог позволить ему умереть.',
+    malricVision3: 'Я лишь хотел спасти его.',
+    vossVision1: 'Король уже был мертв.',
+    vossVision2: 'Малрик отказался это принять.',
+    vossVision3: 'Нам следовало дать ему покой.',
+    vossVision4: 'Если найдете крипту... покончите с этим.',
     ritualBreaks: 'Ключ-камень крипты холодеет, когда печать рушится.',
-    nythraxisVision: 'Видение: Нитраксис встает между жизнью и смертью, и его королевство погружается в хаос.',
     cryptSealed: 'Вход в крипту запечатан для вас.',
     awakens: '{name} пробуждается!',
-    aldrenYell: '{name} кричит: "Никто не потревожит покой короля! За Торнпик!"',
+    aldrenYell: '{name} кричит: "Никто не потревожит покой короля! За Thornpeak!"',
     malricYell: '{name} кричит: "Смерть никогда не заберет моего короля! Ритуал должен сохраниться!"',
     vossYell: '{name} кричит: "Вы не доберетесь до него! Король должен сохраниться!"',
   },
@@ -1939,6 +2057,184 @@ const QUEST_EXTRA: Record<SupportedLanguage, Record<QuestExtraKey, string>> = {
 function tQuestExtra(key: QuestExtraKey, params?: InterpolationValues): string {
   const table = QUEST_EXTRA[getLanguage()] ?? QUEST_EXTRA.en;
   return interpolate(table[key] ?? QUEST_EXTRA.en[key], params);
+}
+
+// Item / equipment / world-object interaction strings emitted by src/sim: the
+// /gear self-readout frame plus the relic + quest-item pickup error toasts. Like
+// QUEST_EXTRA/ARENA_EXTRA these live here (not the DICT) and are matched by the
+// RULES below; the gear readout's per-slot LABELS reuse the already-translated
+// itemUi.slots.* keys via t(), so only the frame + "(empty)" marker are new here.
+type ItemExtraKey =
+  | 'gearReadout' | 'gearEmptySlot' | 'nothingEquipped'
+  | 'cannotTakeYet' | 'offersNothingMore'
+  | 'relicBound' | 'relicRecovered';
+
+const ITEM_EXTRA: Record<SupportedLanguage, Record<ItemExtraKey, string>> = {
+  en: {
+    gearReadout: 'Equipped ({worn}/{total}): {items}.',
+    gearEmptySlot: '(empty)',
+    nothingEquipped: 'You have nothing equipped.',
+    cannotTakeYet: 'You cannot take the {name} yet.',
+    offersNothingMore: '{name} offers nothing more.',
+    relicBound: 'The relic is bound by the sealed crypt.',
+    relicRecovered: 'You have already recovered this relic.',
+  },
+  en_CA: {
+    gearReadout: 'Equipped ({worn}/{total}): {items}.',
+    gearEmptySlot: '(empty)',
+    nothingEquipped: 'You have nothing equipped.',
+    cannotTakeYet: 'You cannot take the {name} yet.',
+    offersNothingMore: '{name} offers nothing more.',
+    relicBound: 'The relic is bound by the sealed crypt.',
+    relicRecovered: 'You have already recovered this relic.',
+  },
+  es: {
+    gearReadout: 'Equipado ({worn}/{total}): {items}.',
+    gearEmptySlot: '(vacío)',
+    nothingEquipped: 'No tienes nada equipado.',
+    cannotTakeYet: 'Aún no puedes tomar {name}.',
+    offersNothingMore: '{name} no ofrece nada más.',
+    relicBound: 'La reliquia está atada a la cripta sellada.',
+    relicRecovered: 'Ya has recuperado esta reliquia.',
+  },
+  es_ES: {
+    gearReadout: 'Equipado ({worn}/{total}): {items}.',
+    gearEmptySlot: '(vacío)',
+    nothingEquipped: 'No tienes nada equipado.',
+    cannotTakeYet: 'Aún no puedes tomar {name}.',
+    offersNothingMore: '{name} no ofrece nada más.',
+    relicBound: 'La reliquia está atada a la cripta sellada.',
+    relicRecovered: 'Ya has recuperado esta reliquia.',
+  },
+  fr_FR: {
+    gearReadout: 'Équipé ({worn}/{total}): {items}.',
+    gearEmptySlot: '(vide)',
+    nothingEquipped: "Vous n'avez rien d'équipé.",
+    cannotTakeYet: 'Vous ne pouvez pas encore prendre {name}.',
+    offersNothingMore: "{name} n'offre rien de plus.",
+    relicBound: 'La relique est liée à la crypte scellée.',
+    relicRecovered: 'Vous avez déjà récupéré cette relique.',
+  },
+  fr_CA: {
+    gearReadout: 'Équipé ({worn}/{total}): {items}.',
+    gearEmptySlot: '(vide)',
+    nothingEquipped: "Vous n'avez rien d'équipé.",
+    cannotTakeYet: 'Vous ne pouvez pas encore prendre {name}.',
+    offersNothingMore: "{name} n'offre rien de plus.",
+    relicBound: 'La relique est liée à la crypte scellée.',
+    relicRecovered: 'Vous avez déjà récupéré cette relique.',
+  },
+  it_IT: {
+    gearReadout: 'Equipaggiato ({worn}/{total}): {items}.',
+    gearEmptySlot: '(vuoto)',
+    nothingEquipped: 'Non hai nulla equipaggiato.',
+    cannotTakeYet: 'Non puoi ancora prendere {name}.',
+    offersNothingMore: "{name} non offre nient'altro.",
+    relicBound: 'La reliquia è vincolata alla cripta sigillata.',
+    relicRecovered: 'Hai già recuperato questa reliquia.',
+  },
+  de_DE: {
+    gearReadout: 'Ausgerüstet ({worn}/{total}): {items}.',
+    gearEmptySlot: '(leer)',
+    nothingEquipped: 'Ihr habt nichts ausgerüstet.',
+    cannotTakeYet: 'Ihr könnt {name} noch nicht nehmen.',
+    offersNothingMore: '{name} bietet nichts weiter.',
+    relicBound: 'Das Relikt ist an die versiegelte Krypta gebunden.',
+    relicRecovered: 'Ihr habt dieses Relikt bereits geborgen.',
+  },
+  zh_CN: {
+    gearReadout: '已装备（{worn}/{total}）：{items}。',
+    gearEmptySlot: '（空）',
+    nothingEquipped: '你没有装备任何物品。',
+    cannotTakeYet: '你还不能拿取{name}。',
+    offersNothingMore: '{name}没有更多可提供的了。',
+    relicBound: '圣物被封印的墓穴束缚着。',
+    relicRecovered: '你已经找回了这件圣物。',
+  },
+  zh_TW: {
+    gearReadout: '已裝備（{worn}/{total}）：{items}。',
+    gearEmptySlot: '（空）',
+    nothingEquipped: '你沒有裝備任何物品。',
+    cannotTakeYet: '你還不能拿取{name}。',
+    offersNothingMore: '{name}沒有更多可提供的了。',
+    relicBound: '聖物被封印的墓穴束縛著。',
+    relicRecovered: '你已經找回了這件聖物。',
+  },
+  ko_KR: {
+    gearReadout: '착용 중 ({worn}/{total}): {items}.',
+    gearEmptySlot: '(없음)',
+    nothingEquipped: '착용한 장비가 없습니다.',
+    cannotTakeYet: '아직 {name}을(를) 가져갈 수 없습니다.',
+    offersNothingMore: '{name}에게서 더 얻을 것이 없습니다.',
+    relicBound: '유물이 봉인된 묘실에 묶여 있습니다.',
+    relicRecovered: '이미 이 유물을 되찾았습니다.',
+  },
+  ja_JP: {
+    gearReadout: '装備中（{worn}/{total}）：{items}。',
+    gearEmptySlot: '（なし）',
+    nothingEquipped: '何も装備していません。',
+    cannotTakeYet: 'まだ{name}を取ることはできません。',
+    offersNothingMore: '{name}からはもう何も得られません。',
+    relicBound: '聖遺物は封印された墓所に縛られています。',
+    relicRecovered: 'この聖遺物はすでに回収しています。',
+  },
+  pt_BR: {
+    gearReadout: 'Equipado ({worn}/{total}): {items}.',
+    gearEmptySlot: '(vazio)',
+    nothingEquipped: 'Você não tem nada equipado.',
+    cannotTakeYet: 'Você ainda não pode pegar {name}.',
+    offersNothingMore: '{name} não oferece mais nada.',
+    relicBound: 'A relíquia está presa à cripta selada.',
+    relicRecovered: 'Você já recuperou esta relíquia.',
+  },
+  ru_RU: {
+    gearReadout: 'Экипировано ({worn}/{total}): {items}.',
+    gearEmptySlot: '(пусто)',
+    nothingEquipped: 'У вас ничего не экипировано.',
+    cannotTakeYet: 'Вы пока не можете взять {name}.',
+    offersNothingMore: '{name} больше ничего не предлагает.',
+    relicBound: 'Реликвия привязана к запечатанной крипте.',
+    relicRecovered: 'Вы уже нашли эту реликвию.',
+  },
+};
+
+function tItemExtra(key: ItemExtraKey, params?: InterpolationValues): string {
+  const table = ITEM_EXTRA[getLanguage()] ?? ITEM_EXTRA.en;
+  return interpolate(table[key] ?? ITEM_EXTRA.en[key], params);
+}
+
+// The /gear readout's English slot labels -> the already-translated itemUi.slots.*
+// keys the character-window paperdoll renders. Keep in sync with gearReadout() in
+// src/sim/sim.ts (the slot order/labels it emits).
+const GEAR_SLOT_KEYS: Record<string, TranslationKey> = {
+  'Main Hand': 'itemUi.slots.mainhand',
+  'Helmet': 'itemUi.slots.helmet',
+  'Shoulder': 'itemUi.slots.shoulder',
+  'Chest': 'itemUi.slots.chest',
+  'Waist': 'itemUi.slots.waist',
+  'Legs': 'itemUi.slots.legs',
+  'Gloves': 'itemUi.slots.gloves',
+  'Feet': 'itemUi.slots.feet',
+};
+
+// Rebuild the /gear readout in the active locale: localize each "Slot: value"
+// segment (slot label via itemUi.slots.*, item name via the entity dict, the
+// "(empty)" marker via ITEM_EXTRA) then re-frame via the gearReadout template.
+function locGearReadout(worn: string, total: string, body: string): string {
+  const items = body
+    .split(', ')
+    .map((seg) => {
+      const sep = seg.indexOf(': ');
+      if (sep < 0) return seg;
+      const label = seg.slice(0, sep);
+      const value = seg.slice(sep + 2);
+      const slotKey = GEAR_SLOT_KEYS[label];
+      const locLabel = slotKey ? t(slotKey) : label;
+      const locValue = value === '(empty)' ? tItemExtra('gearEmptySlot') : locItem(value);
+      return `${locLabel}: ${locValue}`;
+    })
+    .join(', ');
+  return tItemExtra('gearReadout', { worn, total, items });
 }
 
 // EXACT (no-placeholder) sim messages: English -> key (auto-built; throws on collision).
@@ -1950,14 +2246,39 @@ for (const key of Object.keys(enTable) as SimMessageKey[]) {
   EXACT[v] = key;
 }
 
+// /talents readout (src/sim/sim.ts talentsReadout): the sim assembles an English
+// summary; rebuild it here from t() keys. Spec names splice verbatim (English
+// content names) like player/build names. The breakdown sub-grammar is "Class N"
+// or "Class N, <spec> M"; the optional tail is " N unspent.".
+function locTalentBreakdown(s: string): string {
+  let m = /^Class (.+), (.+) (.+)$/.exec(s);
+  if (m) return t('game.talents.readout.breakdownSpec', { classPts: m[1], spec: m[2], specPts: m[3] });
+  m = /^Class (.+)$/.exec(s);
+  if (m) return t('game.talents.readout.breakdownClass', { classPts: m[1] });
+  return s;
+}
+function locTalentTail(s: string): string {
+  const m = /^ (.+) unspent\.$/.exec(s);
+  return m ? t('game.talents.readout.unspent', { count: m[1] }) : s;
+}
+
 type Rule = { re: RegExp; build: (m: RegExpExecArray) => string };
 const RULES: Rule[] = [
+  { re: /^Your class has no talent tree yet\.$/, build: () => t('game.talents.readout.noTree') },
+  { re: /^You have not unlocked talents yet — they begin at level (.+)\.$/, build: (m) => t('game.talents.readout.locked', { level: m[1] }) },
+  { re: /^Talents: (.+) — (.+)\/(.+) points spent \((.+)\)\.(.*)$/, build: (m) => t('game.talents.readout.summary', { head: m[1] === 'no specialization' ? t('game.talents.readout.noSpec') : m[1], spent: m[2], total: m[3], breakdown: locTalentBreakdown(m[4]) }) + (m[5] ? locTalentTail(m[5]) : '') },
   { re: /^The ritual circle is silent without the Crypt Keystone\.$/, build: () => tQuestExtra('ritualNeedsKey') },
-  { re: /^Vision: Captain Aldren says, "My king was a good man\. I swore my blade to him\. I would do so again\."$/, build: () => tQuestExtra('aldrenVision') },
-  { re: /^Vision: High Priest Malric says, "There had to be another way\. I could not let him die\. I only wanted to save him\."$/, build: () => tQuestExtra('malricVision') },
-  { re: /^Vision: Royal Assassin Voss says, "The king was already dead\. Malric refused to accept it\. We should have let him rest\. If you find the crypt\.\.\. end this\."$/, build: () => tQuestExtra('vossVision') },
+  { re: /^My king was a good man\.$/, build: () => tQuestExtra('aldrenVision1') },
+  { re: /^I swore my blade to him\.$/, build: () => tQuestExtra('aldrenVision2') },
+  { re: /^I would do so again\.$/, build: () => tQuestExtra('aldrenVision3') },
+  { re: /^There had to be another way\.$/, build: () => tQuestExtra('malricVision1') },
+  { re: /^I could not let him die\.$/, build: () => tQuestExtra('malricVision2') },
+  { re: /^I only wanted to save him\.$/, build: () => tQuestExtra('malricVision3') },
+  { re: /^The king was already dead\.$/, build: () => tQuestExtra('vossVision1') },
+  { re: /^Malric refused to accept it\.$/, build: () => tQuestExtra('vossVision2') },
+  { re: /^We should have let him rest\.$/, build: () => tQuestExtra('vossVision3') },
+  { re: /^If you find the crypt\.\.\. end this\.$/, build: () => tQuestExtra('vossVision4') },
   { re: /^The Crypt Keystone turns cold as the seal breaks\.$/, build: () => tQuestExtra('ritualBreaks') },
-  { re: /^Vision: Thornpeak collapses as Nythraxis rises deathless, and survivors seal him beneath the kingdom\.$/, build: () => tQuestExtra('nythraxisVision') },
   { re: /^The crypt entrance is sealed to you\.$/, build: () => tQuestExtra('cryptSealed') },
   { re: /^(.+) awakens!$/, build: (m) => tQuestExtra('awakens', { name: locMob(m[1]) }) },
   { re: /^Fallen Captain Aldren yells, "None shall disturb the king's rest! For Thornpeak!"$/, build: () => tQuestExtra('aldrenYell', { name: locMob('Fallen Captain Aldren') }) },
@@ -1986,7 +2307,18 @@ const RULES: Rule[] = [
   { re: /^(.+) begins to swell — get clear!$/, build: (m) => tSim('log.deathThroesArm', { name: locMob(m[1]) }) },
   { re: /^(.+) bursts in a cloud of (.+)!$/, build: (m) => tSim('log.deathThroesBurst', { name: locMob(m[1]), effect: localizeSimAuraName(m[2]) ?? m[2] }) },
   { re: /^Discarded (.+?)( x\d+)?\.$/, build: (m) => tSim('log.discarded', { item: locItemStack(m[1], m[2]) }) },
-  { re: /^Equipped (.+)\.$/, build: (m) => tSim('log.equipped', { item: locItem(m[1]) }) },
+  // /gear self-readout (must precede the single-item Equipped rule below, which is
+  // anchored with (?!\() so it can never swallow this compound readout).
+  { re: /^Equipped \(([^/]+)\/([^)]+)\): (.+)\.$/, build: (m) => locGearReadout(m[1], m[2], m[3]) },
+  { re: /^You have nothing equipped\.$/, build: () => tItemExtra('nothingEquipped') },
+  // Quest-item + relic pickup error toasts (src/sim emits these as `?? 'English'`
+  // fallbacks, so the S3 drift guard's this.error regex cannot see them — covered
+  // explicitly by tests/sim_item_i18n.test.ts instead).
+  { re: /^You cannot take the (.+) yet\.$/, build: (m) => tItemExtra('cannotTakeYet', { name: locItem(m[1]) }) },
+  { re: /^(.+) offers nothing more\.$/, build: (m) => tItemExtra('offersNothingMore', { name: locItem(m[1]) }) },
+  { re: /^The relic is bound by the sealed crypt\.$/, build: () => tItemExtra('relicBound') },
+  { re: /^You have already recovered this relic\.$/, build: () => tItemExtra('relicRecovered') },
+  { re: /^Equipped (?!\()(.+)\.$/, build: (m) => tSim('log.equipped', { item: locItem(m[1]) }) },
   { re: /^You quaff (.+)\.$/, build: (m) => tSim('log.quaff', { item: locItem(m[1]) }) },
   { re: /^(.+) wins (.+) \((\d+)\)$/, build: (m) => tSim('loot.rollWin', { winner: m[1], item: locItem(m[2]), roll: m[3] }) },
   { re: /^(.+) leaves the party\.$/, build: (m) => tSim('log.partyLeaves', { name: m[1] }) },

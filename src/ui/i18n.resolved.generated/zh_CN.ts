@@ -26,7 +26,8 @@ export const zh_CN: EnTranslations = {
       "maxLevel": "满级",
       "totalXp": "总经验",
       "lv": "等级",
-      "toNext": "到下一级"
+      "toNext": "到下一级",
+      "rested": "充分休息"
     },
     "progression": {
       "heading": "进度",
@@ -73,7 +74,12 @@ export const zh_CN: EnTranslations = {
       "needXp": "更多终身经验才可声望晋升"
     },
     "settings": {
-      "showOverflowXp": "显示溢出经验"
+      "showOverflowXp": "显示溢出经验",
+      "weather": "天气效果"
+    },
+    "hud": {
+      "lowMana": "法力不足",
+      "lowEnergy": "能量不足"
     },
     "talents": {
       "title": "天赋",
@@ -132,7 +138,16 @@ export const zh_CN: EnTranslations = {
       "noBuilds": "没有已保存配置",
       "save": "保存",
       "comingSoonTitle": "天赋即将推出",
-      "comingSoonBody": "此职业还没有天赋树。你可以继续正常游玩；完整天赋树会在未来更新中到来。"
+      "comingSoonBody": "此职业还没有天赋树。你可以继续正常游玩；完整天赋树会在未来更新中到来。",
+      "readout": {
+        "noTree": "你的职业暂无天赋树。",
+        "locked": "你尚未解锁天赋，天赋将在 {level} 级开启。",
+        "noSpec": "未选择专精",
+        "summary": "天赋：{head} — 已用 {spent}/{total} 点（{breakdown}）。",
+        "breakdownClass": "职业 {classPts}",
+        "breakdownSpec": "职业 {classPts}，{spec} {specPts}",
+        "unspent": " 剩余 {count} 点未用。"
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const zh_CN: EnTranslations = {
       "levelLog": "你已达到 {level} 级！",
       "xpGain": "你获得 {amount} 点经验。",
       "xpFloat": "+{amount} 经验",
+      "xpFloatRested": "+{amount} 休息",
+      "xpGainRested": "你获得 {amount} 点经验（休息奖励 {rested} 点）。",
       "deathTitle": "你已经死亡。",
       "releaseSpirit": "释放灵魂",
       "chatTab": "聊天",
@@ -521,6 +538,7 @@ export const zh_CN: EnTranslations = {
       "keyBindings": "按键绑定",
       "graphics": "图形",
       "audio": "音频",
+      "interface": "界面",
       "logout": "退出登录",
       "returnToGame": "返回游戏",
       "resetToDefaults": "恢复默认",
@@ -544,15 +562,33 @@ export const zh_CN: EnTranslations = {
       "terrainLow": "低",
       "terrainHigh": "高",
       "touchOpacity": "触控控件透明度",
+      "invertLook": "反转视角（触控）",
       "graphicsReloadNote": "图形质量和地形细节会在重新加载后生效。",
       "reloadNow": "立即重新加载",
       "fullscreen": "全屏",
       "touchLookSpeed": "触屏视角速度",
+      "joystickSize": "摇杆大小",
+      "buttonSize": "按钮大小",
+      "joystickDeadzone": "摇杆死区",
       "leftHandedTouch": "左手触屏模式",
       "filterProfanity": "过滤脏话",
       "clickMoveButton": "点击移动按键",
       "clickToMove": "点击移动",
       "graphicsNote": "降低镜头速度可让鼠标视角更平稳。渲染质量低于 100% 可在较弱设备上提升 FPS。",
+      "fieldOfView": "视野",
+      "hudOpacity": "界面不透明度",
+      "tooltipScale": "提示文字大小",
+      "fctScale": "战斗文字大小",
+      "chatFontScale": "聊天文字大小",
+      "chatOpacity": "聊天背景不透明度",
+      "compactChat": "紧凑聊天框",
+      "frostedPanels": "毛玻璃面板",
+      "highContrastText": "高对比度文字",
+      "reduceMotion": "减少动画",
+      "showFps": "显示帧率",
+      "invertLookY": "反转视角（Y轴）",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "这些选项仅改变你自己的视图，并保存在此设备上。",
       "soundEffects": "音效",
       "musicVolume": "音乐音量",
       "music": "音乐",
@@ -1037,6 +1073,7 @@ export const zh_CN: EnTranslations = {
       "readyQuestAria": "可交付任务：{name}",
       "discussQuest": "谈论{name}。",
       "discussQuestAria": "谈论任务：{name}",
+      "nythraxisDeathlessKingWarning": "三件遗物讲述着同一个故事：奥德伦为守护国王而战，马尔里克打破了死亡的界限，沃斯试图阻止随后发生的一切。封印正在减弱，废弃墓穴就是通往地下的道路。",
       "browseGoods": "让我看看你的货物。",
       "browseGoodsAria": "查看 {name} 的货物",
       "worldMarket": "让我看看世界市场。",
@@ -1044,6 +1081,7 @@ export const zh_CN: EnTranslations = {
       "accept": "接受",
       "decline": "拒绝",
       "continue": "继续",
+      "done": "完成",
       "completeQuest": "完成任务",
       "turnIn": "交付",
       "back": "返回",
@@ -1108,7 +1146,8 @@ export const zh_CN: EnTranslations = {
       "food": "食物",
       "drink": "饮料",
       "tool": "工具",
-      "potion": "药水"
+      "potion": "药水",
+      "elixir": "药剂"
     },
     "stats": {
       "armor": "护甲",
@@ -1124,6 +1163,8 @@ export const zh_CN: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{quality}{kind}",
+      "currentlyEquipped": "当前装备",
+      "ifYouEquip": "装备后",
       "damageSpeed": "{min} - {max} 伤害 速度 {speed}",
       "dps": "（每秒 {dps} 伤害）",
       "dagger": "匕首",
@@ -1247,6 +1288,14 @@ export const zh_CN: EnTranslations = {
         "name": "战斗怒吼",
         "description": "使你的攻击强度提高 20，持续 2 分钟。"
       },
+      "commanding_shout": {
+        "name": "命令怒吼",
+        "description": "使你的耐力提高 6，持续 2 分钟。"
+      },
+      "demoralizing_shout": {
+        "name": "挫志怒吼",
+        "description": "发出可怕的怒吼，使附近所有敌人的攻击强度降低 30，持续 30 秒。"
+      },
       "charge": {
         "name": "冲锋",
         "description": "向一名敌人冲锋，产生 9 点怒气并使其昏迷 1 秒。8-25 码距离。"
@@ -1315,6 +1364,10 @@ export const zh_CN: EnTranslations = {
         "name": "造水术",
         "description": "制造 2 瓶水，饮用后恢复法力。更高等级可制造更纯净的水。"
       },
+      "conjure_food": {
+        "name": "造食术",
+        "description": "制造 2 份面包，食用后恢复生命值。更高等级可制造更丰盛的食物。"
+      },
       "fire_blast": {
         "name": "火焰冲击",
         "description": "冲击敌人，造成 {damage} 点火焰伤害。瞬发。"
@@ -1338,6 +1391,10 @@ export const zh_CN: EnTranslations = {
       "scorch": {
         "name": "灼烧",
         "description": "灼烧敌人，造成 {damage} 点火焰伤害。施法迅速。"
+      },
+      "pyroblast": {
+        "name": "炎爆术",
+        "description": "投掷一颗巨大的火焰陨石，造成 {damage} 点火焰伤害，并在一段时间内造成额外伤害。"
       },
       "ice_barrier": {
         "name": "寒冰护体",
@@ -1387,6 +1444,46 @@ export const zh_CN: EnTranslations = {
         "name": "冲动",
         "description": "热血沸腾，立即恢复 60 点能量。"
       },
+      "garrote": {
+        "name": "锁喉",
+        "description": "勒住敌人的喉咙，立即造成伤害，并使其流血，在 18 秒内受到 {damage} 点伤害。必须处于潜行状态。奖励 1 个连击点。"
+      },
+      "cheap_shot": {
+        "name": "偷袭",
+        "description": "攻击目标，使其昏迷 4 秒。必须处于潜行状态。奖励 2 个连击点。"
+      },
+      "sap": {
+        "name": "闷棍",
+        "description": "使目标无法行动，持续 8 秒。必须处于潜行状态且不在战斗中。任何伤害都会打破效果。"
+      },
+      "crippling_poison": {
+        "name": "致残毒药",
+        "description": "以致残毒药攻击目标，造成 {damage} 点自然伤害，并使其移动速度降低 50%，持续 12 秒。"
+      },
+      "expose_armor": {
+        "name": "破甲",
+        "description": "终结技，使目标护甲值降低。消耗的连击点越多，削减得越深。"
+      },
+      "rupture": {
+        "name": "割裂",
+        "description": "终结技，撕裂目标，使其流血，在 16 秒内受到 {damage} 点伤害。"
+      },
+      "vanish": {
+        "name": "消失",
+        "description": "从视野中消失，即使在战斗中也能进入潜行状态。隐身时你的移动速度降低 30%。持续最多 10 秒。"
+      },
+      "instant_poison": {
+        "name": "速效毒药",
+        "description": "为你的武器淬毒，持续 30 分钟，使你的每次近战攻击额外造成 8 点自然伤害。"
+      },
+      "deadly_poison": {
+        "name": "致命毒药",
+        "description": "为你的武器淬毒，持续 30 分钟，使你的每次近战攻击额外造成 14 点自然伤害。"
+      },
+      "blind": {
+        "name": "致盲",
+        "description": "使目标失明，导致其神志不清地四处游荡，持续 8 秒。任何伤害都会打破效果。"
+      },
       "seal_of_righteousness": {
         "name": "正义圣印",
         "description": "使你充满神圣能量，持续 30 秒，使每次近战挥击造成 4 点额外神圣伤害。可用审判释放。"
@@ -1435,6 +1532,10 @@ export const zh_CN: EnTranslations = {
         "name": "正义之怒",
         "description": "使你的神圣伤害产生的威胁值提高 60%，持续 30 分钟。防护圣骑士的核心技能。"
       },
+      "retribution_aura": {
+        "name": "惩戒光环",
+        "description": "以神圣能量环绕自身，持续 30 分钟，对任何近战攻击你的敌人造成 5 点神圣伤害。"
+      },
       "tame_beast": {
         "name": "驯服野兽",
         "description": "开始驯服一只野兽作为你的伙伴。它必须不高于你的等级，且不能是精英。你的宠物会跟随你、攻击敌人，并保持自己的威胁值。同一时间只能拥有一只宠物。"
@@ -1470,6 +1571,10 @@ export const zh_CN: EnTranslations = {
       "wing_clip": {
         "name": "摔绊",
         "description": "造成伤口，使敌人移动速度降低 40%，持续 10 秒。"
+      },
+      "aspect_of_the_monkey": {
+        "name": "猿猴守护",
+        "description": "获得猿猴守护，使躲闪几率提高 8%，持续 30 分钟。"
       },
       "aspect_of_the_cheetah": {
         "name": "猎豹守护",
@@ -1547,9 +1652,17 @@ export const zh_CN: EnTranslations = {
         "name": "烈焰震击",
         "description": "用火焰灼烧目标，造成 25 点伤害，并在 12 秒内额外造成 {damage}。"
       },
+      "flametongue_weapon": {
+        "name": "火舌武器",
+        "description": "用元素之火灌注你的武器：每次挥击额外造成 8 点火焰伤害，持续 5 分钟。"
+      },
       "frost_shock": {
         "name": "冰霜震击",
         "description": "立即以冰霜冲击目标，造成 {damage} 点冰霜伤害，并使其移动速度降低 50%，持续 8 秒。"
+      },
+      "frostbrand_weapon": {
+        "name": "霜刃武器",
+        "description": "为你的武器附上刺骨寒霜：每次挥击额外造成 8 点伤害，持续 5 分钟。"
       },
       "ghost_wolf": {
         "name": "幽魂之狼",
@@ -1667,6 +1780,46 @@ export const zh_CN: EnTranslations = {
         "name": "星火术",
         "description": "召下一道星辰之火，造成 {damage} 点奥术伤害。"
       },
+      "travel_form": {
+        "name": "旅行形态",
+        "description": "化为迅捷的旅行形态，使移动速度提高 40%。无法在战斗中使用。"
+      },
+      "enrage": {
+        "name": "激怒",
+        "description": "立即生成 20 点怒气。仅限熊形态。"
+      },
+      "bash": {
+        "name": "重击",
+        "description": "昏迷目标 2 秒。仅限熊形态。"
+      },
+      "faerie_fire": {
+        "name": "精灵之火",
+        "description": "使目标的护甲降低 35，持续 40 秒。"
+      },
+      "hibernate": {
+        "name": "休眠",
+        "description": "迫使目标陷入深度睡眠，最多持续 8 秒。任何伤害都会将其唤醒。"
+      },
+      "dash": {
+        "name": "急奔",
+        "description": "向前冲刺，使移动速度提高 50%，持续 15 秒。仅限猎豹形态。"
+      },
+      "pounce": {
+        "name": "扑击",
+        "description": "一个潜行开场技，昏迷目标 2 秒。奖励 1 个连击点。仅限猎豹形态。"
+      },
+      "insect_swarm": {
+        "name": "虫群",
+        "description": "敌人被虫群侵袭，在 12 秒内受到 {damage} 点自然伤害。"
+      },
+      "tigers_fury": {
+        "name": "猛虎之怒",
+        "description": "使攻击强度提高 40，持续 6 秒。仅限猎豹形态。"
+      },
+      "rip": {
+        "name": "割裂",
+        "description": "终结技，在 12 秒内造成流血伤害。消耗连击点。仅限猎豹形态。"
+      },
       "mortal_strike": {
         "name": "致死打击",
         "description": "凶狠打击，造成武器伤害外加 {damage} 点伤害。（武器专精标志技能）"
@@ -1694,6 +1847,26 @@ export const zh_CN: EnTranslations = {
       "summon_voidwalker": {
         "name": "召唤虚空行者",
         "description": "召唤一只听从术士命令的虚空行者。虚空行者是一种坚韧的恶魔，会嘲讽你的敌人并承受打击。召唤新的恶魔会驱散你当前的恶魔。你同时只能拥有一只恶魔。"
+      },
+      "summon_succubus": {
+        "name": "召唤魅魔",
+        "description": "召唤一只听从术士命令的魅魔。魅魔是一种脆弱的恶魔，会快速出手并在近战中造成重创。召唤新的恶魔会驱散你当前的恶魔。你同时只能拥有一只恶魔。"
+      },
+      "summon_felhunter": {
+        "name": "召唤地狱猎犬",
+        "description": "召唤一只听从术士命令的地狱猎犬。地狱猎犬会用暗影撕咬从远处骚扰敌人，擅长猎杀施法者。召唤新的恶魔会驱散你当前的恶魔。你同时只能拥有一只恶魔。"
+      },
+      "summon_felguard": {
+        "name": "召唤恶魔卫士",
+        "description": "召唤一只听从术士命令的恶魔卫士。恶魔卫士是一种坚韧的近战恶魔，会冲入战斗并独当一面。召唤新的恶魔会驱散你当前的恶魔。你同时只能拥有一只恶魔。"
+      },
+      "summon_infernal": {
+        "name": "召唤地狱火",
+        "description": "将一只地狱火束缚于你的意志之下——这是一头庞大的破坏巨兽，拥有毁灭性的近战能力，以及所有恶魔中最深厚的生命与护甲。漫长的冷却时间限制了它的原始威力。召唤新的恶魔会驱散你当前的恶魔。你同时只能拥有一只恶魔。"
+      },
+      "summon_doomguard": {
+        "name": "召唤末日守卫",
+        "description": "将一只末日守卫束缚于你的意志之下——这是一种精英恶魔，会从远处倾泻沉重的暗影伤害。漫长的冷却时间限制了它的毁灭性威力。召唤新的恶魔会驱散你当前的恶魔。你同时只能拥有一只恶魔。"
       },
       "bear_charge": {
         "name": "野熊冲锋",
@@ -2146,6 +2319,51 @@ export const zh_CN: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "裂开的龙鳞"
       },
+      "conjured_bread": {
+        "name": "魔法面包"
+      },
+      "conjured_bread2": {
+        "name": "魔法黑麦面包"
+      },
+      "conjured_bread3": {
+        "name": "魔法甜面包"
+      },
+      "roadwardens_helm": {
+        "name": "路卫头盔"
+      },
+      "wayfarers_hood": {
+        "name": "旅人兜帽"
+      },
+      "acolytes_circlet": {
+        "name": "见习者头环"
+      },
+      "reinforced_pauldrons": {
+        "name": "强化肩甲"
+      },
+      "embroidered_mantle": {
+        "name": "绣纹披肩"
+      },
+      "sturdy_belt": {
+        "name": "坚固旅行腰带"
+      },
+      "silk_sash": {
+        "name": "编织丝绸腰带"
+      },
+      "roughspun_gloves": {
+        "name": "粗纺手套"
+      },
+      "bristlehide_spaulders": {
+        "name": "鬃皮肩甲"
+      },
+      "sableweb_cord": {
+        "name": "黑网腰绳"
+      },
+      "gorraks_cleaver": {
+        "name": "戈拉克的劈刀"
+      },
+      "mossy_handwraps": {
+        "name": "苔藓护手"
+      },
       "bristleback_maul": {
         "name": "硬鬃重槌"
       },
@@ -2293,6 +2511,96 @@ export const zh_CN: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "龙影足垫"
       },
+      "glimmerfin_koi": {
+        "name": "微光鳍锦鲤"
+      },
+      "raw_bog_eel": {
+        "name": "生沼泽鳗鱼"
+      },
+      "raw_frostgill_trout": {
+        "name": "生霜鳃鳟鱼"
+      },
+      "raw_marsh_pike": {
+        "name": "生沼泽狗鱼"
+      },
+      "raw_river_perch": {
+        "name": "生河鲈鱼"
+      },
+      "raw_stonescale_carp": {
+        "name": "生石鳞鲤鱼"
+      },
+      "soggy_boot": {
+        "name": "湿透的靴子"
+      },
+      "elixir_of_the_bear": {
+        "name": "巨熊药剂"
+      },
+      "lesser_healing_potion": {
+        "name": "次级治疗药水"
+      },
+      "lesser_mana_potion": {
+        "name": "次级法力药水"
+      },
+      "healing_potion": {
+        "name": "治疗药水"
+      },
+      "mana_potion": {
+        "name": "法力药水"
+      },
+      "tunnelkings_spade": {
+        "name": "隧道王之铲"
+      },
+      "brutoks_maul": {
+        "name": "布鲁托克的巨槌"
+      },
+      "cracked_ogre_tusk": {
+        "name": "破裂的食人魔獠牙"
+      },
+      "crag_warden_cudgel": {
+        "name": "峭壁守卫者短棍"
+      },
+      "cragmaw_prowlboots": {
+        "name": "裂颚潜行靴"
+      },
+      "drowned_tide_scepter": {
+        "name": "溺亡潮汐权杖"
+      },
+      "emberfang_warblade": {
+        "name": "炽牙战刃"
+      },
+      "emberwing_cinderscale": {
+        "name": "炽翼煤鳞"
+      },
+      "emberwing_legguards": {
+        "name": "炽翼护腿"
+      },
+      "gravewardens_shiv": {
+        "name": "守墓人尖刀"
+      },
+      "hollow_vigil_staff": {
+        "name": "空寂守望之杖"
+      },
+      "maldrecs_soulbinder": {
+        "name": "玛尔德雷克的缚魂器"
+      },
+      "oathbound_greaves": {
+        "name": "誓约护胫"
+      },
+      "skullsmasher_warbelt": {
+        "name": "碎颅者战腰带"
+      },
+      "skullsplitter_dirk": {
+        "name": "裂颅匕首"
+      },
+      "sloomtooth_tidefang": {
+        "name": "涝牙的潮汐之牙"
+      },
+      "tidereaver_gaff": {
+        "name": "裂潮者钩杆"
+      },
+      "verlans_oathblade": {
+        "name": "维尔兰的誓约之刃"
+      },
       "briny_idol": {
         "name": "咸海神像"
       },
@@ -2408,13 +2716,13 @@ export const zh_CN: EnTranslations = {
         "name": "古老墓穴之门"
       },
       "captains_crest": {
-        "name": "队长纹章"
+        "name": "墓穴钥石上半部"
       },
       "priests_sigil": {
-        "name": "祭司印记"
+        "name": "墓穴钥石下半部"
       },
       "royal_seal": {
-        "name": "皇家徽印"
+        "name": "古老日记"
       },
       "crypt_keystone": {
         "name": "墓穴钥石"
@@ -2424,12 +2732,6 @@ export const zh_CN: EnTranslations = {
       },
       "kings_signet": {
         "name": "国王印戒"
-      },
-      "nythraxis_vision": {
-        "name": "尼思拉克西斯幻象"
-      },
-      "aldrics_seal": {
-        "name": "奥德里克的徽印"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const zh_CN: EnTranslations = {
       },
       "voidwalker": {
         "name": "虚空行者"
+      },
+      "succubus": {
+        "name": "魅魔"
+      },
+      "grix_the_tunnelking": {
+        "name": "隧道之王格里克斯"
+      },
+      "brutok_skullsmasher": {
+        "name": "碎颅者布鲁托克"
+      },
+      "captain_verlan": {
+        "name": "维尔兰队长"
+      },
+      "old_cragmaw": {
+        "name": "老裂颚"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "溺亡者涝牙"
+      },
+      "voskar_emberwing": {
+        "name": "炽翼沃斯卡"
+      },
+      "wraithbinder_maldrec": {
+        "name": "缚魂者玛尔德雷克"
+      },
+      "felhunter": {
+        "name": "地狱猎犬"
+      },
+      "felguard": {
+        "name": "恶魔卫士"
+      },
+      "infernal": {
+        "name": "地狱火"
+      },
+      "doomguard": {
+        "name": "末日守卫"
       },
       "choirmother_selthe": {
         "name": "唱诗母塞尔瑟"
@@ -3445,9 +3783,9 @@ export const zh_CN: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "躁动的亡者",
-        "text": "Thornpeak 的亡者身上刻着我不认识的符文，{playerName}。带回十块符文骨片，让我看清是什么唤醒了他们。",
-        "completion": "每块碎片上都有同一个标记：一顶王冠。它不属于 Eastbrook 的任何血脉。",
+        "title": "骨原的异动",
+        "text": "Thornpeak Heights 出事了，{playerName}。亡者不再漫无目的地游荡。他们在 Highwatch 以北的骨原集结并行军，那里是旧战场与峭壁道路交汇之处。去那里调查骨甲亡魂的异动，并带回任何能说明是什么驱使它们的证据。",
+        "completion": "每块碎片上都有同一个标记……一顶王冠。我以前见过它，刻在一些 Eastbrook 记录中早已遗忘的旧坟上。",
         "objectives": {
           "0": {
             "label": "符文骨片"
@@ -3456,8 +3794,8 @@ export const zh_CN: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "被遗忘者的坟墓",
-        "text": "这顶王冠不属于 Eastbrook 记录中仍被记载的任何血脉。北方战场附近立着三座古老纪念碑：奥德伦队长、大祭司马尔里克和皇家刺客沃斯。触碰每一块石碑并聆听，{playerName}。",
-        "completion": "奥德伦依旧忠诚，马尔里克拒绝接受死亡，而沃斯比任何人都更早看见危险。他们三人都曾侍奉尼思拉克西斯王。",
+        "text": "我以前见过这些标记，就在北方战场周围的三座旧坟上。奥德伦队长葬在东侧高地，马尔里克大祭司在中央破路旁，皇家刺客沃斯则在西侧峭壁边。触碰每座坟墓并倾听，{playerName}。死者或许记得生者遗忘的事。",
+        "completion": "奥德伦依旧忠诚，马尔里克拒绝接受死亡，而沃斯比任何人都更早看见危险。他们三人都侍奉同一位被遗忘的国王。",
         "objectives": {
           "0": {
             "label": "奥德伦队长之墓的幻象"
@@ -3472,24 +3810,24 @@ export const zh_CN: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "废弃墓穴",
-        "text": "幻象指向旧废墟下的一座废弃墓穴。从其中被腐化的遗骸上取回队长纹章、祭司印记和皇家徽印。",
-        "completion": "这些遗物曾属于尼思拉克西斯最亲近的人。它们仍承载着他陨落的重量。",
+        "text": "幻象指向西侧峭壁中的废弃墓穴。古老传说称，那座墓穴曾安置一位国王。也许在马尔里克的仪式把他扭曲成不死之物后，Thornpeak 将他封在了下面。进入墓穴，看看里面还剩下什么。",
+        "completion": "钥石的两半合在了一起，而沃斯的日记写明了它们封印之物：尼思拉克西斯国王的印戒。如果日记属实，那枚印戒就是通往他陵墓的钥匙。",
         "objectives": {
           "0": {
-            "label": "队长纹章"
+            "label": "墓穴钥石上半部"
           },
           "1": {
-            "label": "祭司印记"
+            "label": "墓穴钥石下半部"
           },
           "2": {
-            "label": "皇家徽印"
+            "label": "古老日记"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "受缚守卫者",
-        "text": "Thornpeak 的幸存者创造了一个骨之守卫来保护封印。把墓穴钥石带到仪式法阵，在那里使用它，然后坚持住。",
-        "completion": "这枚印戒证明了一切。Eastbrook 地底被遗忘的国王就是尼思拉克西斯。",
+        "text": "沃斯写道，幸存者把国王印戒封在一名古老守卫身后，免得任何人因偶然或野心抵达尼思拉克西斯的陵墓。把墓穴钥石带到废弃墓穴以东、西侧坟墓东南方平地上的仪式法阵。在那里使用它，击破守卫，并带回印戒。",
+        "completion": "三件遗物讲述着同一个故事：奥德伦为守护国王而战，马尔里克打破了死亡的界限，沃斯试图阻止随后发生的一切。封印正在减弱，而这枚印戒就是尼思拉克西斯陵墓的钥匙。你现在已经完成调谐，可以进入尼思拉克西斯墓穴。",
         "objectives": {
           "0": {
             "label": "在仪式法阵使用墓穴钥石"
@@ -3499,19 +3837,6 @@ export const zh_CN: EnTranslations = {
           },
           "2": {
             "label": "国王印戒"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "尼思拉克西斯，Eastbrook 的灾厄",
-        "text": "尼思拉克西斯王濒死时被带回家，但马尔里克不肯让他安息。留在我身边，{playerName}，注视封印的记忆。",
-        "completion": "数百年来封印一直稳固。现在它正在减弱。如果尼思拉克西斯再次崛起，Eastbrook 将成为亡者之国。你现在已调谐，可以进入尼思拉克西斯墓穴。",
-        "objectives": {
-          "0": {
-            "label": "见证尼思拉克西斯的幻象"
-          },
-          "1": {
-            "label": "已与奥德里克修士交谈"
           }
         }
       },

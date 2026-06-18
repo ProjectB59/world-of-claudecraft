@@ -4,9 +4,8 @@ import { OVERHEAD_EMOTES, type IWorld } from '../world_api';
 import { groundHeight, WATER_LEVEL, zoneBiomeAt } from '../sim/world';
 import {
   MOBS, ABILITIES, DUNGEON_X_THRESHOLD, DUNGEON_LIST, QUESTS,
-  instanceOrigin, INSTANCE_SLOT_COUNT, ARENA_SLOT_COUNT, arenaOrigin, arenaOriginAt, isArenaPos, dungeonAt,
+  instanceOrigin, INSTANCE_SLOT_COUNT, ARENA_SLOT_COUNT, arenaOrigin, isArenaPos, dungeonAt,
 } from '../sim/data';
-import { ARENA_LAYOUT, DUNGEON_WALL_X } from '../sim/dungeon_layout';
 import { cameraOcclusion } from '../sim/colliders';
 import type { BiomeId } from '../sim/types';
 import { AnimState, CharacterVisual, createCharacterVisual } from './characters';
@@ -17,6 +16,7 @@ import { plankTexture, sparkleTexture } from './textures';
 import { DungeonInteriors, ensureDungeonAssets } from './dungeon';
 import { buildGroundQuestObject } from './quest_objects';
 import { Vfx } from './vfx';
+import { Weather } from './weather';
 import {
   GFX, initGfxTier, sharedUniforms, SUN_ANCHOR, SUN_DIR, surfaceMat, urlForcedTier,
 } from './gfx';
@@ -26,6 +26,9 @@ import { buildWater, WaterView } from './water';
 import { buildClouds, buildSky, SkyView } from './sky';
 import { buildFoliage, FoliageView } from './foliage';
 import { buildFish, FishView } from './fish';
+import { buildCritters, CritterField } from './critters';
+import { buildMotes, MotesView } from './motes';
+import { buildBirds, BirdsView } from './birds';
 import { shouldRenderStealthGhost } from './stealth';
 import { t } from '../ui/i18n';
 import { tEntity } from '../ui/entity_i18n';
@@ -33,6 +36,8 @@ import { raidMarkerDataUrl } from '../ui/icons';
 import { isProjectedNameplateAnchorVisible, nameplateScreenTransform } from './nameplate_projection';
 import { comboPipsFor, COMBO_PIP_MAX } from './nameplate_combo';
 import { stepCameraOcclusion, type CameraOcclusionState } from './camera_collision';
+import { castBarState } from './cast_bar';
+import { isMobThreateningViewer } from './nameplate_threat';
 
 const NAMEPLATE_RANGE = 55;
 const NAMEPLATE_RANGE_SQ = NAMEPLATE_RANGE * NAMEPLATE_RANGE;
@@ -65,6 +70,7 @@ const AIRBORNE_EPS = 0.4;
 const LIGHT_BUDGET_RANGE_SQ = 55 * 55;
 // HDR boosts so the bloom pass picks these out (composer tiers only)
 const SELECTION_RING_BOOST = 1.5;
+const SELECTION_RING_SPIN = 0.6; // rad/s — slow classic target-reticle rotation
 const SPARKLE_BOOST = 1.5;
 const PORTAL_BOOST = 2;
 // Third-person camera collision (see updateCamera). Prop colliders marked
@@ -124,6 +130,9 @@ interface EntityView {
   emoteIconEl: HTMLImageElement;
   emoteLabelEl: HTMLSpanElement;
   markerEl: HTMLDivElement;
+  castBar: HTMLDivElement; // overhead spell cast/channel bar, below the hp bar
+  castFill: HTMLDivElement;
+  castLabel: HTMLDivElement;
   raidMarkEl: HTMLDivElement; // party raid/target marker, above the name
   comboRow: HTMLDivElement; // rogue/druid combo-point pips, above the name
   comboPips: HTMLDivElement[]; // the COMBO_PIP_MAX pip cells, lit left-to-right
@@ -185,7 +194,6 @@ function npcDisplayName(npcId: string): string {
 }
 
 function dungeonDisplayName(dungeonId: string): string {
-  if (dungeonId === 'nythraxis_crypt') return DUNGEON_LIST.find((d) => d.id === dungeonId)?.name ?? 'Abandoned Crypt';
   return tEntity({ kind: 'dungeon', id: dungeonId, field: 'name' });
 }
 
@@ -245,6 +253,9 @@ export class Renderer {
   private terrainView: TerrainView;
   private foliage: FoliageView;
   private fish: FishView;
+  private critters: CritterField;
+  private motes: MotesView;
+  private birds: BirdsView;
   private fogScratch = new THREE.Color();
   private flames: THREE.Mesh[];
   private fireLights: THREE.PointLight[];
@@ -264,6 +275,7 @@ export class Renderer {
   private time = 0;
   private frameIdx = 0;
   vfx: Vfx;
+  private weather: Weather;
 
   private lowGfx: boolean;
   private post: PostPipeline | null = null;
@@ -453,19 +465,38 @@ export class Renderer {
     this.scene.add(this.foliage.group);
     this.fish = buildFish(this.sim.cfg.seed);
     this.scene.add(this.fish.group);
+    this.critters = buildCritters(this.sim.cfg.seed);
+    this.scene.add(this.critters.group);
+    this.motes = buildMotes(this.sim.cfg.seed);
+    this.scene.add(this.motes.group);
+    this.birds = buildBirds(this.sim.cfg.seed);
+    this.scene.add(this.birds.group);
     const props = buildProps(this.sim.cfg.seed);
     this.scene.add(props.group);
     this.flames = props.flames;
     this.fireLights = props.fireLights;
     this.propsView = props;
 
-    // selection ring
-    const ringGeo = new THREE.RingGeometry(0.9, 1.15, 32);
+    // selection ring — a classic target reticle: a base ring plus four
+    // inward-pointing ticks. The ring is radially symmetric (so spin reads
+    // only off the ticks); it rotates slowly and pulses in sync() below.
+    const ringGeo = new THREE.RingGeometry(0.9, 1.15, 48);
     ringGeo.rotateX(-Math.PI / 2);
-    this.selectionRing = new THREE.Mesh(
-      ringGeo,
-      new THREE.MeshBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.9, depthWrite: false }),
-    );
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.9, depthWrite: false });
+    this.selectionRing = new THREE.Mesh(ringGeo, ringMat);
+    // four cardinal ticks, flat in the XZ plane, sharing the ring material so
+    // the per-frame hostile/friendly recolour carries over for free.
+    const tickGeo = new THREE.BufferGeometry();
+    tickGeo.setAttribute('position', new THREE.Float32BufferAttribute([
+      0.72, 0, 0,     // inner tip (points toward the unit)
+      1.2, 0, 0.16,   // outer corners
+      1.2, 0, -0.16,
+    ], 3));
+    for (let i = 0; i < 4; i++) {
+      const t = new THREE.Mesh(tickGeo, ringMat);
+      t.rotation.y = (i * Math.PI) / 2;
+      this.selectionRing.add(t);
+    }
     this.selectionRing.visible = false;
     this.scene.add(this.selectionRing);
 
@@ -478,6 +509,9 @@ export class Renderer {
       return new THREE.Vector3(v.group.position.x, v.group.position.y + h, v.group.position.z);
     });
     this.vfx.setViewportScale(this.webgl.domElement.clientHeight * this.webgl.getPixelRatio(), 60);
+
+    // ambient precipitation: biome-driven snow/rain that rides with the camera
+    this.weather = new Weather(this.scene, this.lowGfx);
 
     // post chain (bloom + grade, GTAO on ultra); low renders direct
     if (GFX.composer) this.post = buildComposer(this.webgl, this.scene, this.camera, this.viewport.width, this.viewport.height);
@@ -539,6 +573,17 @@ export class Renderer {
   /** Tone-mapping exposure multiplier (1.0 = the default look). */
   setBrightness(mult: number): void {
     this.webgl.toneMappingExposure = this.baseExposure * mult;
+  }
+
+  /** Toggle biome-driven ambient precipitation (snow/rain). */
+  setWeatherEnabled(on: boolean): void {
+    this.weather.setEnabled(on);
+  }
+
+  /** Vertical camera field of view in degrees (55..100, default 60). */
+  setCameraFov(deg: number): void {
+    this.camera.fov = Math.min(100, Math.max(55, deg));
+    this.camera.updateProjectionMatrix();
   }
 
   /** Resolution multiplier on top of the device pixel ratio (0.5..1). */
@@ -854,7 +899,16 @@ export class Renderer {
     const hpFill = document.createElement('div');
     hpFill.className = 'np-hpfill';
     hpBar.appendChild(hpFill);
-    np.append(emoteEl, raidMark, comboRow, marker, nameEl, hpBar);
+    // overhead cast bar — hidden until the entity starts casting/channeling
+    const castBar = document.createElement('div');
+    castBar.className = 'np-castbar';
+    castBar.style.display = 'none';
+    const castFill = document.createElement('div');
+    castFill.className = 'np-castfill';
+    const castLabel = document.createElement('div');
+    castLabel.className = 'np-castlabel';
+    castBar.append(castFill, castLabel);
+    np.append(emoteEl, raidMark, comboRow, marker, nameEl, hpBar, castBar);
     this.nameplateLayer.appendChild(np);
 
     // object views gate their own casters; character shadows live in visual
@@ -862,7 +916,7 @@ export class Renderer {
     if (!visual) collectCasters(group, objectCasters);
     this.views.set(e.id, {
       group, visual, sheepVisual: null, bearVisual: null, catVisual: null, height, clickTarget,
-      nameplate: np, nameEl, hpBar, hpFill, emoteEl, emoteIconEl, emoteLabelEl, markerEl: marker, raidMarkEl: raidMark, comboRow, comboPips, sparkle, objectMesh, portal,
+      nameplate: np, nameEl, hpBar, hpFill, emoteEl, emoteIconEl, emoteLabelEl, markerEl: marker, raidMarkEl: raidMark, comboRow, comboPips, castBar, castFill, castLabel, sparkle, objectMesh, portal,
       nameplateDisplay: 'none', nameplateTransform: '', nameplateSig: '', nameplateHpWidth: '', comboSig: '',
       objectCasters, shadowOn: true, isFar: false, lastOverheadEmoteKey: null,
       lastX: e.pos.x, lastZ: e.pos.z, skin: e.skin,
@@ -886,6 +940,14 @@ export class Renderer {
   triggerHit(entityId: number): void {
     const v = this.views.get(entityId);
     if (v) this.activeVisual(v)?.playHit();
+  }
+
+  private isHostileSelectionTarget(target: Entity): boolean {
+    if (target.kind === 'mob') return target.hostile;
+    if (target.kind !== 'player' || target.dead || target.id === this.sim.playerId) return false;
+    if (this.sim.duelInfo?.state === 'active' && this.sim.duelInfo.otherPid === target.id) return true;
+    const match = this.sim.arenaInfo?.match;
+    return match?.state === 'active' && (match.oppPid === target.id || match.enemies.some((e) => e.pid === target.id));
   }
 
   // -------------------------------------------------------------------------
@@ -1212,10 +1274,19 @@ export class Renderer {
       v.visual.setFar(v.isFar && active === v.visual);
 
       // animation state machine inputs, derived from render-space motion with
-      // hysteresis so a one-frame speed dip can't reset the walk clip
-      const vx = x - v.lastX, vz = z - v.lastZ;
-      v.lastX = x;
-      v.lastZ = z;
+      // hysteresis so a one-frame speed dip can't reset the walk clip.
+      // For the local player online, sample the *plain* interpolated sim motion
+      // (ax/ay/az), never the smoothed/predicted self render position (selfPos):
+      // the online self predictor freezes-then-jumps within each snapshot
+      // interval, and feeding that jitter to the cadence/airborne logic
+      // intermittently flips the base state and resets the walk clip. The
+      // predictor moves only the mesh. Offline, ax==x so this is a no-op.
+      const ax = isSelf ? e.prevPos.x + (e.pos.x - e.prevPos.x) * alpha : x;
+      const ay = isSelf ? e.prevPos.y + (e.pos.y - e.prevPos.y) * alpha : y;
+      const az = isSelf ? e.prevPos.z + (e.pos.z - e.prevPos.z) * alpha : z;
+      const vx = ax - v.lastX, vz = az - v.lastZ;
+      v.lastX = ax;
+      v.lastZ = az;
       const loco = updateLocomotion(v.loco, vx, vz, facing, dt);
       const moving = loco.moving;
       const visuallyDead = isVisuallyDead(e);
@@ -1227,7 +1298,7 @@ export class Renderer {
       const airborne = !visuallyDead && !swimming && (
         !e.onGround
         || (e.kind === 'player'
-          && y - groundHeight(x, z, this.sim.cfg.seed) > AIRBORNE_EPS));
+          && ay - groundHeight(ax, az, this.sim.cfg.seed) > AIRBORNE_EPS));
       const st: AnimState = {
         speed: loco.speed,
         moving,
@@ -1274,9 +1345,11 @@ export class Renderer {
         this.selectionRing.position.copy(tv.group.position);
         this.selectionRing.position.y += 0.08;
         this.selectionRing.scale.setScalar(target.scale);
+        this.selectionRing.rotation.y += dt * SELECTION_RING_SPIN; // slow reticle spin
         const ringMat = this.selectionRing.material as THREE.MeshBasicMaterial;
-        ringMat.color.setHex(target.hostile ? 0xcc2222 : 0xd4af37);
+        ringMat.color.setHex(this.isHostileSelectionTarget(target) ? 0xcc2222 : 0xd4af37);
         if (!this.lowGfx) ringMat.color.multiplyScalar(SELECTION_RING_BOOST); // subtle bloom edge
+        ringMat.opacity = 0.78 + 0.2 * Math.sin(this.time * 4.5); // gentle pulse
         this.selectionRing.visible = true;
       } else {
         this.selectionRing.visible = false;
@@ -1333,6 +1406,10 @@ export class Renderer {
       this.cameraLookAt.x, this.cameraLookAt.y, this.cameraLookAt.z,
       fogFar,
     );
+    this.dungeons?.update(
+      this.camera.position.x, this.camera.position.y, this.camera.position.z,
+      this.cameraLookAt.x, this.cameraLookAt.y, this.cameraLookAt.z,
+    );
     this.foliage.update(
       p.pos.x, p.pos.z,
       this.camera.position.x, this.camera.position.y, this.camera.position.z,
@@ -1340,6 +1417,9 @@ export class Renderer {
       fogFar,
     );
     this.fish.update(p.pos.x, p.pos.z, dt);
+    this.critters.update(p.pos.x, p.pos.z, dt);
+    this.motes.update(p.pos.x, p.pos.z, dt);
+    this.birds.update(p.pos.x, p.pos.z, dt);
 
     this.updateAmbience(p.pos.x, this.camera.position.y, dt);
     // shadow frustum follows the player
@@ -1356,6 +1436,12 @@ export class Renderer {
       this.skyView.setCameraZ(this.camera.position.z, dt);
       this.updateEnvBiome(dt);
     }
+    // precipitation only falls outdoors; indoors/underwater pass null to clear
+    this.weather.update(
+      this.camera.position,
+      dt,
+      this.fogState === 'outdoor' ? zoneBiomeAt(p.pos.z) : null,
+    );
     for (const sp of this.sunSprites) {
       sp.position.copy(this.camera.position).addScaledVector(this.sunDir, 760);
       sp.visible = this.fogState === 'outdoor';
@@ -1460,36 +1546,35 @@ export class Renderer {
     let cx = px - Math.sin(this.camYaw) * Math.cos(this.camPitch) * this.camDist;
     let cy = eyeY + Math.sin(this.camPitch) * this.camDist;
     let cz = pz - Math.cos(this.camYaw) * Math.cos(this.camPitch) * this.camDist;
-    // The Ashen Coliseum is a small enclosed pit and the combatants spawn only
-    // ~6yd from the end walls, so the 12yd chase cam would otherwise sit outside
-    // the walls looking in. Keep it inside the room's interior box.
     if (isArenaPos(p.pos.x)) {
-      const o = arenaOriginAt(p.pos.z);
-      const m = 2; // clearance from the wall faces
-      cx = Math.min(Math.max(cx, o.x - DUNGEON_WALL_X + m), o.x + DUNGEON_WALL_X - m);
-      cz = Math.min(Math.max(cz, o.z + ARENA_LAYOUT.zMin + m), o.z + ARENA_LAYOUT.zMax - m);
+      // Arena walls hide from the camera like buildings, so the chase camera
+      // stays at the player's requested zoom instead of clamping inside the pit.
+      this.camOcclusion.pullT = 1;
+      this.camOcclusion.lensT = 1;
+      this.camOcclusion.fov = CAMERA_BASE_FOV;
+    } else {
+      // Camera collision for non-hideable blockers. Camera-ghost props are left
+      // at the requested zoom and hidden in props.ts while keeping their shadows.
+      let hardT = cameraOcclusion(seed, px, eyeY, pz, cx, cy, cz, CAMERA_COLLIDER_PAD);
+      let softT = cameraOcclusion(seed, px, eyeY, pz, cx, cy, cz, CAMERA_SOFT_COLLIDER_PAD);
+      const segLen = Math.hypot(cx - px, cy - eyeY, cz - pz);
+      if (segLen > 1e-3) {
+        const minT = CAMERA_MIN_DIST / segLen;
+        hardT = Math.min(1, Math.max(hardT, minT));
+        softT = Math.min(1, Math.max(softT, minT));
+      }
+      stepCameraOcclusion(
+        this.camOcclusion,
+        hardT,
+        softT,
+        dt,
+        CAMERA_PULL_IN_RATE,
+        CAMERA_PULL_OUT_RATE,
+        CAMERA_SOFT_PULL_WEIGHT,
+        CAMERA_BASE_FOV,
+        CAMERA_MAX_COMP_FOV,
+      );
     }
-    // Camera collision for non-hideable blockers. Camera-ghost props are left
-    // at the requested zoom and hidden in props.ts while keeping their shadows.
-    let hardT = cameraOcclusion(seed, px, eyeY, pz, cx, cy, cz, CAMERA_COLLIDER_PAD);
-    let softT = cameraOcclusion(seed, px, eyeY, pz, cx, cy, cz, CAMERA_SOFT_COLLIDER_PAD);
-    const segLen = Math.hypot(cx - px, cy - eyeY, cz - pz);
-    if (segLen > 1e-3) {
-      const minT = CAMERA_MIN_DIST / segLen;
-      hardT = Math.min(1, Math.max(hardT, minT));
-      softT = Math.min(1, Math.max(softT, minT));
-    }
-    stepCameraOcclusion(
-      this.camOcclusion,
-      hardT,
-      softT,
-      dt,
-      CAMERA_PULL_IN_RATE,
-      CAMERA_PULL_OUT_RATE,
-      CAMERA_SOFT_PULL_WEIGHT,
-      CAMERA_BASE_FOV,
-      CAMERA_MAX_COMP_FOV,
-    );
     const ct = this.camOcclusion.pullT;
     cx = px + (cx - px) * ct;
     cy = eyeY + (cy - eyeY) * ct;
@@ -1616,14 +1701,21 @@ export class Renderer {
         const diff = e.level - p.level;
         const template = MOBS[e.templateId];
         const elite = !!template?.elite;
+        const boss = !!template?.boss;
         const color = e.dead ? '#999' : diff >= 3 ? '#ff4444' : diff >= 1 ? '#ffaa33' : diff >= -2 ? '#ffe97a' : diff >= -5 ? '#7fdc4f' : '#9d9d9d';
         const mobName = e.ownerId !== null ? e.name : mobDisplayName(e.templateId);
         const name = e.dead ? t('worldContent.corpseName', { name: mobName }) : `[${e.level}${elite ? '+' : ''}] ${mobName}`;
         const hpDisplay = e.dead ? 'none' : '';
         const marker = e.lootable ? '$' : elite && !e.dead ? '◆' : '';
-        this.setNameplateStatic(v, `mob|${name}|${color}|${hpDisplay}|${marker}`, name, color, hpDisplay, marker, 'np-marker loot', '1');
+        // classic "dragon frame" cue: gold bar frame for elites, red for bosses (live mobs only)
+        const frame = e.dead ? '' : boss ? 'boss' : elite ? 'elite' : '';
+        this.setNameplateStatic(v, `mob|${name}|${color}|${hpDisplay}|${marker}|${frame}`, name, color, hpDisplay, marker, 'np-marker loot', '1', frame);
         this.setNameplateHp(v, e);
+        // threat plate: tint the bar red when this mob is aggroed on me
+        v.nameplate.classList.toggle('np-threat', isMobThreateningViewer(e, this.sim.playerId));
       }
+
+      this.updateCastBar(v, e);
     }
   }
 
@@ -1636,12 +1728,15 @@ export class Renderer {
     marker: string,
     markerClass: string,
     opacity: string,
+    frame = '',
   ): void {
     if (sig === v.nameplateSig) return;
     v.nameplateSig = sig;
     v.nameEl.textContent = name;
     v.nameEl.style.color = color;
     v.hpBar.style.display = hpDisplay;
+    v.hpBar.classList.toggle('elite', frame === 'elite');
+    v.hpBar.classList.toggle('boss', frame === 'boss');
     v.markerEl.textContent = marker;
     v.markerEl.className = markerClass;
     v.nameplate.style.opacity = opacity;
@@ -1665,6 +1760,22 @@ export class Renderer {
     for (let i = 0; i < v.comboPips.length; i++) {
       v.comboPips[i].classList.toggle('lit', i < n);
     }
+  }
+
+  // Overhead spell cast/channel bar. The fill + label rules live in the DOM-free
+  // castBarState() helper (cast_bar.ts); here we just push them to the DOM. Casts
+  // fill up toward completion, channels drain down — both honest to the live
+  // cast fields the sim and the online snapshot already expose.
+  private updateCastBar(v: EntityView, e: Entity): void {
+    const st = castBarState(e);
+    if (!st.visible) {
+      if (v.castBar.style.display !== 'none') v.castBar.style.display = 'none';
+      return;
+    }
+    v.castBar.style.display = '';
+    v.castBar.classList.toggle('channel', st.channel);
+    v.castFill.style.width = `${(st.fill * 100).toFixed(1)}%`;
+    v.castLabel.textContent = st.label;
   }
 
   // Hang a speech bubble over an entity's head; it follows the entity and

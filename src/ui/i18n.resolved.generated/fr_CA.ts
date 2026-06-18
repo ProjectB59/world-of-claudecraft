@@ -26,7 +26,8 @@ export const fr_CA: EnTranslations = {
       "maxLevel": "NIVEAU MAX.",
       "totalXp": "EXP totale",
       "lv": "Niv.",
-      "toNext": "avant le suivant"
+      "toNext": "avant le suivant",
+      "rested": "Reposé"
     },
     "progression": {
       "heading": "Progression",
@@ -73,7 +74,12 @@ export const fr_CA: EnTranslations = {
       "needXp": "EXP à vie supplémentaire pour le prestige"
     },
     "settings": {
-      "showOverflowXp": "Afficher l'EXP excédentaire"
+      "showOverflowXp": "Afficher l'EXP excédentaire",
+      "weather": "Effets météo"
+    },
+    "hud": {
+      "lowMana": "Mana faible",
+      "lowEnergy": "Énergie faible"
     },
     "talents": {
       "title": "Talents",
@@ -132,7 +138,16 @@ export const fr_CA: EnTranslations = {
       "noBuilds": "Aucune configuration sauvegardée",
       "save": "Sauvegarder",
       "comingSoonTitle": "Talents à venir",
-      "comingSoonBody": "Cette classe n'a pas encore d'arbres de talents. Vous pouvez continuer à jouer normalement; les arbres complets arriveront dans une future mise à jour."
+      "comingSoonBody": "Cette classe n'a pas encore d'arbres de talents. Vous pouvez continuer à jouer normalement; les arbres complets arriveront dans une future mise à jour.",
+      "readout": {
+        "noTree": "Votre classe n'a pas encore d'arbre de talents.",
+        "locked": "Vous n'avez pas encore débloqué les talents — ils commencent au niveau {level}.",
+        "noSpec": "aucune spécialisation",
+        "summary": "Talents: {head} — {spent}/{total} points dépensés ({breakdown}).",
+        "breakdownClass": "Classe {classPts}",
+        "breakdownSpec": "Classe {classPts}, {spec} {specPts}",
+        "unspent": " {count} non dépensés."
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const fr_CA: EnTranslations = {
       "levelLog": "Vous avez atteint le niveau {level} !",
       "xpGain": "Vous gagnez {amount} points d'expérience.",
       "xpFloat": "+{amount} XP",
+      "xpFloatRested": "+{amount} repos",
+      "xpGainRested": "Vous gagnez {amount} points d'expérience ({rested} bonus de repos).",
       "deathTitle": "Vous êtes mort.",
       "releaseSpirit": "Libérer l'esprit",
       "chatTab": "Discussion",
@@ -521,6 +538,7 @@ export const fr_CA: EnTranslations = {
       "keyBindings": "Raccourcis clavier",
       "graphics": "Graphismes",
       "audio": "Audio",
+      "interface": "Interface",
       "logout": "Déconnexion",
       "returnToGame": "Retour au jeu",
       "resetToDefaults": "Réinitialiser",
@@ -544,15 +562,33 @@ export const fr_CA: EnTranslations = {
       "terrainLow": "Bas",
       "terrainHigh": "Élevé",
       "touchOpacity": "Opacité des commandes tactiles",
+      "invertLook": "Inverser la visée (tactile)",
       "graphicsReloadNote": "La qualité graphique et le détail du terrain s'appliquent après un rechargement.",
       "reloadNow": "Recharger maintenant",
       "fullscreen": "Plein écran",
       "touchLookSpeed": "Vitesse caméra tactile",
+      "joystickSize": "Taille du joystick",
+      "buttonSize": "Taille des boutons",
+      "joystickDeadzone": "Zone morte du joystick",
       "leftHandedTouch": "Mode gaucher tactile",
       "filterProfanity": "Filtrer le langage",
       "clickMoveButton": "Bouton clic pour déplacer",
       "clickToMove": "Cliquer pour se déplacer",
       "graphicsNote": "Réduisez la vitesse de caméra pour une visée plus calme. Une qualité de rendu sous 100 % améliore les FPS sur les machines modestes.",
+      "fieldOfView": "Champ de vision",
+      "hudOpacity": "Opacité de l'interface",
+      "tooltipScale": "Taille du texte des infobulles",
+      "fctScale": "Taille du texte de combat",
+      "chatFontScale": "Taille du texte de discussion",
+      "chatOpacity": "Opacité du fond de discussion",
+      "compactChat": "Discussion compacte",
+      "frostedPanels": "Panneaux givrés",
+      "highContrastText": "Texte à contraste élevé",
+      "reduceMotion": "Réduire les animations",
+      "showFps": "Afficher les FPS",
+      "invertLookY": "Inverser la visée (Y)",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "Ces options ne changent que votre propre vue et sont enregistrées sur cet appareil.",
       "soundEffects": "Effets sonores",
       "musicVolume": "Volume de la musique",
       "music": "Musique",
@@ -1037,6 +1073,7 @@ export const fr_CA: EnTranslations = {
       "readyQuestAria": "Quête prête à rendre : {name}",
       "discussQuest": "Discuter de {name}.",
       "discussQuestAria": "Discuter de la quête : {name}",
+      "nythraxisDeathlessKingWarning": "Les trois reliques racontent la meme histoire: Aldren combattit pour defendre son roi, Malric franchit la frontiere de la mort, et Voss tenta d arreter ce qui suivit. Le sceau faiblit, et la crypte abandonnee est le chemin vers les profondeurs.",
       "browseGoods": "Laissez-moi voir vos marchandises.",
       "browseGoodsAria": "Voir les marchandises de {name}",
       "worldMarket": "Montrez-moi le marché mondial.",
@@ -1044,6 +1081,7 @@ export const fr_CA: EnTranslations = {
       "accept": "Accepter",
       "decline": "Refuser",
       "continue": "Continuer",
+      "done": "Terminé",
       "completeQuest": "Terminer la quête",
       "turnIn": "Rendre",
       "back": "Retour",
@@ -1108,7 +1146,8 @@ export const fr_CA: EnTranslations = {
       "food": "Nourriture",
       "drink": "Boisson",
       "tool": "Outil",
-      "potion": "Potion"
+      "potion": "Potion",
+      "elixir": "Élixir"
     },
     "stats": {
       "armor": "Armure",
@@ -1124,6 +1163,8 @@ export const fr_CA: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{kind} {quality}",
+      "currentlyEquipped": "Actuellement équipé",
+      "ifYouEquip": "Si vous équipez ceci",
       "damageSpeed": "{min} - {max} points de dégâts Vitesse {speed}",
       "dps": "({dps} dégâts par seconde)",
       "dagger": "Dague",
@@ -1247,6 +1288,14 @@ export const fr_CA: EnTranslations = {
         "name": "Cri de guerre",
         "description": "Augmente votre puissance d'attaque de 20 pendant 2 min."
       },
+      "commanding_shout": {
+        "name": "Cri de commandement",
+        "description": "Augmente votre Endurance de 6 pendant 2 min."
+      },
+      "demoralizing_shout": {
+        "name": "Cri démoralisant",
+        "description": "Pousse un cri terrifiant qui réduit la puissance d'attaque de tous les ennemis proches de 30 pendant 30 s."
+      },
       "charge": {
         "name": "Charge",
         "description": "Charge un ennemi, génère 9 rage et l'étourdit pendant 1 s. Portée de 8-25 m."
@@ -1315,6 +1364,10 @@ export const fr_CA: EnTranslations = {
         "name": "Invocation d'eau",
         "description": "Invoque 2 bouteilles d'eau qui restaurent du mana une fois bues. Les rangs supérieurs invoquent une eau plus pure."
       },
+      "conjure_food": {
+        "name": "Invocation de nourriture",
+        "description": "Invoque 2 portions de pain qui restaurent de la vie une fois mangées. Les rangs supérieurs invoquent une nourriture plus consistante."
+      },
       "fire_blast": {
         "name": "Trait de feu",
         "description": "Frappe l'ennemi pour {damage} points de dégâts de Feu. Instantané."
@@ -1338,6 +1391,10 @@ export const fr_CA: EnTranslations = {
       "scorch": {
         "name": "Brûlure",
         "description": "Brûle l'ennemi pour {damage} points de dégâts de Feu. Incantation rapide."
+      },
+      "pyroblast": {
+        "name": "Explosion pyrotechnique",
+        "description": "Projette un immense rocher enflammé qui inflige {damage} points de dégâts de Feu plus des dégâts supplémentaires sur la durée."
       },
       "ice_barrier": {
         "name": "Barrière de glace",
@@ -1387,6 +1444,46 @@ export const fr_CA: EnTranslations = {
         "name": "Poussée d'adrénaline",
         "description": "Votre sang s'embrase et restaure instantanément 60 énergie."
       },
+      "garrote": {
+        "name": "Garrot",
+        "description": "Garrotte l'ennemi, infligeant des dégâts immédiats et le faisant saigner de {damage} pendant 18 s. Vous devez être camouflé. Confère 1 point de combo."
+      },
+      "cheap_shot": {
+        "name": "Coup bas",
+        "description": "Frappe la cible, l'étourdissant pendant 4 s. Vous devez être camouflé. Confère 2 points de combo."
+      },
+      "sap": {
+        "name": "Assommer",
+        "description": "Neutralise la cible pendant 8 s. Vous devez être camouflé et hors combat. Le moindre dégât rompt l'effet."
+      },
+      "crippling_poison": {
+        "name": "Poison affaiblissant",
+        "description": "Frappe la cible avec un poison affaiblissant, infligeant {damage} dégâts de Nature et réduisant sa vitesse de déplacement de 50% pendant 12 s."
+      },
+      "expose_armor": {
+        "name": "Exposer l'armure",
+        "description": "Coup de grâce qui expose la cible, réduisant son armure. Plus vous dépensez de points de combo, plus l'entaille est profonde."
+      },
+      "rupture": {
+        "name": "Rupture",
+        "description": "Coup de grâce qui blesse la cible, la faisant saigner de {damage} pendant 16 s."
+      },
+      "vanish": {
+        "name": "Disparition",
+        "description": "Vous disparaissez et entrez en Camouflage, même en plein combat. Vous vous déplacez 30% plus lentement tant que vous êtes dissimulé. Dure jusqu'à 10 s."
+      },
+      "instant_poison": {
+        "name": "Poison instantané",
+        "description": "Enduit votre arme pendant 30 min, chacune de vos attaques en mêlée infligeant 8 dégâts de Nature supplémentaires."
+      },
+      "deadly_poison": {
+        "name": "Poison mortel",
+        "description": "Enduit votre arme pendant 30 min, chacune de vos attaques en mêlée infligeant 14 dégâts de Nature supplémentaires."
+      },
+      "blind": {
+        "name": "Cécité",
+        "description": "Aveugle la cible, la faisant errer désorientée pendant 8 s. Le moindre dégât rompt l'effet."
+      },
       "seal_of_righteousness": {
         "name": "Sceau de piété",
         "description": "Vous remplit de puissance Sacrée pendant 30 s, faisant infliger 4 points de dégâts Sacrés supplémentaires à chacune de vos frappes de mêlée. Libérez-le avec Jugement."
@@ -1435,6 +1532,10 @@ export const fr_CA: EnTranslations = {
         "name": "Fureur vertueuse",
         "description": "Augmente de 60% la menace générée par vos dégâts Sacrés pendant 30 min. La pierre angulaire du paladin tank."
       },
+      "retribution_aura": {
+        "name": "Aura de châtiment",
+        "description": "Vous entoure d'énergie sacrée pendant 30 min, infligeant 5 points de dégâts Sacrés à tout ennemi qui vous frappe en mêlée."
+      },
       "tame_beast": {
         "name": "Apprivoiser une bête",
         "description": "Commence à apprivoiser une bête pour en faire votre compagnon. Elle doit être de votre niveau ou moins et ne pas être élite. Votre familier vous suit, attaque vos ennemis et génère sa propre menace. Vous ne pouvez avoir qu'un familier à la fois."
@@ -1470,6 +1571,10 @@ export const fr_CA: EnTranslations = {
       "wing_clip": {
         "name": "Coupure d'ailes",
         "description": "Inflige une blessure qui ralentit l'ennemi de 40% pendant 10 s."
+      },
+      "aspect_of_the_monkey": {
+        "name": "Aspect du singe",
+        "description": "Adopte l'aspect du singe et augmente vos chances d'esquive de 8% pendant 30 min."
       },
       "aspect_of_the_cheetah": {
         "name": "Aspect du guépard",
@@ -1547,9 +1652,17 @@ export const fr_CA: EnTranslations = {
         "name": "Horion de flammes",
         "description": "Brûle la cible par le feu pour 25 points de dégâts plus {damage} en 12 s."
       },
+      "flametongue_weapon": {
+        "name": "Arme Langue de feu",
+        "description": "Imprègne votre arme de feu élémentaire: chaque frappe inflige 8 points de dégâts de Feu supplémentaires pendant 5 min."
+      },
       "frost_shock": {
         "name": "Horion de givre",
         "description": "Frappe instantanément la cible par le givre pour {damage} points de dégâts de Givre et ralentit son déplacement de 50% pendant 8 s."
+      },
+      "frostbrand_weapon": {
+        "name": "Arme Marque-givre",
+        "description": "Imprègne votre arme d'un givre mordant: chaque frappe inflige 8 points de dégâts supplémentaires pendant 5 min."
       },
       "ghost_wolf": {
         "name": "Loup fantôme",
@@ -1667,6 +1780,46 @@ export const fr_CA: EnTranslations = {
         "name": "Feu stellaire",
         "description": "Fait tomber un trait de feu stellaire qui inflige {damage} points de dégâts des Arcanes."
       },
+      "travel_form": {
+        "name": "Forme de voyage",
+        "description": "Prend une forme de voyage rapide, augmentant la vitesse de déplacement de 40%. Inutilisable en combat."
+      },
+      "enrage": {
+        "name": "Furie",
+        "description": "Génère 20 points de rage instantanément. Forme d'ours uniquement."
+      },
+      "bash": {
+        "name": "Coup de massue",
+        "description": "Étourdit la cible pendant 2 s. Forme d'ours uniquement."
+      },
+      "faerie_fire": {
+        "name": "Feu féerique",
+        "description": "Diminue l'armure de la cible de 35 pendant 40 s."
+      },
+      "hibernate": {
+        "name": "Hibernation",
+        "description": "Plonge la cible dans un sommeil profond pendant 8 s maximum. Tout dégât la réveille."
+      },
+      "dash": {
+        "name": "Sprint",
+        "description": "Bondit en avant, augmentant la vitesse de déplacement de 50% pendant 15 s. Forme de félin uniquement."
+      },
+      "pounce": {
+        "name": "Bondir",
+        "description": "Ouverture furtive qui étourdit la cible pendant 2 s. Confère 1 point de combo. Forme de félin uniquement."
+      },
+      "insect_swarm": {
+        "name": "Nuée d'insectes",
+        "description": "L'ennemi est assailli par une nuée d'insectes, subissant {damage} points de dégâts de Nature sur 12 s."
+      },
+      "tigers_fury": {
+        "name": "Furie du tigre",
+        "description": "Augmente la puissance d'attaque de 40 pendant 6 s. Forme de félin uniquement."
+      },
+      "rip": {
+        "name": "Lacération",
+        "description": "Coup de grâce qui inflige des dégâts de saignement sur 12 s. Consomme les points de combo. Forme de félin uniquement."
+      },
       "mortal_strike": {
         "name": "Frappe mortelle",
         "description": "Frappe vicieuse infligeant les dégâts de l'arme plus {damage}. (signature Armes)"
@@ -1694,6 +1847,26 @@ export const fr_CA: EnTranslations = {
       "summon_voidwalker": {
         "name": "Invoquer un marcheur du Vide",
         "description": "Invoque un Marcheur du Vide sous le commandement du démoniste. Le Marcheur du Vide est un démon robuste qui provoque vos ennemis et encaisse les coups. Invoquer un nouveau démon renvoie celui que vous avez. Vous ne pouvez avoir qu'un démon à la fois."
+      },
+      "summon_succubus": {
+        "name": "Invoquer une succube",
+        "description": "Invoque une Succube sous le commandement du démoniste. La Succube est un démon fragile qui frappe vite et fort au corps à corps. Invoquer un nouveau démon renvoie celui que vous avez. Vous ne pouvez avoir qu'un démon à la fois."
+      },
+      "summon_felhunter": {
+        "name": "Invoquer un limier corrompu",
+        "description": "Invoque un Limier corrompu sous le commandement du démoniste. Le Limier corrompu harcèle les ennemis à distance avec sa Morsure des ombres et excelle dans la traque des lanceurs de sorts. Invoquer un nouveau démon renvoie celui que vous avez. Vous ne pouvez avoir qu'un démon à la fois."
+      },
+      "summon_felguard": {
+        "name": "Invoquer un gangregarde",
+        "description": "Invoque un Gangregarde sous le commandement du démoniste. Le Gangregarde est un démon de mêlée résistant qui se jette dans la bataille et tient bon. Invoquer un nouveau démon renvoie celui que vous avez. Vous ne pouvez avoir qu'un démon à la fois."
+      },
+      "summon_infernal": {
+        "name": "Invoquer un infernal",
+        "description": "Soumet un Infernal à votre volonté — un colosse implacable doté d'une puissance de mêlée écrasante et des points de vie et de l'armure les plus élevés de tous les démons. Un long temps de recharge bride sa puissance brute. Invoquer un nouveau démon renvoie celui que vous avez. Vous ne pouvez avoir qu'un démon à la fois."
+      },
+      "summon_doomguard": {
+        "name": "Invoquer un seigneur de l'effroi",
+        "description": "Soumet un Seigneur de l'effroi à votre volonté — un démon d'élite qui déverse de lourds dégâts d'Ombre à distance. Un long temps de recharge bride sa puissance dévastatrice. Invoquer un nouveau démon renvoie celui que vous avez. Vous ne pouvez avoir qu'un démon à la fois."
       },
       "bear_charge": {
         "name": "Charge de l'ours",
@@ -2146,6 +2319,51 @@ export const fr_CA: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "Écaille de wyrm fendue"
       },
+      "conjured_bread": {
+        "name": "Pain conjuré"
+      },
+      "conjured_bread2": {
+        "name": "Pain noir conjuré"
+      },
+      "conjured_bread3": {
+        "name": "Brioche conjurée"
+      },
+      "roadwardens_helm": {
+        "name": "Heaume du gardien des routes"
+      },
+      "wayfarers_hood": {
+        "name": "Capuche du voyageur"
+      },
+      "acolytes_circlet": {
+        "name": "Diadème de l'acolyte"
+      },
+      "reinforced_pauldrons": {
+        "name": "Spallières renforcées"
+      },
+      "embroidered_mantle": {
+        "name": "Manteau brodé"
+      },
+      "sturdy_belt": {
+        "name": "Ceinture solide du voyageur"
+      },
+      "silk_sash": {
+        "name": "Écharpe de soie tissée"
+      },
+      "roughspun_gloves": {
+        "name": "Gants de toile grossière"
+      },
+      "bristlehide_spaulders": {
+        "name": "Spallières en cuir hérissé"
+      },
+      "sableweb_cord": {
+        "name": "Cordon de Sableweb"
+      },
+      "gorraks_cleaver": {
+        "name": "Fendoir de Gorrak"
+      },
+      "mossy_handwraps": {
+        "name": "Mitaines moussues"
+      },
       "bristleback_maul": {
         "name": "Maillet Bristleback"
       },
@@ -2293,6 +2511,96 @@ export const fr_CA: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "Bottines Ombrewyrm"
       },
+      "glimmerfin_koi": {
+        "name": "Koï aux nageoires scintillantes"
+      },
+      "raw_bog_eel": {
+        "name": "Anguille des marais crue"
+      },
+      "raw_frostgill_trout": {
+        "name": "Truite aux ouïes givrées crue"
+      },
+      "raw_marsh_pike": {
+        "name": "Brochet des marais cru"
+      },
+      "raw_river_perch": {
+        "name": "Perche de rivière crue"
+      },
+      "raw_stonescale_carp": {
+        "name": "Carpe aux écailles de pierre crue"
+      },
+      "soggy_boot": {
+        "name": "Botte détrempée"
+      },
+      "elixir_of_the_bear": {
+        "name": "Élixir de l'Ours"
+      },
+      "lesser_healing_potion": {
+        "name": "Potion de soins inférieure"
+      },
+      "lesser_mana_potion": {
+        "name": "Potion de mana inférieure"
+      },
+      "healing_potion": {
+        "name": "Potion de soins"
+      },
+      "mana_potion": {
+        "name": "Potion de mana"
+      },
+      "tunnelkings_spade": {
+        "name": "Bêche du Roi des Tunnels"
+      },
+      "brutoks_maul": {
+        "name": "Maillet de Brutok"
+      },
+      "cracked_ogre_tusk": {
+        "name": "Défense d'ogre fêlée"
+      },
+      "crag_warden_cudgel": {
+        "name": "Gourdin du gardien des falaises"
+      },
+      "cragmaw_prowlboots": {
+        "name": "Bottes rôdeuses de Cragmaw"
+      },
+      "drowned_tide_scepter": {
+        "name": "Sceptre de la marée noyée"
+      },
+      "emberfang_warblade": {
+        "name": "Lame de guerre crocs-de-braise"
+      },
+      "emberwing_cinderscale": {
+        "name": "Écaille de cendre d'Aile-de-braise"
+      },
+      "emberwing_legguards": {
+        "name": "Jambières d'Aile-de-braise"
+      },
+      "gravewardens_shiv": {
+        "name": "Surin du gardien des tombes"
+      },
+      "hollow_vigil_staff": {
+        "name": "Bâton de la veille creuse"
+      },
+      "maldrecs_soulbinder": {
+        "name": "Lieur d'âmes de Maldrec"
+      },
+      "oathbound_greaves": {
+        "name": "Jambières du serment"
+      },
+      "skullsmasher_warbelt": {
+        "name": "Ceinturon de guerre du briseur de crânes"
+      },
+      "skullsplitter_dirk": {
+        "name": "Dague fend-crâne"
+      },
+      "sloomtooth_tidefang": {
+        "name": "Croc-de-marée de Sloomtooth"
+      },
+      "tidereaver_gaff": {
+        "name": "Gaffe du fendeur de marées"
+      },
+      "verlans_oathblade": {
+        "name": "Lame du serment de Verlan"
+      },
       "briny_idol": {
         "name": "Idole saumâtre"
       },
@@ -2408,13 +2716,13 @@ export const fr_CA: EnTranslations = {
         "name": "Porte antique de la crypte"
       },
       "captains_crest": {
-        "name": "Cimier du capitaine"
+        "name": "Partie superieure de la clef"
       },
       "priests_sigil": {
-        "name": "Sceau du prêtre"
+        "name": "Partie inferieure de la clef"
       },
       "royal_seal": {
-        "name": "Sceau royal"
+        "name": "Journal ancien"
       },
       "crypt_keystone": {
         "name": "Clef de la crypte"
@@ -2424,12 +2732,6 @@ export const fr_CA: EnTranslations = {
       },
       "kings_signet": {
         "name": "Chevalière du roi"
-      },
-      "nythraxis_vision": {
-        "name": "Vision de Nythraxis"
-      },
-      "aldrics_seal": {
-        "name": "Sceau d'Aldric"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const fr_CA: EnTranslations = {
       },
       "voidwalker": {
         "name": "Marcheur du Vide"
+      },
+      "succubus": {
+        "name": "Succube"
+      },
+      "grix_the_tunnelking": {
+        "name": "Grix le Roi des tunnels"
+      },
+      "brutok_skullsmasher": {
+        "name": "Brutok Brise-crânes"
+      },
+      "captain_verlan": {
+        "name": "Capitaine Verlan"
+      },
+      "old_cragmaw": {
+        "name": "Vieux Cragmaw"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "Sloomtooth le Noyé"
+      },
+      "voskar_emberwing": {
+        "name": "Voskar Aile-de-braise"
+      },
+      "wraithbinder_maldrec": {
+        "name": "Maldrec le Lie-spectres"
+      },
+      "felhunter": {
+        "name": "Limier corrompu"
+      },
+      "felguard": {
+        "name": "Gangregarde"
+      },
+      "infernal": {
+        "name": "Infernal"
+      },
+      "doomguard": {
+        "name": "Seigneur de l'effroi"
       },
       "choirmother_selthe": {
         "name": "Selthe, mère de chœur"
@@ -3445,9 +3783,9 @@ export const fr_CA: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "Les morts agités",
-        "text": "Les morts-vivants de Thornpeak portent des runes que je ne reconnais pas, {playerName}. Rapportez-moi dix fragments d'os runiques afin que je lise ce qui les réveille.",
-        "completion": "Le même symbole apparaît sur chaque fragment : une couronne. Elle n'appartient à aucune lignée d'Eastbrook.",
+        "title": "Agitation dans les champs d os",
+        "text": "Quelque chose a change dans les hauteurs de Thornpeak, {playerName}. Les morts ne vagabondent plus sans but. Ils se rassemblent et marchent dans les champs d os du nord, au-dela de Highwatch, la ou l ancien champ de bataille rejoint la route de la falaise. Allez-y, enquetez sur cette agitation parmi les revenants cuirasses d os, et rapportez toute preuve de ce qui les pousse.",
+        "completion": "Le meme symbole apparait sur chaque fragment... une couronne. Je l ai deja vu, grave sur de vieilles tombes qu aucun registre d Eastbrook ne mentionne.",
         "objectives": {
           "0": {
             "label": "Fragment d'os runique"
@@ -3456,8 +3794,8 @@ export const fr_CA: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "Tombes des oubliés",
-        "text": "La couronne n'appartient à aucune lignée encore nommée dans les archives d'Eastbrook. Trois anciens mémoriaux se dressent près du champ de bataille du nord : le capitaine Aldren, le grand prêtre Malric et l'assassin royal Voss. Touchez chaque pierre et écoutez, {playerName}.",
-        "completion": "Aldren resta loyal, Malric refusa la mort, et Voss vit le danger avant tous les autres. Tous trois servaient le roi Nythraxis.",
+        "text": "J ai deja vu ces marques, sur trois vieilles tombes autour du champ de bataille du nord. Le capitaine Aldren repose sur la hauteur orientale, le grand pretre Malric pres de la route centrale brisee, et l assassin royal Voss pres de la falaise occidentale. Touchez chaque tombe et ecoutez, {playerName}. Les morts peuvent se souvenir de ce que les vivants ont oublie.",
+        "completion": "Aldren resta loyal, Malric refusa d accepter la mort, et Voss vit le danger avant tous les autres. Tous trois servaient le meme roi oublie.",
         "objectives": {
           "0": {
             "label": "Vision à la tombe du capitaine Aldren"
@@ -3472,24 +3810,24 @@ export const fr_CA: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "La crypte abandonnée",
-        "text": "Les visions indiquent une crypte abandonnée sous les vieilles ruines. Récupérez le Cimier du capitaine, le Sceau du prêtre et le Sceau royal sur les restes corrompus qu'elle renferme.",
-        "completion": "Ces reliques appartenaient aux plus proches de Nythraxis. Elles portent encore le poids de sa chute.",
+        "text": "Les visions indiquent la crypte abandonnee dans la falaise occidentale. Une vieille legende dit que la crypte abritait un roi. Peut-etre Thornpeak l a-t-il scelle la-dessous apres que le rituel de Malric l eut tordu en quelque chose d immortel. Entrez dans la crypte et voyez ce qu il reste a l interieur.",
+        "completion": "Les deux moities de la clef s assemblent, et le journal de Voss nomme ce qu elles ont scelle: la chevaliere du roi Nythraxis. Si le journal dit vrai, cette chevaliere est la clef de sa tombe.",
         "objectives": {
           "0": {
-            "label": "Cimier du capitaine"
+            "label": "Partie superieure de la clef"
           },
           "1": {
-            "label": "Sceau du prêtre"
+            "label": "Partie inferieure de la clef"
           },
           "2": {
-            "label": "Sceau royal"
+            "label": "Journal ancien"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "Le Gardien lié",
-        "text": "Les survivants de Thornpeak créèrent un gardien d'os pour protéger le sceau. Portez la clef au cercle rituel, utilisez-la, puis tenez bon.",
-        "completion": "La chevalière le prouve. Le roi oublié sous Eastbrook était Nythraxis.",
+        "text": "Voss ecrivit que les survivants scellerent la Chevaliere du roi derriere un gardien ancien, afin que nul n atteigne la tombe de Nythraxis par accident ou par ambition. Portez la Clef de la crypte au cercle rituel sur le terrain plat a l est de la crypte abandonnee et au sud-est de la tombe occidentale. Utilisez-la la-bas, brisez le gardien et rapportez la chevaliere.",
+        "completion": "Les trois reliques racontent la meme histoire: Aldren combattit pour defendre son roi, Malric franchit la frontiere de la mort, et Voss tenta d arreter ce qui suivit. Le sceau faiblit, et cette chevaliere est la clef de la tombe de Nythraxis. Vous etes maintenant harmonise pour entrer dans la Crypte de Nythraxis.",
         "objectives": {
           "0": {
             "label": "Clef utilisée au cercle rituel"
@@ -3498,20 +3836,7 @@ export const fr_CA: EnTranslations = {
             "label": "Gardien lié vaincu"
           },
           "2": {
-            "label": "Chevalière du roi"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "Nythraxis, Fléau d'Eastbrook",
-        "text": "Le roi Nythraxis fut ramené mourant, mais Malric refusa de le laisser reposer. Restez avec moi, {playerName}, et contemplez la mémoire du sceau.",
-        "completion": "Pendant des siècles, le sceau a tenu. Il faiblit maintenant. Si Nythraxis se relève, Eastbrook deviendra un royaume de morts. Vous êtes désormais harmonisé pour entrer dans la Crypte de Nythraxis.",
-        "objectives": {
-          "0": {
-            "label": "Vision de Nythraxis observée"
-          },
-          "1": {
-            "label": "Frère Aldric consulté"
+            "label": "Chevaliere du roi"
           }
         }
       },

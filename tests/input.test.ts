@@ -454,12 +454,18 @@ describe('touch jump', () => {
     expect(input.readMoveInput().jump).toBe(false);
   });
 
-  it('triggerTouchJump yields exactly one frame of jump', () => {
+  it('triggerTouchJump latches briefly so non-sim movement reads cannot consume it', () => {
     const { input } = makeInput();
+    const now = vi.spyOn(performance, 'now');
+    now.mockReturnValue(1000);
     input.triggerTouchJump();
     expect(input.readMoveInput().jump).toBe(true);
-    // momentary: a single poll consumes it so it cannot stick on like a held key
+    expect(input.readMoveInput().jump).toBe(true);
+    now.mockReturnValue(1219);
+    expect(input.readMoveInput().jump).toBe(true);
+    now.mockReturnValue(1221);
     expect(input.readMoveInput().jump).toBe(false);
+    now.mockRestore();
   });
 });
 
@@ -483,5 +489,40 @@ describe('Input emote wheel hold', () => {
     windowListeners.get('blur')!({});
 
     expect(cb.onEmoteWheel).toHaveBeenLastCalledWith(false);
+  });
+});
+
+describe('Input touch invert-look', () => {
+  it('reverses the touch joystick pitch when inverted, leaving yaw alone', () => {
+    const { input } = makeInput();
+    input.setTouchLook(true);
+    input.setTouchLookVector({ x: 1, y: 1 });
+
+    const startPitch = input.camPitch;
+    const startYaw = input.camYaw;
+    input.updateTouchLook(1 / 60);
+    const upDelta = input.camPitch - startPitch;
+    const yawDelta = input.camYaw - startYaw;
+    expect(upDelta).toBeGreaterThan(0); // default: stick up raises pitch
+
+    input.setTouchInvertLook(true);
+    input.camPitch = startPitch;
+    input.camYaw = startYaw;
+    input.updateTouchLook(1 / 60);
+    expect(input.camPitch - startPitch).toBeCloseTo(-upDelta);
+    // yaw is unaffected by the invert toggle
+    expect(input.camYaw - startYaw).toBeCloseTo(yawDelta);
+  });
+
+  it('also inverts the swipe-look delta path', () => {
+    const { input } = makeInput();
+    const base = input.camPitch;
+    input.applyTouchLookDelta(0, 100);
+    const normal = input.camPitch - base;
+
+    input.setTouchInvertLook(true);
+    input.camPitch = base;
+    input.applyTouchLookDelta(0, 100);
+    expect(input.camPitch - base).toBeCloseTo(-normal);
   });
 });

@@ -26,25 +26,47 @@ export function isAttackHoverTarget(e: Entity | undefined): boolean {
   return hoverCursorKind(e, -1, new Set()) === 'attack';
 }
 
+export function activePvpOpponentIds(world: Pick<PickInteractionWorld, 'player' | 'playerId' | 'duelInfo' | 'arenaInfo'>): Set<number> {
+  const ids = new Set<number>();
+  const selfId = world.playerId ?? world.player.id;
+  if (world.duelInfo?.state === 'active' && world.duelInfo.otherPid !== selfId) ids.add(world.duelInfo.otherPid);
+  const match = world.arenaInfo?.match;
+  if (match?.state === 'active') {
+    if (match.oppPid !== selfId) ids.add(match.oppPid);
+    for (const enemy of match.enemies) {
+      if (enemy.pid !== selfId) ids.add(enemy.pid);
+    }
+  }
+  return ids;
+}
+
+export function isAttackableEntity(
+  e: Entity | undefined,
+  playerId: number,
+  activePvpOpponentSet: ReadonlySet<number> = new Set(),
+): boolean {
+  if (!e || e.dead || e.id === playerId) return false;
+  if (e.kind === 'mob') return e.hostile;
+  return e.kind === 'player' && activePvpOpponentSet.has(e.id);
+}
+
 /** Which game cursor to show when hovering an entity. */
 export function hoverCursorKind(
   e: Entity | undefined,
   playerId: number,
   partyMemberIds: ReadonlySet<number>,
+  activePvpOpponentSet: ReadonlySet<number> = new Set(),
 ): HoverCursorKind {
   if (!e) return 'default';
-  if (e.kind === 'mob' && !e.dead && e.hostile) return 'attack';
+  if (isAttackableEntity(e, playerId, activePvpOpponentSet)) return 'attack';
   if (e.kind === 'npc') return 'friendly';
   if (e.kind === 'player' && e.id !== playerId) return 'friendly';
   void partyMemberIds;
   return 'default';
 }
 
-function isActivePvpOpponent(world: PickInteractionWorld, e: Entity): boolean {
-  if (e.kind !== 'player' || e.dead) return false;
-  if (e.id === (world.playerId ?? world.player.id)) return false;
-  if (world.duelInfo?.state === 'active' && world.duelInfo.otherPid === e.id) return true;
-  return world.arenaInfo?.match?.state === 'active' && world.arenaInfo.match.oppPid === e.id;
+export function isActivePvpOpponent(world: PickInteractionWorld, e: Entity): boolean {
+  return e.kind === 'player' && isAttackableEntity(e, world.playerId ?? world.player.id, activePvpOpponentIds(world));
 }
 
 export function handlePickedEntity(

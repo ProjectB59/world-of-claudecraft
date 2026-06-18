@@ -26,7 +26,8 @@ export const de_DE: EnTranslations = {
       "maxLevel": "MAX. STUFE",
       "totalXp": "EP gesamt",
       "lv": "St.",
-      "toNext": "bis zur nächsten"
+      "toNext": "bis zur nächsten",
+      "rested": "Ausgeruht"
     },
     "progression": {
       "heading": "Fortschritt",
@@ -73,7 +74,12 @@ export const de_DE: EnTranslations = {
       "needXp": "mehr Lebenszeit-EP für Prestige"
     },
     "settings": {
-      "showOverflowXp": "Überschuss-EP anzeigen"
+      "showOverflowXp": "Überschuss-EP anzeigen",
+      "weather": "Wettereffekte"
+    },
+    "hud": {
+      "lowMana": "Wenig Mana",
+      "lowEnergy": "Wenig Energie"
     },
     "talents": {
       "title": "Talente",
@@ -132,7 +138,16 @@ export const de_DE: EnTranslations = {
       "noBuilds": "Keine gespeicherten Builds",
       "save": "Speichern",
       "comingSoonTitle": "Talente folgen bald",
-      "comingSoonBody": "Diese Klasse hat noch keine Talentbäume. Ihr könnt normal weiterspielen; vollständige Bäume kommen in einem zukünftigen Update."
+      "comingSoonBody": "Diese Klasse hat noch keine Talentbäume. Ihr könnt normal weiterspielen; vollständige Bäume kommen in einem zukünftigen Update.",
+      "readout": {
+        "noTree": "Eure Klasse hat noch keinen Talentbaum.",
+        "locked": "Ihr habt die Talente noch nicht freigeschaltet; sie beginnen auf Stufe {level}.",
+        "noSpec": "keine Spezialisierung",
+        "summary": "Talente: {head} — {spent}/{total} Punkte ausgegeben ({breakdown}).",
+        "breakdownClass": "Klasse {classPts}",
+        "breakdownSpec": "Klasse {classPts}, {spec} {specPts}",
+        "unspent": " {count} nicht ausgegeben."
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const de_DE: EnTranslations = {
       "levelLog": "Ihr habt Stufe {level} erreicht!",
       "xpGain": "Ihr erhaltet {amount} Erfahrung.",
       "xpFloat": "+{amount} EP",
+      "xpFloatRested": "+{amount} ausgeruht",
+      "xpGainRested": "Ihr erhaltet {amount} Erfahrung ({rested} Bonus durch Ausruhen).",
       "deathTitle": "Ihr seid gestorben.",
       "releaseSpirit": "Geist freigeben",
       "chatTab": "Chat",
@@ -521,6 +538,7 @@ export const de_DE: EnTranslations = {
       "keyBindings": "Tastenbelegung",
       "graphics": "Grafik",
       "audio": "Audio",
+      "interface": "Benutzeroberfläche",
       "logout": "Ausloggen",
       "returnToGame": "Zurück zum Spiel",
       "resetToDefaults": "Standardwerte",
@@ -544,15 +562,33 @@ export const de_DE: EnTranslations = {
       "terrainLow": "Niedrig",
       "terrainHigh": "Hoch",
       "touchOpacity": "Deckkraft der Touch-Steuerung",
+      "invertLook": "Sicht umkehren (Touch)",
       "graphicsReloadNote": "Grafikqualität und Geländedetail werden nach dem Neuladen angewendet.",
       "reloadNow": "Jetzt neu laden",
       "fullscreen": "Vollbild",
       "touchLookSpeed": "Touch-Kamerageschwindigkeit",
+      "joystickSize": "Joystick-Größe",
+      "buttonSize": "Schaltflächengröße",
+      "joystickDeadzone": "Joystick-Totzone",
       "leftHandedTouch": "Linkshänder-Touch",
       "filterProfanity": "Schimpfwörter filtern",
       "clickMoveButton": "Klick-Bewegungstaste",
       "clickToMove": "Klicken zum Bewegen",
       "graphicsNote": "Senkt die Kamerageschwindigkeit für ruhigere Maussteuerung. Renderqualität unter 100 % verbessert die FPS auf schwächeren Geräten.",
+      "fieldOfView": "Sichtfeld",
+      "hudOpacity": "HUD-Deckkraft",
+      "tooltipScale": "Tooltip-Textgröße",
+      "fctScale": "Kampftextgröße",
+      "chatFontScale": "Chat-Textgröße",
+      "chatOpacity": "Chat-Hintergrunddeckkraft",
+      "compactChat": "Kompakter Chat",
+      "frostedPanels": "Mattierte Fenster",
+      "highContrastText": "Text mit hohem Kontrast",
+      "reduceMotion": "Bewegung reduzieren",
+      "showFps": "FPS anzeigen",
+      "invertLookY": "Blick umkehren (Y)",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "Diese Optionen ändern nur Eure eigene Ansicht und werden auf diesem Gerät gespeichert.",
       "soundEffects": "Soundeffekte",
       "musicVolume": "Musiklautstärke",
       "music": "Musik",
@@ -1037,6 +1073,7 @@ export const de_DE: EnTranslations = {
       "readyQuestAria": "Quest bereit zur Abgabe: {name}",
       "discussQuest": "{name} besprechen.",
       "discussQuestAria": "Quest besprechen: {name}",
+      "nythraxisDeathlessKingWarning": "Die drei Relikte erzahlen dieselbe Geschichte: Aldren kampfte, um seinen Konig zu verteidigen, Malric durchbrach die Grenze des Todes, und Voss versuchte aufzuhalten, was danach kam. Das Siegel wird schwacher, und die verlassene Krypta ist der Weg hinab.",
       "browseGoods": "Lasst mich Eure Waren ansehen.",
       "browseGoodsAria": "Waren von {name} ansehen",
       "worldMarket": "Zeigt mir den Weltmarkt.",
@@ -1044,6 +1081,7 @@ export const de_DE: EnTranslations = {
       "accept": "Annehmen",
       "decline": "Ablehnen",
       "continue": "Weiter",
+      "done": "Fertig",
       "completeQuest": "Quest abschließen",
       "turnIn": "Abgeben",
       "back": "Zurück",
@@ -1108,7 +1146,8 @@ export const de_DE: EnTranslations = {
       "food": "Essen",
       "drink": "Getränk",
       "tool": "Werkzeug",
-      "potion": "Trank"
+      "potion": "Trank",
+      "elixir": "Elixier"
     },
     "stats": {
       "armor": "Rüstung",
@@ -1124,6 +1163,8 @@ export const de_DE: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{quality} {kind}",
+      "currentlyEquipped": "Derzeit angelegt",
+      "ifYouEquip": "Wenn Ihr dies anlegt",
       "damageSpeed": "{min} - {max} Schaden Tempo {speed}",
       "dps": "({dps} Schaden pro Sekunde)",
       "dagger": "Dolch",
@@ -1247,6 +1288,14 @@ export const de_DE: EnTranslations = {
         "name": "Schlachtruf",
         "description": "Erhöht eure Angriffskraft 2 Min. lang um 20."
       },
+      "commanding_shout": {
+        "name": "Befehlsruf",
+        "description": "Erhöht eure Ausdauer 2 Min. lang um 6."
+      },
+      "demoralizing_shout": {
+        "name": "Demoralisierender Ruf",
+        "description": "Stößt einen furchterregenden Ruf aus und verringert die Angriffskraft aller nahen Gegner 30 Sek. lang um 30."
+      },
       "charge": {
         "name": "Sturmangriff",
         "description": "Stürmt auf einen Gegner zu, erzeugt 9 Wut und betäubt ihn 1 Sek. lang. Reichweite 8-25 m."
@@ -1315,6 +1364,10 @@ export const de_DE: EnTranslations = {
         "name": "Wasser herbeizaubern",
         "description": "Beschwört 2 Flaschen Wasser, die beim Trinken Mana wiederherstellen. Höhere Ränge beschwören reineres Wasser."
       },
+      "conjure_food": {
+        "name": "Nahrung herbeizaubern",
+        "description": "Beschwört 2 Portionen Brot, die beim Essen Gesundheit wiederherstellen. Höhere Ränge beschwören nahrhaftere Speisen."
+      },
       "fire_blast": {
         "name": "Feuerschlag",
         "description": "Trifft den Gegner für {damage} Feuerschaden. Sofort."
@@ -1338,6 +1391,10 @@ export const de_DE: EnTranslations = {
       "scorch": {
         "name": "Versengen",
         "description": "Versengt den Gegner für {damage} Feuerschaden. Schnell zu wirken."
+      },
+      "pyroblast": {
+        "name": "Pyroschlag",
+        "description": "Schleudert einen gewaltigen Feuerbrocken, der {damage} Feuerschaden sowie zusätzlichen Schaden über Zeit verursacht."
       },
       "ice_barrier": {
         "name": "Eisbarriere",
@@ -1387,6 +1444,46 @@ export const de_DE: EnTranslations = {
         "name": "Adrenalinrausch",
         "description": "Euer Blut kocht und stellt sofort 60 Energie wieder her."
       },
+      "garrote": {
+        "name": "Erwürgen",
+        "description": "Erwürgt den Gegner, verursacht sofort Schaden und lässt ihn 18 Sek. lang um {damage} bluten. Erfordert Verstohlenheit. Gewährt 1 Combopunkt."
+      },
+      "cheap_shot": {
+        "name": "Wilder Hieb",
+        "description": "Trifft das Ziel und betäubt es 4 Sek. lang. Erfordert Verstohlenheit. Gewährt 2 Combopunkte."
+      },
+      "sap": {
+        "name": "Kopfnuss",
+        "description": "Macht das Ziel 8 Sek. lang handlungsunfähig. Erfordert Verstohlenheit und außerhalb des Kampfes zu sein. Jeder Schaden bricht den Effekt."
+      },
+      "crippling_poison": {
+        "name": "Lähmendes Gift",
+        "description": "Trifft das Ziel mit einem lähmenden Gift, verursacht {damage} Naturschaden und verringert sein Bewegungstempo 12 Sek. lang um 50%."
+      },
+      "expose_armor": {
+        "name": "Rüstung zerreißen",
+        "description": "Finishing-Move, der das Ziel entblößt und seine Rüstung verringert. Mehr eingesetzte Combopunkte führen zu einem tieferen Schnitt."
+      },
+      "rupture": {
+        "name": "Rupturieren",
+        "description": "Finishing-Move, der das Ziel verwundet und es 16 Sek. lang um {damage} bluten lässt."
+      },
+      "vanish": {
+        "name": "Verschwinden",
+        "description": "Verschwindet aus dem Blickfeld und tretet selbst im Kampf in Verstohlenheit. Ihr bewegt euch 30% langsamer, solange ihr verborgen seid. Hält bis zu 10 Sek. an."
+      },
+      "instant_poison": {
+        "name": "Sofortgift",
+        "description": "Überzieht eure Waffe 30 Min. lang, sodass jeder eurer Nahkampfschwünge 8 zusätzlichen Naturschaden verursacht."
+      },
+      "deadly_poison": {
+        "name": "Tödliches Gift",
+        "description": "Überzieht eure Waffe 30 Min. lang, sodass jeder eurer Nahkampfschwünge 14 zusätzlichen Naturschaden verursacht."
+      },
+      "blind": {
+        "name": "Blenden",
+        "description": "Blendet das Ziel, sodass es 8 Sek. lang desorientiert umherirrt. Jeder Schaden bricht den Effekt."
+      },
       "seal_of_righteousness": {
         "name": "Siegel der Rechtschaffenheit",
         "description": "Erfüllt euch 30 Sek. lang mit Heiliger Macht, sodass jeder Nahkampfschwung 4 zusätzlichen Heiligschaden verursacht. Mit Richturteil entfesseln."
@@ -1435,6 +1532,10 @@ export const de_DE: EnTranslations = {
         "name": "Zorn der Gerechtigkeit",
         "description": "Erhöht die durch euren Heiligschaden erzeugte Bedrohung 30 Min. lang um 60%. Der Grundpfeiler des Tank-Paladins."
       },
+      "retribution_aura": {
+        "name": "Vergeltungsaura",
+        "description": "Umgibt Euch 30 Min. lang mit heiliger Energie und fügt jedem Gegner, der Euch im Nahkampf trifft, 5 Heiligschaden zu."
+      },
       "tame_beast": {
         "name": "Wildtier zähmen",
         "description": "Beginnt, ein Wildtier als Begleiter zu zähmen. Es muss eure Stufe oder niedriger haben und darf kein Elitegegner sein. Euer Begleiter folgt euch, greift eure Gegner an und hält eigene Bedrohung. Ihr könnt nur einen Begleiter zugleich haben."
@@ -1470,6 +1571,10 @@ export const de_DE: EnTranslations = {
       "wing_clip": {
         "name": "Zurechtstutzen",
         "description": "Verursacht eine Wunde, die den Gegner 10 Sek. lang um 40% verlangsamt."
+      },
+      "aspect_of_the_monkey": {
+        "name": "Aspekt des Affen",
+        "description": "Nehmt den Aspekt des Affen an und erhöht eure Ausweichchance 30 Min. lang um 8%."
       },
       "aspect_of_the_cheetah": {
         "name": "Aspekt des Geparden",
@@ -1547,9 +1652,17 @@ export const de_DE: EnTranslations = {
         "name": "Flammenschock",
         "description": "Versengt das Ziel mit Feuer für 25 Schaden plus {damage} über 12 Sek."
       },
+      "flametongue_weapon": {
+        "name": "Flammenzungenwaffe",
+        "description": "Erfüllt eure Waffe mit elementarem Feuer: Jeder Schlag verursacht 8 zusätzlichen Feuerschaden für 5 Min."
+      },
       "frost_shock": {
         "name": "Frostschock",
         "description": "Schockt das Ziel sofort mit Frost für {damage} Frostschaden und verlangsamt seine Bewegung 8 Sek. lang um 50%."
+      },
+      "frostbrand_weapon": {
+        "name": "Frostbrandwaffe",
+        "description": "Verzaubert Eure Waffe mit beißendem Frost: Jeder Schlag verursacht 8 zusätzlichen Schaden für 5 Min."
       },
       "ghost_wolf": {
         "name": "Geisterwolf",
@@ -1667,6 +1780,46 @@ export const de_DE: EnTranslations = {
         "name": "Sternenfeuer",
         "description": "Ruft einen Bolzen aus Sternenfeuer herab, der {damage} Arkanschaden verursacht."
       },
+      "travel_form": {
+        "name": "Reisegestalt",
+        "description": "Nehmt eine flinke Reisegestalt an, was das Lauftempo um 40% erhöht. Im Kampf nicht einsetzbar."
+      },
+      "enrage": {
+        "name": "Wutanfall",
+        "description": "Erzeugt sofort 20 Wut. Nur in Bärengestalt."
+      },
+      "bash": {
+        "name": "Knüppeln",
+        "description": "Betäubt das Ziel 2 Sek. lang. Nur in Bärengestalt."
+      },
+      "faerie_fire": {
+        "name": "Feenfeuer",
+        "description": "Verringert die Rüstung des Ziels 40 Sek. lang um 35."
+      },
+      "hibernate": {
+        "name": "Winterschlaf",
+        "description": "Versetzt das Ziel bis zu 8 Sek. in tiefen Schlaf. Jeglicher Schaden weckt es auf."
+      },
+      "dash": {
+        "name": "Sprint",
+        "description": "Sprintet vorwärts und erhöht das Lauftempo 15 Sek. lang um 50%. Nur in Katzengestalt."
+      },
+      "pounce": {
+        "name": "Anspringen",
+        "description": "Ein Eröffnungsangriff aus der Verstohlenheit, der das Ziel 2 Sek. lang betäubt. Gewährt 1 Combopunkt. Nur in Katzengestalt."
+      },
+      "insect_swarm": {
+        "name": "Insektenschwarm",
+        "description": "Der Gegner wird von Insekten umschwärmt und erleidet {damage} Naturschaden über 12 Sek."
+      },
+      "tigers_fury": {
+        "name": "Zorn des Tigers",
+        "description": "Erhöht die Angriffskraft 6 Sek. lang um 40. Nur in Katzengestalt."
+      },
+      "rip": {
+        "name": "Zerfetzen",
+        "description": "Finishing-Move, der über 12 Sek. Blutungsschaden verursacht. Verbraucht Combopunkte. Nur in Katzengestalt."
+      },
       "mortal_strike": {
         "name": "Tödlicher Stoß",
         "description": "Ein bösartiger Schlag, der Waffenschaden plus {damage} verursacht. (Waffen-Signatur)"
@@ -1694,6 +1847,26 @@ export const de_DE: EnTranslations = {
       "summon_voidwalker": {
         "name": "Leerwandler beschwören",
         "description": "Beschwört einen Leerwandler unter dem Befehl des Hexenmeisters. Der Leerwandler ist ein zäher Dämon, der Eure Feinde verhöhnt und Schaden einsteckt. Das Beschwören eines neuen Dämons entlässt Euren aktuellen. Ihr könnt nur einen Dämon zur Zeit haben."
+      },
+      "summon_succubus": {
+        "name": "Sukkubus beschwören",
+        "description": "Beschwört einen Sukkubus unter dem Befehl des Hexenmeisters. Der Sukkubus ist ein zerbrechlicher Dämon, der schnell zuschlägt und im Nahkampf hart austeilt. Das Beschwören eines neuen Dämons entlässt Euren aktuellen. Ihr könnt nur einen Dämon zur Zeit haben."
+      },
+      "summon_felhunter": {
+        "name": "Teufelsjäger beschwören",
+        "description": "Beschwört einen Teufelsjäger unter dem Befehl des Hexenmeisters. Der Teufelsjäger setzt Feinden aus der Ferne mit Schattenbiss zu und ist hervorragend darin, Zauberwirker zu jagen. Das Beschwören eines neuen Dämons entlässt Euren aktuellen. Ihr könnt nur einen Dämon zur Zeit haben."
+      },
+      "summon_felguard": {
+        "name": "Teufelswache beschwören",
+        "description": "Beschwört eine Teufelswache unter dem Befehl des Hexenmeisters. Die Teufelswache ist ein widerstandsfähiger Nahkampfdämon, der sich in die Schlacht wirft und sich behauptet. Das Beschwören eines neuen Dämons entlässt Euren aktuellen. Ihr könnt nur einen Dämon zur Zeit haben."
+      },
+      "summon_infernal": {
+        "name": "Inferno beschwören",
+        "description": "Bindet ein Inferno an Euren Willen – einen wuchtigen Koloss mit zermalmendem Nahkampf und den höchsten Lebens- und Rüstungswerten aller Dämonen. Eine lange Abklingzeit zügelt seine rohe Kraft. Das Beschwören eines neuen Dämons entlässt Euren aktuellen. Ihr könnt nur einen Dämon zur Zeit haben."
+      },
+      "summon_doomguard": {
+        "name": "Schreckenswache beschwören",
+        "description": "Bindet eine Schreckenswache an Euren Willen – einen Elitedämon, der aus der Ferne schweren Schattenschaden niederregnen lässt. Eine lange Abklingzeit zügelt seine verheerende Kraft. Das Beschwören eines neuen Dämons entlässt Euren aktuellen. Ihr könnt nur einen Dämon zur Zeit haben."
       },
       "bear_charge": {
         "name": "Bärensturm",
@@ -2146,6 +2319,51 @@ export const de_DE: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "Gesprungene Wyrmschuppe"
       },
+      "conjured_bread": {
+        "name": "Herbeigezaubertes Brot"
+      },
+      "conjured_bread2": {
+        "name": "Herbeigezaubertes Schwarzbrot"
+      },
+      "conjured_bread3": {
+        "name": "Herbeigezauberte Süße Schnecke"
+      },
+      "roadwardens_helm": {
+        "name": "Helm des Wegwächters"
+      },
+      "wayfarers_hood": {
+        "name": "Kapuze des Wanderers"
+      },
+      "acolytes_circlet": {
+        "name": "Reif des Akolythen"
+      },
+      "reinforced_pauldrons": {
+        "name": "Verstärkte Schulterstücke"
+      },
+      "embroidered_mantle": {
+        "name": "Bestickter Schultermantel"
+      },
+      "sturdy_belt": {
+        "name": "Stabiler Reisegürtel"
+      },
+      "silk_sash": {
+        "name": "Gewebte Seidenschärpe"
+      },
+      "roughspun_gloves": {
+        "name": "Grobe Handschuhe"
+      },
+      "bristlehide_spaulders": {
+        "name": "Borstenhaut-Schulterstücke"
+      },
+      "sableweb_cord": {
+        "name": "Sableweb-Schnur"
+      },
+      "gorraks_cleaver": {
+        "name": "Gorraks Hackbeil"
+      },
+      "mossy_handwraps": {
+        "name": "Bemooste Handwickel"
+      },
       "bristleback_maul": {
         "name": "Bristleback-Schlägel"
       },
@@ -2293,6 +2511,96 @@ export const de_DE: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "Wyrmschattentreter"
       },
+      "glimmerfin_koi": {
+        "name": "Schimmerflossen-Koi"
+      },
+      "raw_bog_eel": {
+        "name": "Roher Mooraal"
+      },
+      "raw_frostgill_trout": {
+        "name": "Rohe Frostkiemen-Forelle"
+      },
+      "raw_marsh_pike": {
+        "name": "Roher Sumpfhecht"
+      },
+      "raw_river_perch": {
+        "name": "Roher Flussbarsch"
+      },
+      "raw_stonescale_carp": {
+        "name": "Roher Steinschuppen-Karpfen"
+      },
+      "soggy_boot": {
+        "name": "Durchnässter Stiefel"
+      },
+      "elixir_of_the_bear": {
+        "name": "Elixier des Bären"
+      },
+      "lesser_healing_potion": {
+        "name": "Geringer Heiltrank"
+      },
+      "lesser_mana_potion": {
+        "name": "Geringer Manatrank"
+      },
+      "healing_potion": {
+        "name": "Heiltrank"
+      },
+      "mana_potion": {
+        "name": "Manatrank"
+      },
+      "tunnelkings_spade": {
+        "name": "Spaten des Tunnelkönigs"
+      },
+      "brutoks_maul": {
+        "name": "Brutoks Streitkolben"
+      },
+      "cracked_ogre_tusk": {
+        "name": "Rissiger Ogerhauer"
+      },
+      "crag_warden_cudgel": {
+        "name": "Knüppel des Felswächters"
+      },
+      "cragmaw_prowlboots": {
+        "name": "Schleicherstiefel von Cragmaw"
+      },
+      "drowned_tide_scepter": {
+        "name": "Zepter der ertrunkenen Flut"
+      },
+      "emberfang_warblade": {
+        "name": "Glutzahn-Kriegsklinge"
+      },
+      "emberwing_cinderscale": {
+        "name": "Aschenschuppe von Glutschwinge"
+      },
+      "emberwing_legguards": {
+        "name": "Beinschienen von Glutschwinge"
+      },
+      "gravewardens_shiv": {
+        "name": "Stilett des Grabwächters"
+      },
+      "hollow_vigil_staff": {
+        "name": "Stab der hohlen Wacht"
+      },
+      "maldrecs_soulbinder": {
+        "name": "Maldrecs Seelenbinder"
+      },
+      "oathbound_greaves": {
+        "name": "Eidgebundene Beinschienen"
+      },
+      "skullsmasher_warbelt": {
+        "name": "Kriegsgürtel des Schädelschmetterers"
+      },
+      "skullsplitter_dirk": {
+        "name": "Schädelspalterdolch"
+      },
+      "sloomtooth_tidefang": {
+        "name": "Sloomzahns Flutzahn"
+      },
+      "tidereaver_gaff": {
+        "name": "Flutschnitter-Enterhaken"
+      },
+      "verlans_oathblade": {
+        "name": "Verlans Eidklinge"
+      },
       "briny_idol": {
         "name": "Salzlaken-Götze"
       },
@@ -2408,13 +2716,13 @@ export const de_DE: EnTranslations = {
         "name": "Alte Kryptentür"
       },
       "captains_crest": {
-        "name": "Wappen des Hauptmanns"
+        "name": "Oberteil des Kryptenschlussels"
       },
       "priests_sigil": {
-        "name": "Siegel des Priesters"
+        "name": "Unterteil des Kryptenschlussels"
       },
       "royal_seal": {
-        "name": "Königliches Siegel"
+        "name": "Altes Tagebuch"
       },
       "crypt_keystone": {
         "name": "Krypten-Schlüsselstein"
@@ -2424,12 +2732,6 @@ export const de_DE: EnTranslations = {
       },
       "kings_signet": {
         "name": "Siegelring des Königs"
-      },
-      "nythraxis_vision": {
-        "name": "Vision von Nythraxis"
-      },
-      "aldrics_seal": {
-        "name": "Aldrics Siegel"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const de_DE: EnTranslations = {
       },
       "voidwalker": {
         "name": "Leerwandler"
+      },
+      "succubus": {
+        "name": "Sukkubus"
+      },
+      "grix_the_tunnelking": {
+        "name": "Grix der Tunnelkönig"
+      },
+      "brutok_skullsmasher": {
+        "name": "Brutok Schädelschmetterer"
+      },
+      "captain_verlan": {
+        "name": "Hauptmann Verlan"
+      },
+      "old_cragmaw": {
+        "name": "Alter Cragmaw"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "Sloomzahn der Ertrunkene"
+      },
+      "voskar_emberwing": {
+        "name": "Voskar Glutschwinge"
+      },
+      "wraithbinder_maldrec": {
+        "name": "Maldrec der Geisterbinder"
+      },
+      "felhunter": {
+        "name": "Teufelsjäger"
+      },
+      "felguard": {
+        "name": "Teufelswache"
+      },
+      "infernal": {
+        "name": "Inferno"
+      },
+      "doomguard": {
+        "name": "Schreckenswache"
       },
       "choirmother_selthe": {
         "name": "Chormutter Selthe"
@@ -3445,9 +3783,9 @@ export const de_DE: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "Die ruhelosen Toten",
-        "text": "Die Untoten von Thornpeak tragen Runen, die ich nicht erkenne, {playerName}. Bring mir zehn Runen-Knochensplitter, damit ich lesen kann, was sie weckt.",
-        "completion": "Auf jedem Splitter erscheint dasselbe Zeichen: eine Krone. Sie gehört keiner Linie Eastbrooks.",
+        "title": "Unruhe in den Knochenfeldern",
+        "text": "Etwas hat sich in den Thornpeak-Hohen verandert, {playerName}. Die Toten wandern nicht mehr ziellos umher. Sie sammeln sich und marschieren durch die nordlichen Knochenfelder jenseits von Highwatch, wo das alte Schlachtfeld auf die Klippenstrasse trifft. Geh dorthin, untersuche die Unruhe unter den Knochengepanzerten Wiedergangern und bring jeden Beweis zuruck, der zeigt, was sie antreibt.",
+        "completion": "Dasselbe Zeichen erscheint auf jedem Splitter... eine Krone. Ich habe es schon einmal gesehen, eingeritzt in alte Graber, an die sich keine Aufzeichnung Eastbrooks erinnert.",
         "objectives": {
           "0": {
             "label": "Runen-Knochensplitter"
@@ -3456,8 +3794,8 @@ export const de_DE: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "Gräber der Vergessenen",
-        "text": "Die Krone gehört keiner Linie, die noch in Eastbrooks Aufzeichnungen steht. Drei alte Denkmäler stehen nahe dem nördlichen Schlachtfeld: Hauptmann Aldren, Hohepriester Malric und der königliche Assassine Voss. Berühre jeden Stein und lausche, {playerName}.",
-        "completion": "Aldren blieb loyal, Malric verweigerte den Tod, und Voss erkannte die Gefahr vor allen anderen. Alle drei dienten König Nythraxis.",
+        "text": "Ich habe diese Zeichen schon gesehen, auf drei alten Grabern rund um das nordliche Schlachtfeld. Hauptmann Aldren liegt auf der ostlichen Anhohe, Hohepriester Malric nahe der zerbrochenen mittleren Strasse und der konigliche Assassine Voss an der westlichen Klippe. Beruhre jedes Grab und lausche, {playerName}. Die Toten erinnern sich vielleicht an das, was die Lebenden vergessen haben.",
+        "completion": "Aldren blieb treu, Malric weigerte sich, den Tod zu akzeptieren, und Voss erkannte die Gefahr vor allen anderen. Alle drei dienten demselben vergessenen Konig.",
         "objectives": {
           "0": {
             "label": "Vision am Grab von Hauptmann Aldren"
@@ -3472,24 +3810,24 @@ export const de_DE: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "Die verlassene Krypta",
-        "text": "Die Visionen weisen auf eine verlassene Krypta unter den alten Ruinen. Hole das Wappen des Hauptmanns, das Siegel des Priesters und das Königliche Siegel aus den verderbten Überresten darin.",
-        "completion": "Diese Relikte gehörten denen, die Nythraxis am nächsten standen. Sie tragen noch immer das Gewicht seines Falls.",
+        "text": "Die Visionen weisen auf die verlassene Krypta in der westlichen Klippe. Eine alte Legende sagt, die Krypta habe einen Konig beherbergt. Vielleicht versiegelte Thornpeak ihn dort unten, nachdem Malrics Ritual ihn zu etwas Todeslosem verzerrt hatte. Betritt die Krypta und sieh nach, was darin geblieben ist.",
+        "completion": "Die beiden Schlusselhalften passen zusammen, und Voss Tagebuch nennt, was sie versiegelten: den Siegelring von Konig Nythraxis. Wenn das Tagebuch wahr ist, ist dieser Ring der Schlussel zu seinem Grab.",
         "objectives": {
           "0": {
-            "label": "Wappen des Hauptmanns"
+            "label": "Oberteil des Kryptenschlussels"
           },
           "1": {
-            "label": "Siegel des Priesters"
+            "label": "Unterteil des Kryptenschlussels"
           },
           "2": {
-            "label": "Königliches Siegel"
+            "label": "Altes Tagebuch"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "Der Gebundene Wächter",
-        "text": "Die Überlebenden von Thornpeak erschufen einen Knochenwächter, um das Siegel zu schützen. Bring den Schlüsselstein zum Ritualkreis, benutze ihn dort und halte stand.",
-        "completion": "Der Siegelring beweist es. Der vergessene König unter Eastbrook war Nythraxis.",
+        "text": "Voss schrieb, dass die Uberlebenden den Siegelring des Konigs hinter einem uralten Wachter versiegelten, damit niemand Nythraxis Grab durch Zufall oder Ehrgeiz erreicht. Bring den Kryptenschlussel zum Ritualkreis auf dem flachen Boden ostlich der verlassenen Krypta und sudostlich des westlichen Grabes. Benutze ihn dort, brich den Wachter und bring den Ring zuruck.",
+        "completion": "Die drei Relikte erzahlen dieselbe Geschichte: Aldren kampfte, um seinen Konig zu verteidigen, Malric durchbrach die Grenze des Todes, und Voss versuchte aufzuhalten, was folgte. Das Siegel wird schwacher, und dieser Ring ist der Schlussel zu Nythraxis Grab. Du bist nun eingestimmt, die Krypta von Nythraxis zu betreten.",
         "objectives": {
           "0": {
             "label": "Schlüsselstein am Ritualkreis benutzt"
@@ -3498,20 +3836,7 @@ export const de_DE: EnTranslations = {
             "label": "Gebundener Wächter besiegt"
           },
           "2": {
-            "label": "Siegelring des Königs"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "Nythraxis, Geißel von Eastbrook",
-        "text": "König Nythraxis wurde sterbend heimgetragen, doch Malric wollte ihn nicht ruhen lassen. Bleib bei mir, {playerName}, und blicke in die Erinnerung des Siegels.",
-        "completion": "Jahrhundertelang hielt das Siegel. Nun wird es schwächer. Wenn Nythraxis erneut aufsteigt, wird Eastbrook ein Reich der Toten. Du bist nun auf die Krypta von Nythraxis eingestimmt.",
-        "objectives": {
-          "0": {
-            "label": "Vision von Nythraxis erlebt"
-          },
-          "1": {
-            "label": "Mit Bruder Aldric gesprochen"
+            "label": "Siegelring des Konigs"
           }
         }
       },

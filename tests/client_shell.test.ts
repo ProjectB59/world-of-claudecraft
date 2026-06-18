@@ -129,9 +129,15 @@ describe('client HTML shell', () => {
     expect(html).toContain('-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));');
     expect(html).toContain('body.mobile-touch #xpbar .fill,\n  body.mobile-touch #xpbar .ticks { display: none; }');
     expect(html).toContain('body.mobile-touch #player-frame::before {\n      left: -5px;\n      top: -5px;\n      width: 73px;\n      height: 73px;');
-    expect(html).toContain('body.mobile-touch #target-frame {\n    left: max(8px, env(safe-area-inset-left));\n    top: calc(max(8px, env(safe-area-inset-top)) + 90px);');
-    expect(html).toContain('body.mobile-touch #party-frames {\n    position: fixed;\n    left: max(8px, env(safe-area-inset-left));\n    top: calc(max(8px, env(safe-area-inset-top)) + 92px);');
-    expect(html).toContain('body.mobile-touch #party-frames.below-target {\n    top: calc(max(8px, env(safe-area-inset-top)) + 148px);');
+    expect(html).toContain('body.mobile-touch #target-frame {\n    left: max(8px, env(safe-area-inset-left));\n    top: calc(max(8px, env(safe-area-inset-top)) + 72px);');
+    expect(html).toContain('body.mobile-touch #party-frames {\n    position: fixed;\n    left: max(8px, env(safe-area-inset-left));\n    top: calc(max(8px, env(safe-area-inset-top)) + 74px);');
+    expect(html).toContain('body.mobile-touch #party-frames.below-target {\n    top: calc(max(8px, env(safe-area-inset-top)) + 130px);');
+    expect(html).toContain('body.mobile-touch #party-frames .party-frame {\n    width: 132px;\n    min-height: 30px;');
+    expect(html).toContain('body.mobile-touch #party-frames .party-frame:not(:first-child) {\n    margin-top: -1px;');
+    expect(html).toContain('body.mobile-touch #party-frames #party-leave {\n    width: 132px;\n    min-height: 32px;');
+    expect(html).toContain('body.mobile-touch #party-frames .party-frame {\n      width: 118px;\n      min-height: 25px;');
+    expect(html).toContain('body.mobile-touch #target-frame {\n      left: max(6px, env(safe-area-inset-left));\n      top: calc(max(6px, env(safe-area-inset-top)) + 56px);');
+    expect(html).toContain('body.mobile-touch #party-frames.below-target {\n      top: calc(max(6px, env(safe-area-inset-top)) + 100px);');
     expect(html).not.toContain('body.mobile-touch.mobile-left-handed #xpbar,');
     expect(hudTs).toContain("$('#xpbar').style.setProperty('--xp-fill', bar.fillFrac.toFixed(4));");
     expect(hudTs).toContain("$('#player-frame').style.setProperty('--xp-fill', bar.fillFrac.toFixed(4));");
@@ -147,6 +153,11 @@ describe('client HTML shell', () => {
     expect(html).toContain('body.mobile-touch #homepage-views-container {\n    padding-top: var(--spacing-lg);\n    padding-right: max(var(--spacing-md), env(safe-area-inset-right));');
     expect(html).not.toContain('body.mobile-touch .homepage-header {\n    display: flex;\n    position: relative;');
     expect(mainTs).not.toContain("visualViewport?.addEventListener('scroll', syncAppViewport)");
+  });
+
+  it('stacks selected character details on mobile', () => {
+    expect(html).toContain('id="charselect-class-details"');
+    expect(html).toContain('body.mobile-touch #charselect-panel #charselect-class-details .class-details-grid,\n  body.mobile-touch #charselect-panel #online-class-details .class-details-grid {\n    display: flex;\n    flex-direction: column;');
   });
 
   it('lays out mobile More tray buttons horizontally', () => {
@@ -282,6 +293,16 @@ describe('client HTML shell', () => {
     expect(html).toContain('body.mobile-touch #bags .bag-grid {\n    min-height: 150px;');
     expect(html).not.toContain('body.mobile-touch #bags {\n    position: fixed;\n    left: 10px;\n    right: 10px;\n    bottom: 10px;');
     expect(html).not.toContain('max-height: calc(38vh - 20px);');
+  });
+
+  it('combines Trader and Bags into a mobile split-pane modal', () => {
+    expect(html).toContain('body.mobile-touch.vendor-open #vendor-window,\n  body.mobile-touch.vendor-open #bags {\n    position: fixed;\n    top: max(10px, env(safe-area-inset-top));\n    bottom: calc(72px + env(safe-area-inset-bottom));');
+    expect(html).toContain('body.mobile-touch.vendor-open #vendor-window {\n    left: max(10px, env(safe-area-inset-left));\n    right: 50vw;');
+    expect(html).toContain('body.mobile-touch.vendor-open #bags {\n    left: 50vw;\n    right: max(10px, env(safe-area-inset-right));');
+    expect(html).toContain('body.mobile-touch.vendor-open #vendor-window .panel-title,\n  body.mobile-touch.vendor-open #bags .panel-title {\n    height: 47px;\n    min-height: 47px;');
+    expect(html).toContain('body.mobile-touch.vendor-open #vendor-window .panel-title .x-btn {\n    display: none;');
+    expect(hudTs).toContain("if (this.vendorOpen && document.body.classList.contains('mobile-touch')) this.closeVendor();");
+    expect(hudTs).toContain("const closeMobileBags = document.body.classList.contains('mobile-touch') && $('#bags').style.display !== 'none';");
   });
 
   it('keeps the expanded mobile More tray inside the viewport', () => {

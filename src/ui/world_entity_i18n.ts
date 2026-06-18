@@ -54,7 +54,7 @@ const QUEST_IDS = [
   'q_necromancers', 'q_revenants', 'q_revenant_vanguard', 'q_wyrm_sigils',
   'q_breaking_the_seal', 'q_voice_below', 'q_sanctum_gate', 'q_korgath', 'q_velkhar',
   'q_gravewyrm', 'q_the_codfather', 'q_nythraxis_restless_dead', 'q_nythraxis_graves',
-  'q_nythraxis_sealed_crypt', 'q_nythraxis_bound_guardian', 'q_nythraxis_deathless_king',
+  'q_nythraxis_sealed_crypt', 'q_nythraxis_bound_guardian',
 ] as const;
 
 const ZONE_IDS = ['eastbrook_vale', 'mirefen_marsh', 'thornpeak_heights'] as const;

@@ -26,7 +26,8 @@ export const it_IT: EnTranslations = {
       "maxLevel": "LIVELLO MAX",
       "totalXp": "PE totali",
       "lv": "Liv",
-      "toNext": "al prossimo"
+      "toNext": "al prossimo",
+      "rested": "Riposato"
     },
     "progression": {
       "heading": "Progressione",
@@ -73,7 +74,12 @@ export const it_IT: EnTranslations = {
       "needXp": "PE totali in più per il prestigio"
     },
     "settings": {
-      "showOverflowXp": "Mostra PE eccedenti"
+      "showOverflowXp": "Mostra PE eccedenti",
+      "weather": "Effetti meteo"
+    },
+    "hud": {
+      "lowMana": "Mana basso",
+      "lowEnergy": "Energia bassa"
     },
     "talents": {
       "title": "Talenti",
@@ -132,7 +138,16 @@ export const it_IT: EnTranslations = {
       "noBuilds": "Nessuna build salvata",
       "save": "Salva",
       "comingSoonTitle": "Talenti in arrivo",
-      "comingSoonBody": "Questa classe non ha ancora alberi dei talenti. Puoi continuare a giocare normalmente; gli alberi completi arriveranno in un futuro aggiornamento."
+      "comingSoonBody": "Questa classe non ha ancora alberi dei talenti. Puoi continuare a giocare normalmente; gli alberi completi arriveranno in un futuro aggiornamento.",
+      "readout": {
+        "noTree": "La tua classe non ha ancora un albero dei talenti.",
+        "locked": "Non hai ancora sbloccato i talenti; iniziano al livello {level}.",
+        "noSpec": "nessuna specializzazione",
+        "summary": "Talenti: {head} — {spent}/{total} punti spesi ({breakdown}).",
+        "breakdownClass": "Classe {classPts}",
+        "breakdownSpec": "Classe {classPts}, {spec} {specPts}",
+        "unspent": " {count} non spesi."
+      }
     }
   },
   "nav": {
@@ -492,6 +507,8 @@ export const it_IT: EnTranslations = {
       "levelLog": "Hai raggiunto il livello {level}!",
       "xpGain": "Guadagni {amount} esperienza.",
       "xpFloat": "+{amount} PE",
+      "xpFloatRested": "+{amount} riposo",
+      "xpGainRested": "Guadagni {amount} esperienza ({rested} bonus dal riposo).",
       "deathTitle": "Sei morto.",
       "releaseSpirit": "Libera spirito",
       "chatTab": "Chat",
@@ -521,6 +538,7 @@ export const it_IT: EnTranslations = {
       "keyBindings": "Comandi da tastiera",
       "graphics": "Grafica",
       "audio": "Audio",
+      "interface": "Interfaccia",
       "logout": "Esci",
       "returnToGame": "Torna al gioco",
       "resetToDefaults": "Ripristina predefiniti",
@@ -544,15 +562,33 @@ export const it_IT: EnTranslations = {
       "terrainLow": "Basso",
       "terrainHigh": "Alto",
       "touchOpacity": "Opacità comandi touch",
+      "invertLook": "Inverti visuale (touch)",
       "graphicsReloadNote": "Qualità grafica e dettaglio terreno si applicano dopo un ricaricamento.",
       "reloadNow": "Ricarica ora",
       "fullscreen": "Schermo intero",
       "touchLookSpeed": "Velocità camera touch",
+      "joystickSize": "Dimensione joystick",
+      "buttonSize": "Dimensione pulsanti",
+      "joystickDeadzone": "Zona morta joystick",
       "leftHandedTouch": "Touch per mancini",
       "filterProfanity": "Filtra linguaggio",
       "clickMoveButton": "Pulsante clic per muovere",
       "clickToMove": "Clicca per muoverti",
       "graphicsNote": "Riduci la velocità della camera per un mouselook più stabile. La qualità rendering sotto il 100% aumenta gli FPS sui dispositivi meno potenti.",
+      "fieldOfView": "Campo visivo",
+      "hudOpacity": "Opacità dell'interfaccia",
+      "tooltipScale": "Dimensione del testo dei suggerimenti",
+      "fctScale": "Dimensione del testo di combattimento",
+      "chatFontScale": "Dimensione del testo della chat",
+      "chatOpacity": "Opacità dello sfondo della chat",
+      "compactChat": "Chat compatta",
+      "frostedPanels": "Pannelli smerigliati",
+      "highContrastText": "Testo ad alto contrasto",
+      "reduceMotion": "Riduci animazioni",
+      "showFps": "Mostra FPS",
+      "invertLookY": "Inverti visuale (Y)",
+      "fpsReadout": "{fps} FPS",
+      "interfaceNote": "Queste opzioni cambiano solo la tua visuale e vengono salvate su questo dispositivo.",
       "soundEffects": "Effetti sonori",
       "musicVolume": "Volume musica",
       "music": "Musica",
@@ -1037,6 +1073,7 @@ export const it_IT: EnTranslations = {
       "readyQuestAria": "Missione pronta da consegnare: {name}",
       "discussQuest": "Discuti {name}.",
       "discussQuestAria": "Discuti missione: {name}",
+      "nythraxisDeathlessKingWarning": "Le tre reliquie raccontano la stessa storia: Aldren combatte per difendere il suo re, Malric spezzo il confine della morte e Voss tento di fermare cio che segui. Il sigillo si indebolisce, e la cripta abbandonata e la via verso il basso.",
       "browseGoods": "Fammi vedere la tua merce.",
       "browseGoodsAria": "Vedi la merce di {name}",
       "worldMarket": "Mostrami il Mercato Mondiale.",
@@ -1044,6 +1081,7 @@ export const it_IT: EnTranslations = {
       "accept": "Accetta",
       "decline": "Rifiuta",
       "continue": "Continua",
+      "done": "Fatto",
       "completeQuest": "Completa missione",
       "turnIn": "Consegna",
       "back": "Indietro",
@@ -1108,7 +1146,8 @@ export const it_IT: EnTranslations = {
       "food": "Cibo",
       "drink": "Bevanda",
       "tool": "Strumento",
-      "potion": "Pozione"
+      "potion": "Pozione",
+      "elixir": "Elisir"
     },
     "stats": {
       "armor": "Armatura",
@@ -1124,6 +1163,8 @@ export const it_IT: EnTranslations = {
     },
     "tooltip": {
       "qualityKind": "{kind} {quality}",
+      "currentlyEquipped": "Attualmente equipaggiato",
+      "ifYouEquip": "Se equipaggi questo",
       "damageSpeed": "{min} - {max} danni Velocità {speed}",
       "dps": "({dps} danni al secondo)",
       "dagger": "Pugnale",
@@ -1247,6 +1288,14 @@ export const it_IT: EnTranslations = {
         "name": "Urlo di Battaglia",
         "description": "Aumenta la tua potenza d'attacco di 20 per 2 min."
       },
+      "commanding_shout": {
+        "name": "Urlo di Comando",
+        "description": "Aumenta la tua Tempra di 6 per 2 min."
+      },
+      "demoralizing_shout": {
+        "name": "Urlo Demoralizzante",
+        "description": "Emette un urlo terrificante, riducendo la potenza d'attacco di tutti i nemici vicini di 30 per 30 sec."
+      },
       "charge": {
         "name": "Carica",
         "description": "Carica un nemico, genera 9 rabbia e lo stordisce per 1 s. Portata 8-25 m."
@@ -1315,6 +1364,10 @@ export const it_IT: EnTranslations = {
         "name": "Evoca Acqua",
         "description": "Evoca 2 bottiglie d'acqua che ripristinano mana quando bevute. I ranghi superiori evocano acqua più pura."
       },
+      "conjure_food": {
+        "name": "Evoca Cibo",
+        "description": "Evoca 2 porzioni di pane che ripristinano salute quando mangiate. I ranghi superiori evocano cibo più sostanzioso."
+      },
       "fire_blast": {
         "name": "Esplosione di Fuoco",
         "description": "Investe il nemico per {damage} danni da Fuoco. Istantaneo."
@@ -1338,6 +1391,10 @@ export const it_IT: EnTranslations = {
       "scorch": {
         "name": "Bruciatura",
         "description": "Brucia il nemico per {damage} danni da Fuoco. Lancio rapido."
+      },
+      "pyroblast": {
+        "name": "Piroesplosione",
+        "description": "Scaglia un immenso masso infuocato che infligge {damage} danni da Fuoco più danni aggiuntivi nel tempo."
       },
       "ice_barrier": {
         "name": "Barriera di Ghiaccio",
@@ -1387,6 +1444,46 @@ export const it_IT: EnTranslations = {
         "name": "Scarica di Adrenalina",
         "description": "Il sangue ti ribolle e ripristina istantaneamente 60 energia."
       },
+      "garrote": {
+        "name": "Garrota",
+        "description": "Garrota il nemico, infliggendo danni immediati e provocando sanguinamento per {damage} in 18 sec. Devi essere furtivo. Conferisce 1 punto combo."
+      },
+      "cheap_shot": {
+        "name": "Colpo Furtivo",
+        "description": "Colpisce il bersaglio, stordendolo per 4 sec. Devi essere furtivo. Conferisce 2 punti combo."
+      },
+      "sap": {
+        "name": "Tramortimento",
+        "description": "Incapacita il bersaglio per 8 sec. Devi essere furtivo e fuori dal combattimento. Qualsiasi danno interrompe l'effetto."
+      },
+      "crippling_poison": {
+        "name": "Veleno Immobilizzante",
+        "description": "Colpisce il bersaglio con un veleno immobilizzante, infliggendo {damage} danni della Natura e rallentando la sua velocità di movimento del 50% per 12 sec."
+      },
+      "expose_armor": {
+        "name": "Esposizione Corazza",
+        "description": "Mossa finale che espone il bersaglio, riducendone la corazza. Più punti combo spesi approfondiscono il taglio."
+      },
+      "rupture": {
+        "name": "Lacerazione",
+        "description": "Mossa finale che ferisce il bersaglio, provocando sanguinamento per {damage} in 16 sec."
+      },
+      "vanish": {
+        "name": "Eclissarsi",
+        "description": "Scompari dalla vista, entrando in Furtività anche in combattimento. Ti muovi il 30% più lentamente mentre sei nascosto. Dura fino a 10 sec."
+      },
+      "instant_poison": {
+        "name": "Veleno Istantaneo",
+        "description": "Ricopre la tua arma per 30 min, facendo sì che ognuno dei tuoi attacchi in mischia infligga 8 danni della Natura aggiuntivi."
+      },
+      "deadly_poison": {
+        "name": "Veleno Letale",
+        "description": "Ricopre la tua arma per 30 min, facendo sì che ognuno dei tuoi attacchi in mischia infligga 14 danni della Natura aggiuntivi."
+      },
+      "blind": {
+        "name": "Accecamento",
+        "description": "Acceca il bersaglio, facendolo vagare disorientato per 8 sec. Qualsiasi danno interrompe l'effetto."
+      },
       "seal_of_righteousness": {
         "name": "Sigillo della Rettitudine",
         "description": "Ti riempie di potere Sacro per 30 s, facendo infliggere 4 danni Sacri aggiuntivi a ogni tuo colpo in mischia. Scatenalo con Giudizio."
@@ -1435,6 +1532,10 @@ export const it_IT: EnTranslations = {
         "name": "Furia Virtuosa",
         "description": "Aumenta del 60% la minaccia generata dai tuoi danni Sacri per 30 min. Il cardine del paladino difensore."
       },
+      "retribution_aura": {
+        "name": "Aura di Castigo",
+        "description": "Ti avvolge in energia sacra per 30 min, infliggendo 5 danni Sacri a ogni nemico che ti colpisce in mischia."
+      },
       "tame_beast": {
         "name": "Addomestica Bestia",
         "description": "Inizia ad addomesticare una bestia come compagna. Deve essere del tuo livello o inferiore e non élite. Il tuo famiglio ti segue, attacca i tuoi nemici e mantiene la propria minaccia. Puoi avere un solo famiglio alla volta."
@@ -1470,6 +1571,10 @@ export const it_IT: EnTranslations = {
       "wing_clip": {
         "name": "Taglia Ali",
         "description": "Infligge una ferita che rallenta il nemico del 40% per 10 s."
+      },
+      "aspect_of_the_monkey": {
+        "name": "Aspetto della Scimmia",
+        "description": "Assumi l'aspetto della scimmia, aumentando la tua probabilità di schivata dell'8% per 30 min."
       },
       "aspect_of_the_cheetah": {
         "name": "Aspetto del Ghepardo",
@@ -1547,9 +1652,17 @@ export const it_IT: EnTranslations = {
         "name": "Folgore del Fuoco",
         "description": "Brucia il bersaglio con il fuoco per 25 danni più {damage} in 12 s."
       },
+      "flametongue_weapon": {
+        "name": "Arma Linguafiamma",
+        "description": "Imbeve la tua arma con fuoco elementale: ogni colpo infligge 8 danni da Fuoco aggiuntivi per 5 min."
+      },
       "frost_shock": {
         "name": "Folgore del Gelo",
         "description": "Scuote istantaneamente il bersaglio col gelo per {damage} danni da Gelo e rallenta il movimento del 50% per 8 s."
+      },
+      "frostbrand_weapon": {
+        "name": "Arma Marchiogelo",
+        "description": "Imbeve la tua arma con gelo pungente: ogni colpo infligge 8 danni aggiuntivi per 5 min."
       },
       "ghost_wolf": {
         "name": "Lupo Spettrale",
@@ -1667,6 +1780,46 @@ export const it_IT: EnTranslations = {
         "name": "Fuoco Stellare",
         "description": "Richiama un dardo di fuoco stellare, infliggendo {damage} danni Arcani."
       },
+      "travel_form": {
+        "name": "Forma da Viaggio",
+        "description": "Assume una rapida forma da viaggio, aumentando la velocità di movimento del 40%. Non utilizzabile in combattimento."
+      },
+      "enrage": {
+        "name": "Furia incontrollata",
+        "description": "Genera 20 punti ira all'istante. Solo Forma d'Orso."
+      },
+      "bash": {
+        "name": "Frastornare",
+        "description": "Stordisce il bersaglio per 2 sec. Solo Forma d'Orso."
+      },
+      "faerie_fire": {
+        "name": "Fuoco Fatato",
+        "description": "Riduce l'armatura del bersaglio di 35 per 40 sec."
+      },
+      "hibernate": {
+        "name": "Letargo",
+        "description": "Costringe il bersaglio in un sonno profondo per un massimo di 8 sec. Qualsiasi danno lo risveglia."
+      },
+      "dash": {
+        "name": "Scatto",
+        "description": "Scatta in avanti, aumentando la velocità di movimento del 50% per 15 sec. Solo Forma Felina."
+      },
+      "pounce": {
+        "name": "Balzo",
+        "description": "Apertura furtiva che stordisce il bersaglio per 2 sec. Conferisce 1 punto combo. Solo Forma Felina."
+      },
+      "insect_swarm": {
+        "name": "Sciame d'Insetti",
+        "description": "Il nemico è assalito da uno sciame di insetti, subendo {damage} danni da Natura in 12 sec."
+      },
+      "tigers_fury": {
+        "name": "Furia della Tigre",
+        "description": "Aumenta la potenza d'attacco di 40 per 6 sec. Solo Forma Felina."
+      },
+      "rip": {
+        "name": "Squartare",
+        "description": "Mossa finale che infligge danni da sanguinamento in 12 sec. Consuma i punti combo. Solo Forma Felina."
+      },
       "mortal_strike": {
         "name": "Colpo Mortale",
         "description": "Un colpo feroce che infligge danni dell'arma più {damage}. (firma Armi)"
@@ -1694,6 +1847,26 @@ export const it_IT: EnTranslations = {
       "summon_voidwalker": {
         "name": "Evoca camminatore del Vuoto",
         "description": "Evoca un Camminatore del Vuoto al comando dello stregone. Il Camminatore del Vuoto è un demone robusto che provoca i tuoi nemici e assorbe i colpi. Evocare un nuovo demone congeda quello attuale. Puoi avere un solo demone alla volta."
+      },
+      "summon_succubus": {
+        "name": "Evoca succube",
+        "description": "Evoca una Succube al comando dello stregone. La Succube è un demone fragile che colpisce rapidamente e infligge gravi danni in mischia. Evocare un nuovo demone congeda quello attuale. Puoi avere un solo demone alla volta."
+      },
+      "summon_felhunter": {
+        "name": "Evoca segugio vile",
+        "description": "Evoca un Segugio vile al comando dello stregone. Il Segugio vile tormenta i nemici a distanza con Morso d'ombra ed eccelle nel cacciare gli incantatori. Evocare un nuovo demone congeda quello attuale. Puoi avere un solo demone alla volta."
+      },
+      "summon_felguard": {
+        "name": "Evoca guardia vile",
+        "description": "Evoca una Guardia vile al comando dello stregone. La Guardia vile è un robusto demone da mischia che si getta nella battaglia e sa difendersi. Evocare un nuovo demone congeda quello attuale. Puoi avere un solo demone alla volta."
+      },
+      "summon_infernal": {
+        "name": "Evoca infernale",
+        "description": "Vincola un Infernale al tuo volere: un colosso possente con una mischia devastante e la salute e l'armatura più elevate di qualsiasi demone. Un lungo tempo di recupero ne limita la potenza bruta. Evocare un nuovo demone congeda quello attuale. Puoi avere un solo demone alla volta."
+      },
+      "summon_doomguard": {
+        "name": "Evoca guardia del Terrore",
+        "description": "Vincola una Guardia del Terrore al tuo volere: un demone d'élite che scaglia da lontano ingenti danni d'Ombra. Un lungo tempo di recupero ne limita la potenza devastante. Evocare un nuovo demone congeda quello attuale. Puoi avere un solo demone alla volta."
       },
       "bear_charge": {
         "name": "Carica dell'Orso",
@@ -2146,6 +2319,51 @@ export const it_IT: EnTranslations = {
       "cracked_wyrm_scale": {
         "name": "Scaglia di wyrm incrinata"
       },
+      "conjured_bread": {
+        "name": "Pane evocato"
+      },
+      "conjured_bread2": {
+        "name": "Pane nero evocato"
+      },
+      "conjured_bread3": {
+        "name": "Panino dolce evocato"
+      },
+      "roadwardens_helm": {
+        "name": "Elmo del guardiano della strada"
+      },
+      "wayfarers_hood": {
+        "name": "Cappuccio del viandante"
+      },
+      "acolytes_circlet": {
+        "name": "Cerchietto dell'accolito"
+      },
+      "reinforced_pauldrons": {
+        "name": "Spallacci rinforzati"
+      },
+      "embroidered_mantle": {
+        "name": "Mantello ricamato"
+      },
+      "sturdy_belt": {
+        "name": "Cintura robusta del viandante"
+      },
+      "silk_sash": {
+        "name": "Fascia di seta intrecciata"
+      },
+      "roughspun_gloves": {
+        "name": "Guanti di tela grezza"
+      },
+      "bristlehide_spaulders": {
+        "name": "Spallacci di pelle setolosa"
+      },
+      "sableweb_cord": {
+        "name": "Cordone di Sableweb"
+      },
+      "gorraks_cleaver": {
+        "name": "Mannaia di Gorrak"
+      },
+      "mossy_handwraps": {
+        "name": "Manopole muschiose"
+      },
       "bristleback_maul": {
         "name": "Maglio Bristleback"
       },
@@ -2293,6 +2511,96 @@ export const it_IT: EnTranslations = {
       "wyrmshadow_treads": {
         "name": "Calzari Ombrawyrm"
       },
+      "glimmerfin_koi": {
+        "name": "Koi dalle pinne scintillanti"
+      },
+      "raw_bog_eel": {
+        "name": "Anguilla di palude cruda"
+      },
+      "raw_frostgill_trout": {
+        "name": "Trota dalle branchie gelide cruda"
+      },
+      "raw_marsh_pike": {
+        "name": "Luccio di palude crudo"
+      },
+      "raw_river_perch": {
+        "name": "Persico di fiume crudo"
+      },
+      "raw_stonescale_carp": {
+        "name": "Carpa dalle scaglie di pietra cruda"
+      },
+      "soggy_boot": {
+        "name": "Stivale fradicio"
+      },
+      "elixir_of_the_bear": {
+        "name": "Elisir dell'Orso"
+      },
+      "lesser_healing_potion": {
+        "name": "Pozione di cura inferiore"
+      },
+      "lesser_mana_potion": {
+        "name": "Pozione di mana inferiore"
+      },
+      "healing_potion": {
+        "name": "Pozione di cura"
+      },
+      "mana_potion": {
+        "name": "Pozione di mana"
+      },
+      "tunnelkings_spade": {
+        "name": "Vanga del Re dei Tunnel"
+      },
+      "brutoks_maul": {
+        "name": "Mazza di Brutok"
+      },
+      "cracked_ogre_tusk": {
+        "name": "Zanna d'ogre incrinata"
+      },
+      "crag_warden_cudgel": {
+        "name": "Randello del guardiano della rupe"
+      },
+      "cragmaw_prowlboots": {
+        "name": "Stivali predatori di Cragmaw"
+      },
+      "drowned_tide_scepter": {
+        "name": "Scettro della marea annegata"
+      },
+      "emberfang_warblade": {
+        "name": "Spada da guerra zanna di brace"
+      },
+      "emberwing_cinderscale": {
+        "name": "Squama di cenere di Aladibrace"
+      },
+      "emberwing_legguards": {
+        "name": "Gambali di Aladibrace"
+      },
+      "gravewardens_shiv": {
+        "name": "Pugnale del guardiano delle tombe"
+      },
+      "hollow_vigil_staff": {
+        "name": "Bastone della veglia cava"
+      },
+      "maldrecs_soulbinder": {
+        "name": "Legatore d'anime di Maldrec"
+      },
+      "oathbound_greaves": {
+        "name": "Gambali del giuramento"
+      },
+      "skullsmasher_warbelt": {
+        "name": "Cintura da guerra dello spaccacranio"
+      },
+      "skullsplitter_dirk": {
+        "name": "Daga spaccacranio"
+      },
+      "sloomtooth_tidefang": {
+        "name": "Zanna di marea di Sloomtooth"
+      },
+      "tidereaver_gaff": {
+        "name": "Gancio del falciamaree"
+      },
+      "verlans_oathblade": {
+        "name": "Lama del giuramento di Verlan"
+      },
       "briny_idol": {
         "name": "Idolo Salmastro"
       },
@@ -2408,13 +2716,13 @@ export const it_IT: EnTranslations = {
         "name": "Porta antica della cripta"
       },
       "captains_crest": {
-        "name": "Cimiero del capitano"
+        "name": "Parte superiore della chiave"
       },
       "priests_sigil": {
-        "name": "Sigillo del sacerdote"
+        "name": "Parte inferiore della chiave"
       },
       "royal_seal": {
-        "name": "Sigillo reale"
+        "name": "Diario antico"
       },
       "crypt_keystone": {
         "name": "Chiave di volta della cripta"
@@ -2424,12 +2732,6 @@ export const it_IT: EnTranslations = {
       },
       "kings_signet": {
         "name": "Anello con sigillo del re"
-      },
-      "nythraxis_vision": {
-        "name": "Visione di Nythraxis"
-      },
-      "aldrics_seal": {
-        "name": "Sigillo di Aldric"
       }
     },
     "mobs": {
@@ -2639,6 +2941,42 @@ export const it_IT: EnTranslations = {
       },
       "voidwalker": {
         "name": "Camminatore del Vuoto"
+      },
+      "succubus": {
+        "name": "Succube"
+      },
+      "grix_the_tunnelking": {
+        "name": "Grix il Re dei Cunicoli"
+      },
+      "brutok_skullsmasher": {
+        "name": "Brutok Spaccacranio"
+      },
+      "captain_verlan": {
+        "name": "Capitano Verlan"
+      },
+      "old_cragmaw": {
+        "name": "Vecchio Cragmaw"
+      },
+      "sloomtooth_the_drowned": {
+        "name": "Sloomtooth l'Annegato"
+      },
+      "voskar_emberwing": {
+        "name": "Voskar Aladibrace"
+      },
+      "wraithbinder_maldrec": {
+        "name": "Maldrec il Legaspettri"
+      },
+      "felhunter": {
+        "name": "Segugio vile"
+      },
+      "felguard": {
+        "name": "Guardia vile"
+      },
+      "infernal": {
+        "name": "Infernale"
+      },
+      "doomguard": {
+        "name": "Guardia del Terrore"
       },
       "choirmother_selthe": {
         "name": "Selthe Madre del Coro"
@@ -3445,9 +3783,9 @@ export const it_IT: EnTranslations = {
         }
       },
       "q_nythraxis_restless_dead": {
-        "title": "I morti inquieti",
-        "text": "I non morti di Thornpeak portano rune che non riconosco, {playerName}. Portami dieci frammenti d'osso runico perché possa leggere ciò che li risveglia.",
-        "completion": "Lo stesso simbolo appare su ogni frammento: una corona. Non appartiene a nessuna stirpe di Eastbrook.",
+        "title": "Disordine nei campi d ossa",
+        "text": "Qualcosa e cambiato nelle Alture di Thornpeak, {playerName}. I morti non vagano piu senza meta. Si radunano e marciano nei campi d ossa a nord di Highwatch, dove il vecchio campo di battaglia incontra la strada della scogliera. Vai li, indaga sul disordine tra i revenant corazzati d ossa e porta qualsiasi prova di cio che li spinge.",
+        "completion": "Lo stesso simbolo appare su ogni frammento... una corona. L ho gia visto, inciso su vecchie tombe che nessun registro di Eastbrook ricorda.",
         "objectives": {
           "0": {
             "label": "Frammento d'osso runico"
@@ -3456,8 +3794,8 @@ export const it_IT: EnTranslations = {
       },
       "q_nythraxis_graves": {
         "title": "Tombe dei dimenticati",
-        "text": "La corona non appartiene a nessuna stirpe ancora citata nei registri di Eastbrook. Tre antichi memoriali sorgono vicino al campo di battaglia settentrionale: il capitano Aldren, l'alto sacerdote Malric e l'assassino reale Voss. Tocca ogni pietra e ascolta, {playerName}.",
-        "completion": "Aldren rimase leale, Malric rifiutò la morte e Voss vide il pericolo prima di tutti. Tutti e tre servirono re Nythraxis.",
+        "text": "Ho gia visto questi segni, su tre vecchie tombe attorno al campo di battaglia settentrionale. Il capitano Aldren giace sull altura orientale, l alto sacerdote Malric vicino alla strada centrale spezzata e l assassino reale Voss presso la scogliera occidentale. Tocca ogni tomba e ascolta, {playerName}. I morti possono ricordare cio che i vivi hanno dimenticato.",
+        "completion": "Aldren rimase leale, Malric rifiuto di accettare la morte e Voss vide il pericolo prima di chiunque altro. Tutti e tre servirono lo stesso re dimenticato.",
         "objectives": {
           "0": {
             "label": "Visione alla tomba del capitano Aldren"
@@ -3472,24 +3810,24 @@ export const it_IT: EnTranslations = {
       },
       "q_nythraxis_sealed_crypt": {
         "title": "La cripta abbandonata",
-        "text": "Le visioni indicano una cripta abbandonata sotto le vecchie rovine. Recupera il Cimiero del capitano, il Sigillo del sacerdote e il Sigillo reale dai resti corrotti al suo interno.",
-        "completion": "Queste reliquie appartennero a chi era più vicino a Nythraxis. Portano ancora il peso della sua caduta.",
+        "text": "Le visioni indicano la cripta abbandonata nella scogliera occidentale. Una vecchia leggenda dice che la cripta ospitasse un re. Forse Thornpeak lo sigillo li sotto dopo che il rituale di Malric lo trasformo in qualcosa di immortale. Entra nella cripta e guarda cosa resta dentro.",
+        "completion": "Le due meta della chiave combaciano, e il diario di Voss nomina cio che sigillarono: l anello del re Nythraxis. Se il diario dice il vero, quell anello e la chiave della sua tomba.",
         "objectives": {
           "0": {
-            "label": "Cimiero del capitano"
+            "label": "Parte superiore della chiave"
           },
           "1": {
-            "label": "Sigillo del sacerdote"
+            "label": "Parte inferiore della chiave"
           },
           "2": {
-            "label": "Sigillo reale"
+            "label": "Diario antico"
           }
         }
       },
       "q_nythraxis_bound_guardian": {
         "title": "Il Guardiano Vincolato",
-        "text": "I sopravvissuti di Thornpeak crearono un guardiano d'ossa per proteggere il sigillo. Porta la chiave di volta al cerchio rituale, usala lì e resisti.",
-        "completion": "L'anello lo prova. Il re dimenticato sotto Eastbrook era Nythraxis.",
+        "text": "Voss scrisse che i sopravvissuti sigillarono l Anello del re dietro un antico guardiano, cosi che nessuno potesse raggiungere la tomba di Nythraxis per caso o ambizione. Porta la Chiave della cripta al cerchio rituale sul terreno piano a est della cripta abbandonata e a sud-est della tomba occidentale. Usala li, spezza il guardiano e riporta l anello.",
+        "completion": "Le tre reliquie raccontano la stessa storia: Aldren combatte per difendere il suo re, Malric spezzo il confine della morte e Voss tento di fermare cio che segui. Il sigillo si indebolisce, e questo anello e la chiave della tomba di Nythraxis. Ora sei armonizzato per entrare nella Cripta di Nythraxis.",
         "objectives": {
           "0": {
             "label": "Chiave di volta usata al cerchio rituale"
@@ -3498,20 +3836,7 @@ export const it_IT: EnTranslations = {
             "label": "Guardiano Vincolato sconfitto"
           },
           "2": {
-            "label": "Anello con sigillo del re"
-          }
-        }
-      },
-      "q_nythraxis_deathless_king": {
-        "title": "Nythraxis, Flagello di Eastbrook",
-        "text": "Re Nythraxis fu riportato a casa morente, ma Malric non volle lasciarlo riposare. Resta con me, {playerName}, e osserva la memoria del sigillo.",
-        "completion": "Per secoli il sigillo ha retto. Ora si indebolisce. Se Nythraxis risorgerà, Eastbrook diventerà un regno dei morti. Ora sei armonizzato per entrare nella Cripta di Nythraxis.",
-        "objectives": {
-          "0": {
-            "label": "Visione di Nythraxis osservata"
-          },
-          "1": {
-            "label": "Fratello Aldric consultato"
+            "label": "Anello del re"
           }
         }
       },

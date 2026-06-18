@@ -14,6 +14,18 @@ export interface PathOpts {
   minGround: number; // ground below this height is impassable (deep water)
   maxSpan?: number; // max searched cells per axis
   ignoreFences?: boolean; // treat fences as passable (the mover can jump them)
+  // The mover swims, so water is traversable: deep-water cells stay walkable
+  // (set minGround low) and for slope purposes their surface — not the lake
+  // bottom — is what the body rides, so a sloped bed isn't a wall and the climb
+  // check at the shore measures the real waterline-to-bank step.
+  swim?: boolean;
+}
+
+// Height the mover's body actually rides at a cell: the water surface when
+// swimming over submerged ground, the ground itself otherwise. Used only for
+// slope/climb gating so an uneven lake bed doesn't read as a cliff.
+function rideHeight(h: number, swim: boolean | undefined): number {
+  return swim && h < WATER_LEVEL ? WATER_LEVEL : h;
 }
 
 const CELL = 1; // yards
@@ -40,7 +52,7 @@ function segmentWalkable(
   const steps = Math.max(1, Math.ceil(d / SMOOTH_SAMPLE_STEP));
   let prevX = from.x;
   let prevZ = from.z;
-  let prevH = groundHeight(prevX, prevZ, o.seed);
+  let prevRide = rideHeight(groundHeight(prevX, prevZ, o.seed), o.swim);
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
     const x = from.x + dx * t;
@@ -50,12 +62,13 @@ function segmentWalkable(
     if ((!isEnd || !allowBlockedEnd) && (h < o.minGround || isBlocked(o.seed, x, z, o.bodyRadius, o.ignoreFences))) {
       return false;
     }
+    const ride = rideHeight(h, o.swim);
     const stepLen = Math.hypot(x - prevX, z - prevZ);
-    const rise = h - prevH;
+    const rise = ride - prevRide;
     if (stepLen > 1e-6 && rise > 0 && rise / stepLen > o.maxClimbSlope) return false;
     prevX = x;
     prevZ = z;
-    prevH = h;
+    prevRide = ride;
   }
   return true;
 }
@@ -167,7 +180,7 @@ export function findPath(
     const [, cur] = heapPop();
     if (cur === goalIdx) { found = true; break; }
     const gx = cur % W, gz = (cur / W) | 0;
-    const hCur = groundAt(cur);
+    const hCur = rideHeight(groundAt(cur), o.swim);
     for (let dz = -1; dz <= 1; dz++) {
       for (let dx = -1; dx <= 1; dx++) {
         if (dx === 0 && dz === 0) continue;
@@ -178,7 +191,7 @@ export function findPath(
         // diagonals only when both orthogonal cells are clear (no corner clipping)
         if (dx !== 0 && dz !== 0 && (!walkable(gz * W + nx) || !walkable(nz * W + gx))) continue;
         const stepLen = (dx !== 0 && dz !== 0 ? Math.SQRT2 : 1) * CELL;
-        const rise = groundAt(n) - hCur;
+        const rise = rideHeight(groundAt(n), o.swim) - hCur;
         if (rise > 0 && rise / stepLen > o.maxClimbSlope) continue;
         const g = gScore[cur] + stepLen;
         if (g < gScore[n]) {
@@ -211,25 +224,36 @@ export function findPlayerPath(
   to: { x: number; z: number },
   maxSpan = 128,
   ignoreFences = false,
+  swim = false,
 ): { x: number; z: number }[] {
   return findPath(from, to, {
     seed,
     bodyRadius: PLAYER_BODY_RADIUS,
     maxClimbSlope: PLAYER_MAX_CLIMB_SLOPE,
-    minGround: WATER_LEVEL - PLAYER_SWIM_DEPTH,
+    // Players float on any depth (they tread water at the surface), so when
+    // swimming is allowed no ground is "too deep" to enter — only colliders and
+    // un-climbable banks stop them. Charge keeps the deep-water cutoff.
+    minGround: swim ? -Infinity : WATER_LEVEL - PLAYER_SWIM_DEPTH,
     maxSpan,
     ignoreFences,
+    swim,
   });
 }
 
-function playerDestinationWalkable(seed: number, p: { x: number; z: number }): boolean {
-  return groundHeight(p.x, p.z, seed) >= WATER_LEVEL - PLAYER_SWIM_DEPTH
-    && !isBlocked(seed, p.x, p.z, PLAYER_BODY_RADIUS);
+function playerDestinationWalkable(seed: number, p: { x: number; z: number }, swim: boolean): boolean {
+  if (isBlocked(seed, p.x, p.z, PLAYER_BODY_RADIUS)) return false;
+  // Swimmers can stop on the water; walkers can't, so deep water is rejected and
+  // the caller snaps to the nearest shore.
+  return swim || groundHeight(p.x, p.z, seed) >= WATER_LEVEL - PLAYER_SWIM_DEPTH;
 }
 
-export function resolvePlayerDestination(seed: number, target: { x: number; z: number }): { x: number; z: number } {
+export function resolvePlayerDestination(
+  seed: number,
+  target: { x: number; z: number },
+  swim = false,
+): { x: number; z: number } {
   const pushed = resolvePosition(seed, target.x, target.z, PLAYER_BODY_RADIUS);
-  if (playerDestinationWalkable(seed, pushed)) return pushed;
+  if (playerDestinationWalkable(seed, pushed, swim)) return pushed;
 
   let best: { x: number; z: number } | null = null;
   let bestD2 = Infinity;
@@ -244,7 +268,7 @@ export function resolvePlayerDestination(seed: number, target: { x: number; z: n
         z: target.z + Math.cos(a) * radius,
       };
       const p = resolvePosition(seed, raw.x, raw.z, PLAYER_BODY_RADIUS);
-      if (!playerDestinationWalkable(seed, p)) continue;
+      if (!playerDestinationWalkable(seed, p, swim)) continue;
       const dx = p.x - target.x, dz = p.z - target.z;
       const d2 = dx * dx + dz * dz;
       if (d2 < bestD2) {
