@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
 import { ACTIONS, encodeObs } from '../src/sim/obs';
-import { Entity, dist2d } from '../src/sim/types';
+import { Entity, SimEvent, dist2d } from '../src/sim/types';
 import { CLASSES, CRYPT_DOOR_POS, DUNGEON_LIST, DUNGEON_X_THRESHOLD, ITEMS, LAKE, MOBS, NPCS, QUESTS, instanceOrigin, zoneAt, zoneWelcomeText } from '../src/sim/data';
 import { createMob } from '../src/sim/entity';
 import { generateDecorations, groundHeight, WATER_LEVEL } from '../src/sim/world';
@@ -750,6 +750,13 @@ describe('quest npc roles', () => {
     }
   });
 
+  it('offers the Nythraxis attunement only from the Highwatch Aldric', () => {
+    expect(QUESTS.q_nythraxis_restless_dead.name).not.toBe('The Restless Dead');
+    expect(NPCS.brother_aldric.questIds).not.toContain('q_nythraxis_restless_dead');
+    expect(NPCS.brother_aldric_fen.questIds).not.toContain('q_nythraxis_restless_dead');
+    expect(NPCS.brother_aldric_highwatch.questIds).toContain('q_nythraxis_restless_dead');
+  });
+
   it('interacting with the turn-in NPC does not auto-accept an available quest', () => {
     const sim = makeSim();
     (sim as any).grantXp(99999); // well past minLevel 6 for q_fenbridge_muster
@@ -766,35 +773,13 @@ describe('quest npc roles', () => {
     expect(sim.questState('q_fenbridge_muster')).toBe('active');
   });
 
-  it('lets a completed NPC interaction objective fall through to quest turn-in', () => {
-    const sim = makeSim();
-    const quest = QUESTS.q_nythraxis_deathless_king;
-    const aldric = [...sim.entities.values()].find((e) => e.templateId === quest.turnInNpcId)!;
-    teleportTo(sim, aldric.pos.x + 2, aldric.pos.z);
-    sim.questLog.set(quest.id, { questId: quest.id, counts: [1, 0], state: 'active' });
+  it('ends the Nythraxis attunement on the Bound Guardian quest', () => {
+    const quest = QUESTS.q_nythraxis_bound_guardian;
 
-    sim.talkToNpc(aldric.id);
-    expect(sim.questLog.get(quest.id)?.counts).toEqual([1, 1]);
-    expect(sim.questState(quest.id)).toBe('ready');
-
-    sim.talkToNpc(aldric.id);
-    expect(sim.questState(quest.id)).toBe('done');
-  });
-
-  it('prefers the selected NPC over a nearer object when interacting', () => {
-    const sim = makeSim();
-    const quest = QUESTS.q_nythraxis_deathless_king;
-    const aldric = [...sim.entities.values()].find((e) => e.templateId === quest.turnInNpcId)!;
-    const crate = [...sim.entities.values()].find((e) => e.kind === 'object' && e.objectItemId === 'highwatch_summons')!;
-    teleportTo(sim, aldric.pos.x + 1.8, aldric.pos.z);
-    placeEntity(sim, crate, sim.player.pos.x + 0.5, sim.player.pos.z);
-    sim.questLog.set(quest.id, { questId: quest.id, counts: [1, 0], state: 'active' });
-
-    sim.targetEntity(aldric.id);
-    sim.interact();
-
-    expect(sim.questLog.get(quest.id)?.counts).toEqual([1, 1]);
-    expect(sim.countItem('highwatch_summons')).toBe(0);
+    expect(NPCS.brother_aldric_highwatch.questIds).toContain(quest.id);
+    expect(NPCS.brother_aldric_highwatch.questIds).not.toContain('q_nythraxis_deathless_king');
+    expect(quest.itemRewards.warrior).toBe('kings_signet');
+    expect(QUESTS).not.toHaveProperty('q_nythraxis_deathless_king');
   });
 
   it('gates the sealed crypt and grave visions behind Nythraxis quests', () => {
@@ -822,11 +807,35 @@ describe('quest npc roles', () => {
     expect(vision && !vision.hostile).toBe(true);
     const logEvents = sim.events.filter((e) => e.type === 'log');
     expect(logEvents).toContainEqual(expect.objectContaining({ entityId: vision?.id }));
+    expect(logEvents).toContainEqual(expect.objectContaining({ text: 'My king was a good man.' }));
+    let delayedEvents: SimEvent[] = [];
+    for (let i = 0; i < 101; i++) delayedEvents = sim.tick();
+    expect(delayedEvents).toContainEqual(expect.objectContaining({ text: 'I swore my blade to him.', entityId: vision?.id }));
     sim.targetEntity(vision!.id);
     sim.startAutoAttack();
     expect(sim.player.autoAttack).toBe(false);
-    for (let i = 0; i < 180; i++) sim.tick();
+    for (let i = 0; i < 440; i++) sim.tick();
     expect([...sim.entities.values()].some((e) => e.id === vision!.id)).toBe(false);
+  });
+
+  it('shares Nythraxis grave progress and dialogue with nearby party members', () => {
+    const sim = makeSim();
+    const allyPid = sim.addPlayer('mage', 'Ally');
+    sim.partyInvite(allyPid);
+    sim.partyAccept(allyPid);
+    const grave = [...sim.entities.values()].find((e) => e.kind === 'object' && e.objectItemId === 'grave_sir_aldren')!;
+    teleportTo(sim, grave.pos.x, grave.pos.z);
+    teleportTo(sim, grave.pos.x + 5, grave.pos.z, allyPid);
+    sim.questLog.set('q_nythraxis_graves', { questId: 'q_nythraxis_graves', counts: [0, 0, 0], state: 'active' });
+    sim.meta(allyPid)!.questLog.set('q_nythraxis_graves', { questId: 'q_nythraxis_graves', counts: [0, 0, 0], state: 'active' });
+
+    sim.pickUpObject(grave.id);
+
+    expect(sim.questLog.get('q_nythraxis_graves')?.counts[0]).toBe(1);
+    expect(sim.meta(allyPid)?.questLog.get('q_nythraxis_graves')?.counts[0]).toBe(1);
+    const vision = [...sim.entities.values()].find((e) => e.templateId === 'vision_aldren_warrior')!;
+    expect(sim.events).toContainEqual(expect.objectContaining({ type: 'log', pid: sim.playerId, entityId: vision.id }));
+    expect(sim.events).toContainEqual(expect.objectContaining({ type: 'log', pid: allyPid, entityId: vision.id }));
   });
 
   it('immediately aggros Nythraxis quest summons on the summoning player', () => {
@@ -841,6 +850,35 @@ describe('quest npc roles', () => {
     const guardian = [...sim.entities.values()].find((e) => e.templateId === 'bound_guardian');
     expect(guardian).toBeTruthy();
     expect(guardian).toMatchObject({ hostile: true, aiState: 'chase', aggroTargetId: sim.player.id });
+
+    guardian!.hp = Math.floor(guardian!.maxHp * 0.49);
+    sim.tick();
+
+    const boneguards = [...sim.entities.values()].filter((e) => e.templateId === 'varkas_boneguard' && !e.dead);
+    expect(boneguards).toHaveLength(2);
+    for (const boneguard of boneguards) {
+      expect(boneguard.hostile).toBe(true);
+      expect(['chase', 'attack']).toContain(boneguard.aiState);
+      expect(boneguard.aggroTargetId).toBe(sim.player.id);
+    }
+  });
+
+  it('shares Nythraxis ritual circle progress with nearby party members', () => {
+    const sim = makeSim();
+    const allyPid = sim.addPlayer('mage', 'Ally');
+    sim.partyInvite(allyPid);
+    sim.partyAccept(allyPid);
+    const ritual = [...sim.entities.values()].find((e) => e.kind === 'object' && e.objectItemId === 'crypt_ritual_circle')!;
+    teleportTo(sim, ritual.pos.x, ritual.pos.z);
+    teleportTo(sim, ritual.pos.x + 5, ritual.pos.z, allyPid);
+    sim.questLog.set('q_nythraxis_bound_guardian', { questId: 'q_nythraxis_bound_guardian', counts: [0, 0, 0], state: 'active' });
+    sim.meta(allyPid)!.questLog.set('q_nythraxis_bound_guardian', { questId: 'q_nythraxis_bound_guardian', counts: [0, 0, 0], state: 'active' });
+    sim.addItem('crypt_keystone', 1);
+
+    sim.pickUpObject(ritual.id);
+
+    expect(sim.questLog.get('q_nythraxis_bound_guardian')?.counts[0]).toBe(1);
+    expect(sim.meta(allyPid)?.questLog.get('q_nythraxis_bound_guardian')?.counts[0]).toBe(1);
   });
 
   it('cleanses hostile control auras from quest NPCs', () => {

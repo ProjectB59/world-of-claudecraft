@@ -1233,7 +1233,7 @@ describe('quests', () => {
 
   it('every ground object has custom pickup deny and enough lines', () => {
     const ids = [...new Set(GROUND_OBJECTS.map((o) => o.itemId))].sort();
-    expect(ids).toHaveLength(18);
+    expect(Object.keys(GROUND_PICKUP_LINES).sort()).toEqual(ids);
     for (const id of ids) {
       expect(GROUND_PICKUP_LINES[id]?.deny, `${id} deny`).toBeTruthy();
       expect(GROUND_PICKUP_LINES[id]?.enough, `${id} enough`).toBeTruthy();

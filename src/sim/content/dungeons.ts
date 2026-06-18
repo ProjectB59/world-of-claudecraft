@@ -323,9 +323,9 @@ export const DUNGEON_DEFS: Record<string, DungeonDef> = {
     exitOffset: { x: 0, z: -6 },
     spawns: [],
     objects: [
-      { itemId: 'captains_crest', name: "Captain's Crest", x: -7, z: 28 },
-      { itemId: 'priests_sigil', name: "Priest's Sigil", x: 0, z: 52 },
-      { itemId: 'royal_seal', name: 'Royal Seal', x: 7, z: 76 },
+      { itemId: 'captains_crest', name: 'Crypt Keystone Upper', x: -7, z: 28 },
+      { itemId: 'priests_sigil', name: 'Crypt Keystone Lower', x: 0, z: 52 },
+      { itemId: 'royal_seal', name: 'Ancient Diary', x: 7, z: 76 },
     ],
     interior: 'crypt',
     suggestedPlayers: 1,

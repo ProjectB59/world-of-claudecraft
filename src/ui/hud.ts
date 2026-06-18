@@ -3241,7 +3241,19 @@ export class Hud {
         case 'log': {
           const text = this.localizeSystemText(ev.text);
           this.log(text, ev.color ?? '#ccc');
-          if (ev.entityId !== undefined && (ev.text.startsWith('Vision:') || ev.text.includes(' yells, "'))) {
+          const isNythraxisVisionLine = [
+            'My king was a good man.',
+            'I swore my blade to him.',
+            'I would do so again.',
+            'There had to be another way.',
+            'I could not let him die.',
+            'I only wanted to save him.',
+            'The king was already dead.',
+            'Malric refused to accept it.',
+            'We should have let him rest.',
+            'If you find the crypt... end this.',
+          ].includes(ev.text);
+          if (ev.entityId !== undefined && (isNythraxisVisionLine || ev.text.includes(' yells, "'))) {
             this.renderer.showChatBubble(ev.entityId, text, ev.text.includes(' yells, "'));
           }
           break;
@@ -3722,6 +3734,7 @@ export class Hud {
     });
     el.querySelectorAll('[data-discuss]').forEach((item) => {
       item.addEventListener('click', () => {
+        const questId = (item as HTMLElement).dataset.discuss!;
         this.sim.targetEntity(npc.id);
         this.sim.interact();
         (item as HTMLButtonElement).disabled = true;
@@ -3783,6 +3796,45 @@ export class Hud {
       btn.addEventListener('click', () => { this.sim.turnInQuest(questId); this.renderGossip(npc); });
       el.appendChild(btn);
     }
+    const back = document.createElement('button');
+    back.className = 'btn';
+    back.type = 'button';
+    back.textContent = t('questUi.dialog.back');
+    back.addEventListener('click', () => this.renderGossip(npc));
+    el.appendChild(back);
+    el.querySelector('[data-close]')?.addEventListener('click', () => this.closeQuestDialog());
+    el.style.display = 'block';
+    this.focusFirstInteractive(el);
+  }
+
+  private renderQuestDiscussion(npc: Entity, questId: string, page: number): void {
+    const el = $('#quest-dialog');
+    const pages = [
+      questNarrative(questId, 'text', this.sim.player.name),
+      questNarrative(questId, 'completion', this.sim.player.name),
+    ];
+    const clampedPage = Math.max(0, Math.min(page, pages.length - 1));
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'false');
+    el.setAttribute('aria-labelledby', 'quest-dialog-title');
+    el.setAttribute('tabindex', '-1');
+    el.innerHTML = `<div class="panel-title"><span id="quest-dialog-title">${esc(questTitle(questId))}</span><button type="button" class="x-btn" data-close aria-label="${esc(t('questUi.dialog.close'))}">${svgIcon('close')}</button></div>`
+      + `<div class="qd-text">${esc(pages[clampedPage])}</div>`;
+    const action = document.createElement('button');
+    action.className = 'btn';
+    action.type = 'button';
+    if (clampedPage < pages.length - 1) {
+      action.textContent = t('questUi.dialog.continue');
+      action.addEventListener('click', () => this.renderQuestDiscussion(npc, questId, clampedPage + 1));
+    } else {
+      action.textContent = t('questUi.dialog.done');
+      action.addEventListener('click', () => {
+        this.sim.targetEntity(npc.id);
+        this.sim.interact();
+        this.renderGossip(npc);
+      });
+    }
+    el.appendChild(action);
     const back = document.createElement('button');
     back.className = 'btn';
     back.type = 'button';

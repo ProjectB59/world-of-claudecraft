@@ -76,7 +76,6 @@ const NYTHRAXIS_RELIC_SUMMONS: Record<string, string> = {
 const NYTHRAXIS_CRYPT_QUESTS = new Set([
   'q_nythraxis_sealed_crypt',
   'q_nythraxis_bound_guardian',
-  'q_nythraxis_deathless_king',
 ]);
 const PARTY_MAX = 5;
 const PARTY_XP_RANGE = 80; // yards: members this close share kill xp/credit
@@ -197,6 +196,8 @@ const DEEPFEN_FISHING_SHORE_MARGIN = 10;
 const THE_CODFATHER_ITEM_ID = 'the_codfather';
 const THE_CODFATHER_QUEST_ID = 'q_the_codfather';
 const DOOR_TRIGGER_RADIUS = 2.0; // walking this close to a dungeon door teleports you
+const NYTHRAXIS_PARTY_INTERACT_RANGE = 30;
+const NYTHRAXIS_VISION_LINE_DELAY = 5;
 const BODY_RADIUS = PLAYER_BODY_RADIUS;
 const CHARGE_SPEED_MULT = 3; // warrior charge runs at 3x normal speed
 const CHARGE_MAX_DURATION = 3; // seconds before a blocked charge gives up
@@ -560,6 +561,7 @@ export class Sim {
   primaryId = -1; // the local/RL player in single-player contexts
   nextId = 1;
   events: SimEvent[] = [];
+  private delayedEvents: { at: number; event: SimEvent }[] = [];
   // social systems
   parties = new Map<number, Party>();
   partyByPid = new Map<number, number>(); // pid -> party id
@@ -1388,6 +1390,7 @@ export class Sim {
     this.updateTradesAndInvites();
     this.updateInstances();
     this.updateMarket();
+    this.emitDueDelayedEvents();
 
     // movement re-bucketing: queries during the next tick and the server's
     // snapshot broadcast right after this one see fresh cells
@@ -1397,6 +1400,16 @@ export class Sim {
     const out = this.events;
     this.events = [];
     return out;
+  }
+
+  private emitDueDelayedEvents(): void {
+    if (this.delayedEvents.length === 0) return;
+    const pending: { at: number; event: SimEvent }[] = [];
+    for (const delayed of this.delayedEvents) {
+      if (delayed.at <= this.time) this.emit(delayed.event);
+      else pending.push(delayed);
+    }
+    this.delayedEvents = pending;
   }
 
   private *playerEntities(): Iterable<Entity> {
@@ -4339,6 +4352,7 @@ export class Sim {
           break;
         }
         if (this.maybeFlee(mob, target)) break;
+        const spell = MOBS[mob.templateId]?.petSpell;
         const leash = mob.spawnPos.x > DUNGEON_X_THRESHOLD ? DUNGEON_LEASH_DISTANCE : LEASH_DISTANCE;
         const leashAnchor = mob.leashAnchor ?? mob.spawnPos;
         if (dist2d(mob.pos, leashAnchor) > leash) {
@@ -4349,6 +4363,11 @@ export class Sim {
           break;
         }
         const d = dist2d(mob.pos, target.pos);
+        if (spell && d <= spell.range) {
+          mob.aiState = 'attack';
+          mob.swingTimer = Math.min(mob.swingTimer, 0.4);
+          break;
+        }
         if (d <= MELEE_RANGE * 0.8) {
           mob.aiState = 'attack';
           mob.swingTimer = Math.min(mob.swingTimer, 0.4);
@@ -4364,6 +4383,12 @@ export class Sim {
         if (!target || target.dead) { this.retargetMob(mob); break; }
         if (this.maybeFlee(mob, target)) break;
         const d = dist2d(mob.pos, target.pos);
+        const spell = MOBS[mob.templateId]?.petSpell;
+        if (spell) {
+          if (d > spell.range) { mob.aiState = 'chase'; break; }
+          this.updateRangedPetAttack(mob, target, spell);
+          break;
+        }
         if (d > MELEE_RANGE) { mob.aiState = 'chase'; break; }
         mob.facing = angleTo(mob.pos, target.pos);
         mob.swingTimer -= DT;
@@ -5770,7 +5795,9 @@ export class Sim {
       const o = this.instanceOriginOf(i);
       return Math.abs(boss.pos.x - o.x) < 120 && Math.abs(boss.pos.z - o.z) < 250;
     });
-    const victim = boss.aggroTargetId !== null ? this.entities.get(boss.aggroTargetId) : null;
+    const [topThreatId] = threatEntries(boss, 1)[0] ?? [];
+    const victimId = boss.aggroTargetId ?? topThreatId ?? null;
+    const victim = victimId !== null ? this.entities.get(victimId) : null;
     for (let k = 0; k < count; k++) {
       const ang = (k / count) * Math.PI * 2 + 0.7;
       const pos = this.groundPos(boss.pos.x + Math.sin(ang) * 3.5, boss.pos.z + Math.cos(ang) * 3.5);
@@ -6299,31 +6326,84 @@ export class Sim {
           this.error(meta.entityId, 'The ritual circle is silent without the Crypt Keystone.');
           return;
         }
-        qp.counts[objectiveIndex]++;
-        meta.counters.questProgress++;
-        this.emit({ type: 'questProgress', questId: qp.questId, text: `${objective.label}: ${qp.counts[objectiveIndex]}/${objective.count}`, pid: meta.entityId });
+        const shared = this.sharedNythraxisObjectParticipants(meta, obj, qp.questId, objectiveIndex);
+        for (const member of shared) {
+          const memberQp = member.questLog.get(qp.questId);
+          if (!memberQp || memberQp.state !== 'active') continue;
+          if (memberQp.counts[objectiveIndex] >= objective.count) continue;
+          memberQp.counts[objectiveIndex]++;
+          member.counters.questProgress++;
+          this.emit({
+            type: 'questProgress',
+            questId: memberQp.questId,
+            text: `${objective.label}: ${memberQp.counts[objectiveIndex]}/${objective.count}`,
+            pid: member.entityId,
+          });
+          this.checkQuestReady(memberQp, member);
+        }
         const visionId = this.summonQuestVision(obj.objectItemId, obj.pos);
-        this.emitQuestObjectVision(obj.objectItemId, meta.entityId, visionId);
+        this.emitQuestObjectVision(obj.objectItemId, shared.map((m) => m.entityId), visionId);
         if (obj.objectItemId === 'crypt_ritual_circle') this.summonQuestMob('bound_guardian', obj.pos, meta.entityId);
-        this.checkQuestReady(qp, meta);
       });
     }
     return handled;
   }
 
-  private emitQuestObjectVision(itemId: string, pid: number, entityId?: number | null): void {
-    const text = itemId === 'grave_sir_aldren'
-      ? 'Vision: Captain Aldren says, "My king was a good man. I swore my blade to him. I would do so again."'
+  private sharedNythraxisObjectParticipants(actor: PlayerMeta, obj: Entity, questId: string, objectiveIndex: number): PlayerMeta[] {
+    if (obj.objectItemId !== 'grave_sir_aldren'
+      && obj.objectItemId !== 'grave_high_priest_malric'
+      && obj.objectItemId !== 'grave_captain_voss'
+      && obj.objectItemId !== 'crypt_ritual_circle') {
+      return [actor];
+    }
+    const quest = QUESTS[questId];
+    const objective = quest.objectives[objectiveIndex];
+    const party = this.partyOf(actor.entityId);
+    const members = party ? party.members : [actor.entityId];
+    const eligible: PlayerMeta[] = [];
+    for (const pid of members) {
+      const member = this.players.get(pid);
+      const entity = this.entities.get(pid);
+      const memberQp = member?.questLog.get(questId);
+      if (!member || !entity || entity.dead || !memberQp || memberQp.state !== 'active') continue;
+      if (memberQp.counts[objectiveIndex] >= objective.count) continue;
+      if (dist2d(entity.pos, obj.pos) > NYTHRAXIS_PARTY_INTERACT_RANGE) continue;
+      eligible.push(member);
+    }
+    return eligible.some((member) => member.entityId === actor.entityId) ? eligible : [actor];
+  }
+
+  private emitQuestObjectVision(itemId: string, pids: number[], entityId?: number | null): void {
+    const lines = itemId === 'grave_sir_aldren'
+      ? [
+        'My king was a good man.',
+        'I swore my blade to him.',
+        'I would do so again.',
+      ]
         : itemId === 'grave_high_priest_malric'
-          ? 'Vision: High Priest Malric says, "There had to be another way. I could not let him die. I only wanted to save him."'
+          ? [
+            'There had to be another way.',
+            'I could not let him die.',
+            'I only wanted to save him.',
+          ]
         : itemId === 'grave_captain_voss'
-          ? 'Vision: Royal Assassin Voss says, "The king was already dead. Malric refused to accept it. We should have let him rest. If you find the crypt... end this."'
+          ? [
+            'The king was already dead.',
+            'Malric refused to accept it.',
+            'We should have let him rest.',
+            'If you find the crypt... end this.',
+          ]
           : itemId === 'crypt_ritual_circle'
-            ? 'The Crypt Keystone turns cold as the seal breaks.'
-            : itemId === 'nythraxis_vision'
-              ? 'Vision: Thornpeak collapses as Nythraxis rises deathless, and survivors seal him beneath the kingdom.'
+            ? ['The Crypt Keystone turns cold as the seal breaks.']
               : null;
-    if (text) this.emit({ type: 'log', text, color: '#b8d7ff', pid, entityId: entityId ?? undefined });
+    if (!lines) return;
+    for (let i = 0; i < lines.length; i++) {
+      for (const pid of pids) {
+        const event: SimEvent = { type: 'log', text: lines[i], color: '#b8d7ff', pid, entityId: entityId ?? undefined };
+        if (i === 0) this.emit(event);
+        else this.delayedEvents.push({ at: this.time + i * NYTHRAXIS_VISION_LINE_DELAY, event });
+      }
+    }
   }
 
   private summonQuestVision(itemId: string, pos: Vec3): number | null {
@@ -6339,12 +6419,12 @@ export class Sim {
     if (existing) return existing.id;
     const template = MOBS[templateId];
     if (!template) return null;
-    const mob = createMob(this.nextId++, template, template.maxLevel, this.groundPos(pos.x, pos.z + 2.5));
+    const mob = createMob(this.nextId++, template, template.maxLevel, this.groundPos(pos.x + 2.4, pos.z + 2.4));
     mob.hostile = false;
     mob.aiState = 'idle';
     mob.lootable = false;
     mob.loot = null;
-    mob.despawnTimer = 8;
+    mob.despawnTimer = 22;
     mob.facing = Math.PI;
     mob.prevFacing = mob.facing;
     mob.swingTimer = Infinity;

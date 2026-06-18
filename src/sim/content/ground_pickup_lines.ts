@@ -77,10 +77,6 @@ export const GROUND_PICKUP_LINES: Record<string, GroundPickupLines> = {
     deny: 'The ritual circle lies cold and dormant.',
     enough: 'The circle has nothing more to give you.',
   },
-  nythraxis_vision: {
-    deny: 'The vision will not come to you unbidden.',
-    enough: 'The vision has already shown you all it holds.',
-  },
 };
 
 export function groundPickupDeny(itemId: string, itemName: string): string {

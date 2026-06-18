@@ -23,11 +23,17 @@ const QUEST_OBJECT_URLS: Record<string, string> = {
   ogre_war_totem: '/models/quest/ogre_war_totem.glb',
   sanctum_key_shard: '/models/quest/sanctum_key_shard.glb',
   ancient_crypt_door: '/models/dungeon/wall_gated.glb',
+  grave_sir_aldren: '/models/dungeon/gravestone.glb',
+  grave_high_priest_malric: '/models/dungeon/gravestone.glb',
+  grave_captain_voss: '/models/dungeon/gravestone.glb',
 };
 
 const QUEST_OBJECT_HEIGHTS: Record<string, number> = {
   ancient_crypt_door: 4.2,
   crypt_ritual_circle: 1.65,
+  grave_sir_aldren: 1.6,
+  grave_high_priest_malric: 1.6,
+  grave_captain_voss: 1.6,
 };
 
 const SCROLL_ITEM_IDS = new Set(['weathered_ledger_page', 'fen_muster_order', 'highwatch_summons']);
