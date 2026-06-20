@@ -7,7 +7,7 @@ user-invocable: true
 
 # Feature Plan: Multi-Phase Implementation Planning (Opus 4.8)
 
-Break a large feature into a phased implementation plan designed for multiple Claude Code sessions. Every phase runs as its own fresh session and uses **Opus 4.8 at max effort** (`ultracode` where the phase warrants deterministic multi-agent orchestration). The whole point is to **save context per phase**: the orchestrator delegates reading and fan-out to subagents and keeps only conclusions, so each session stays sharp.
+Break a large feature into a phased implementation plan designed for multiple Claude Code sessions. Every phase runs as its own fresh session and uses **Opus 4.8 at xhigh effort** (`ultracode` where the phase warrants deterministic multi-agent orchestration). The whole point is to **save context per phase**: the orchestrator delegates reading and fan-out to subagents and keeps only conclusions, so each session stays sharp.
 
 The user will provide a feature description either inline (e.g., `/feature-plan add a guild bank`) or you will ask them to describe it.
 
@@ -153,7 +153,7 @@ Prefer many small phases over fewer large ones. A phase that tries to do too muc
 7. The final QA phase closes the packet: once it passes, it offers **Packet teardown** (below), deleting `docs/{feature-name}/` only on explicit user confirmation so the PR does not ship the planning scaffolding.
 
 **Team Workflow section (include at top of plan):**
-Every phase runs on **Opus 4.8 at max effort** (1m context variant where the file load demands it; `ultracode` for batch-heavy phases). Include this standard workflow:
+Every phase runs on **Opus 4.8 at xhigh effort** (1m context variant where the file load demands it; `ultracode` for batch-heavy phases). Include this standard workflow:
 1. **Step 0 - Pre-flight**: Verify `git status` is clean (and that no concurrent session is mid-change in your files). Scan your Claude Code memory (the `MEMORY.md` index and any entries matching the phase domain), if you use it.
 2. **Step 1 - Load Context**: Spawn an Explore agent to read planning docs and relevant source files. The main agent does NOT read large docs directly. The Explore agent returns a focused summary.
 3. **Step 2 - Choose Orchestration + Execute**: Pick the lightest tool from the Orchestration Toolbox. Default: parallel Agent fan-out, one agent per vertical slice (give each ONLY the Explore summary, not raw planning docs). For batch-heavy/audit/content-sweep phases, run an `ultracode` Workflow (pipeline + adversarial-verify) instead. Use `isolation: "worktree"` only when agents mutate overlapping files in parallel.
@@ -207,7 +207,7 @@ Every phase must enforce:
 ```
 This is Phase N of the {Feature Name} feature: {Phase Title}.
 
-Model: Opus 4.8, max effort, 1m context variant where the file load demands it.
+Model: Opus 4.8, xhigh effort (reserve max for genuinely frontier problems), 1m context variant where the file load demands it.
 Harness: Claude Code.
 ULTRACODE: add the keyword `ultracode` to this prompt if this phase is batch-heavy
 (content sweeps across many tables, many-locale i18n additions, exhaustive audit) so you
@@ -320,7 +320,7 @@ STOPPING RULES:
 ```
 This is Phase N QA of the {Feature Name} feature: Verify {Phase Title}.
 
-Model: Opus 4.8, max effort, 1m context variant where the file load demands it.
+Model: Opus 4.8, xhigh effort (reserve max for genuinely frontier problems), 1m context variant where the file load demands it.
 Harness: Claude Code.
 ULTRACODE: for a large or high-risk phase, add `ultracode` so you can run an
 adversarial-verify Workflow (each finding independently confirmed by a skeptic agent
