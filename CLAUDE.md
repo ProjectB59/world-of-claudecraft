@@ -70,8 +70,8 @@ See `README.md` for the full host/develop/play guide and the classic-fidelity ch
 - **i18n: every player-visible string is a `t()` key.** (Translated in every locale
   *by release*: see the contributor/maintainer split below; English-only PRs are
   legal.) Each
-  generated locale slice in `src/ui/i18n.resolved.generated/` is typed `: typeof en`,
-  so `tsc` fails on a missing/renamed
+  generated locale slice in `src/ui/i18n.resolved.generated/` is typed `: EnTranslations`
+  (= `typeof en`), so `tsc` fails on a missing/renamed
   key — but it **cannot** see a hard-coded literal that never became a key, nor a
   new English string emitted by `src/sim/`/`server/` and never registered in the
   client matcher. Both compile green and ship English to a translated player.
@@ -117,8 +117,8 @@ See `README.md` for the full host/develop/play guide and the classic-fidelity ch
 
 ## Conventions
 - **ESM + TypeScript `strict`** everywhere. 2-space indent; match the surrounding file.
-- **Large single-file modules are normal here** (`sim.ts` and `hud.ts` are each
-  ~5k+ lines). Follow the existing in-file structure; **don't split a module just to hit
+- **Large single-file modules are normal here** (`sim.ts` and `hud.ts` are the two
+  largest). Follow the existing in-file structure; **don't split a module just to hit
   a line count.** (This overrides any generic "files < N lines" rule from a
   higher-level CLAUDE.md.)
 - **Do extract reusable, testable logic into focused modules.** The rule above
@@ -153,8 +153,11 @@ correct*.
   refactors) through to completion without pausing after each step, as long as the
   build and tests stay green; fan out parallel subagents for independent
   investigation and per-file batch work; before declaring done, have a fresh
-  subagent review your own diff for correctness/requirement gaps (not style). The
-  operator can push this further with `xhigh` effort / ultracode.
+  subagent review your own diff for correctness/requirement gaps (not style); the repo
+  ships purpose-built reviewers in `.claude/agents/` (`cross-platform-sync`,
+  `migration-safety`, `privacy-security-review`, `qa-checklist`) plus a `feature-plan`
+  skill, so prefer those over ad-hoc subagents. The operator can push this further
+  with `xhigh` effort / ultracode.
 - **Never gate the Invariants, safety (`ALLOW_DEV_COMMANDS`, secrets), or
   correctness on which model you are** — the identity line can be stale, so when in
   doubt use the baseline. Anchor every autonomous step on a check you can actually

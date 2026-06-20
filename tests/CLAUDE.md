@@ -3,7 +3,7 @@
 
 # tests/ — Vitest suite
 
-~240 `*.test.ts` files (~2k cases). Tests import `src/sim/` and `server/` modules
+Around 250 `*.test.ts` files (~2k cases). Tests import `src/sim/` and `server/` modules
 **directly** and exercise them **deterministically** in plain Node — no live
 server, browser, or Postgres for unit tests. Browser/E2E + screenshot tests live
 in `scripts/*.mjs` (need `npm run dev`/`server`) — NOT here.
@@ -55,7 +55,7 @@ any sim/server player-text or English-catalog change. They depend on generated a
 resolved tables and `src/ui/i18n.status.json` first; a bare `npx vitest run` does NOT — run
 `npm run i18n:gen` yourself or the S3 guard throws "status.json is missing".
 - **`localization_fixes.test.ts` is the S3 guard** — it parses `src/sim/sim.ts` and
-  `server/game.ts` (`scanEmitCandidates`, exported + regression-tested against synthetic input),
+  `server/game.ts` (`scanEmitCandidates`, a module-local helper regression-tested against synthetic input),
   enumerating every player-facing emit and asserting each is recognized by a `hud.ts` localize
   arm (`localizeSystemText`/`localizeErrorText`/`localizeLootText`) or the
   `localizeServerText`/`localizeSimText` matchers. Also checks `simDICT`/`serverDICT`/`adminDICT`
@@ -71,5 +71,5 @@ resolved tables and `src/ui/i18n.status.json` first; a bare `npx vitest run` doe
 
 ## Running & adding
 - Single file (preferred while iterating): `npx vitest run tests/<file>.test.ts`.
-- DOM-less env: stub `localStorage`/`WebSocket` on `globalThis` when needed (`keybinds.test.ts`).
+- DOM-less env: stub `localStorage` (`keybinds.test.ts`) or `WebSocket` (`snapshots.test.ts`) on `globalThis` when needed.
 - YOU MUST add/update a test here when you change sim or server behavior (see root CLAUDE.md).

@@ -40,6 +40,7 @@ PRDs say so explicitly) and note the deviation.
 | `talents-and-specializations.md` | Talents/specs flagship milestone (one-class slice first, then 9 classes). |
 | `max-level-xp-overflow.md` | Post-cap XP overflow / prestige progression. |
 | `build-prompts.md` | Two self-contained prompts that drive end-to-end PRD implementation (used with `/gsd:*`). |
+| `woc/` | $WOC / Web3 feature specs: `wallet-link.md` (non-custodial Solana wallet verification) and `holder-cosmetic-flair.md` (verified-holder cosmetic tier). |
 
 ## screenshots/
 JPG/PNG assets embedded by the repo-root `README.md` (title screen, zones, dungeons, UI).
