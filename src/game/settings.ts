@@ -13,9 +13,9 @@ export const SETTING_RANGES = {
   // SFX by default so dialogue reads over ambient combat noise.
   voiceVolume: { min: 0, max: 1, def: 0.9 },
   brightness: { min: 0.6, max: 1.5, def: 1 },
-  // 0 auto, 1 low, 2 medium, 3 high, 4 ultra, 5 advanced. The renderer reads this
+  // 1 low, 2 medium, 3 high, 4 ultra, 5 advanced. The renderer reads this
   // from localStorage during startup because tier choice controls preload.
-  graphicsPreset: { min: 0, max: 5, def: 0 },
+  graphicsPreset: { min: 1, max: 5, def: 1 },
   // Advanced-only: 0 keeps terrain/foliage cheap, 1 enables high terrain.
   terrainDetail: { min: 0, max: 1, def: 1 },
   foliageDensity: { min: 0, max: 1, def: 1 },
@@ -88,10 +88,10 @@ export const BOOL_SETTINGS = {
   // local display choice; the server sends raw text and each client decides.
   // (Slurs are blocked server-side regardless and never reach here.)
   filterProfanity: { def: true },
-  // off by default: MOBA-style "attack move". When on, the WASD movement keys are
-  // disabled and a single rebindable Attack Move key (default A) walks the player
-  // toward the cursor, auto-attacking the enemy under it or the nearest one met
-  // along the way. Opt-in because it replaces the classic keyboard control scheme.
+  // off by default: MOBA-style "attack move". When on, one rebindable Attack
+  // Move key (default A) walks the player toward the cursor, auto-attacking the
+  // enemy under it or the nearest one met along the way. Other movement keys
+  // keep working; only the attack-move key itself is reserved while active.
   attackMove: { def: false },
   // off by default: invert the vertical axis of the touch camera joystick (and
   // swipe-to-look) so pushing the stick up tilts the camera down — the classic
