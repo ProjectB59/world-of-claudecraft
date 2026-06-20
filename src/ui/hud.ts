@@ -38,7 +38,9 @@ import { audio } from '../game/audio';
 import { sfx } from '../game/sfx';
 import { voice } from '../game/voice';
 import { music, musicZoneForLocation } from '../game/music';
-import { iconDataUrl, iconCanvas, QUALITY_COLOR, raidMarkerDataUrl, RAID_MARKER_NAMES } from './icons';
+import { iconDataUrl, QUALITY_COLOR, raidMarkerDataUrl, RAID_MARKER_NAMES } from './icons';
+import { UnitPortraitPainter } from './unit_portrait_painter';
+import { crestIdForEntity } from './unit_portrait';
 import { svgIcon } from './ui_icons';
 import { Keybinds, BIND_ACTIONS, BIND_CATEGORIES, isReservedCode, keyLabel } from '../game/keybinds';
 import { Settings, GameSettings, BoolSettingKey, NumericSettingKey, SETTING_RANGES, normalizeClickMoveButton } from '../game/settings';
@@ -1304,53 +1306,13 @@ export class Hud {
   // Portraits, icons, tooltips, money
   // -------------------------------------------------------------------------
 
-  // Portrait = the procedural crest for a class (`class_<id>`), mob family
-  // (`family_<id>`) or status (`status_npc`), painted by icons.ts and blitted in.
-  private drawPortrait(canvas: HTMLCanvasElement, crestId: string): void {
-    // Crest fallback — also invalidates any pending headshot image-load for this
-    // canvas (see drawPortraitImage) so a late decode can't paint over the crest.
-    canvas.dataset.portrait = '';
-    const ctx = canvas.getContext('2d')!;
-    const s = canvas.width;
-    ctx.clearRect(0, 0, s, s);
-    ctx.drawImage(iconCanvas('crest', crestId, s), 0, 0, s, s);
-  }
-
-  // Decoded headshot images, keyed by their portrait data URL.
-  private portraitImgCache = new Map<string, HTMLImageElement>();
-
-  /** Paint a 3D-headshot data URL into a unit-frame portrait canvas. The decode
-   *  is async even for a data URL, so we tag the canvas with the desired URL and
-   *  only draw if it still matches on load (the target may have changed). */
-  private drawPortraitImage(canvas: HTMLCanvasElement, url: string): void {
-    canvas.dataset.portrait = url;
-    const draw = (img: HTMLImageElement) => {
-      if (canvas.dataset.portrait !== url) return; // target changed mid-decode
-      const ctx = canvas.getContext('2d')!;
-      const s = canvas.width;
-      ctx.clearRect(0, 0, s, s);
-      ctx.drawImage(img, 0, 0, s, s);
-    };
-    const cached = this.portraitImgCache.get(url);
-    if (cached?.complete && cached.naturalWidth) { draw(cached); return; }
-    const img = cached ?? new Image();
-    img.addEventListener('load', () => draw(img), { once: true });
-    if (!cached) {
-      this.portraitImgCache.set(url, img);
-      img.src = url;
-    }
-  }
-
-  /** Draw a (class, skin) headshot into a unit-frame portrait, falling back to
-   *  the class crest until the 3D portraits have finished loading. */
-  private drawClassPortrait(canvas: HTMLCanvasElement, cls: PlayerClass, skin: number): void {
-    const url = playerPortraitDataUrl(cls, skin);
-    if (url) this.drawPortraitImage(canvas, url);
-    else this.drawPortrait(canvas, `class_${cls}`);
-  }
+  // Player- and target-frame circular portraits. The DPI-aware backing store +
+  // crest overscan live in UnitPortraitPainter (unit_portrait_painter.ts); the
+  // HUD just routes the framed unit (class headshot vs mob/NPC crest) to it.
+  private readonly portraits = new UnitPortraitPainter();
 
   private drawPlayerFramePortrait(): void {
-    this.drawClassPortrait(
+    this.portraits.drawClass(
       $('#pf-portrait') as unknown as HTMLCanvasElement,
       this.sim.cfg.playerClass,
       this.sim.player.skin ?? 0,
@@ -2224,12 +2186,9 @@ export class Hud {
         if (target.kind === 'player') {
           // Other players: their real 3D headshot, rendered locally from the
           // class (templateId) + skin in their synced identity fields.
-          this.drawClassPortrait(this.targetPortraitEl, target.templateId as PlayerClass, target.skin ?? 0);
+          this.portraits.drawClass(this.targetPortraitEl, target.templateId as PlayerClass, target.skin ?? 0);
         } else {
-          const crestId = target.kind === 'npc'
-            ? 'status_npc'
-            : `family_${MOBS[target.templateId]?.family ?? 'humanoid'}`;
-          this.drawPortrait(this.targetPortraitEl, crestId);
+          this.portraits.drawCrest(this.targetPortraitEl, crestIdForEntity(target.kind, MOBS[target.templateId]?.family));
         }
       }
       this.renderAuras(this.targetDebuffsEl, target, 'debuffs');
