@@ -4606,5 +4606,15 @@ function fadeOutHomepageMusic(durationMs = 1600): void {
   }, durationMs / steps);
 }
 
+// Apply the persisted UI theme to :root before the home/login/character-select
+// screens paint, so a non-classic theme doesn't flash gold defaults on boot.
+// (startGame() re-applies via its own ThemeStore once the world loads.)
+(() => {
+  try {
+    const vars = new ThemeStore().cssVars();
+    for (const name of Object.keys(vars)) document.documentElement.style.setProperty(name, vars[name]);
+  } catch { /* localStorage/DOM unavailable — fall back to index.html defaults */ }
+})();
+
 wireStartScreens();
 initHomepageMusic();

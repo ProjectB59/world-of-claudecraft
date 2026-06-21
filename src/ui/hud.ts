@@ -55,7 +55,7 @@ import { holderTierForBalance, holderTierByIndex, holderTierBadgeDataUrl, holder
 import { Keybinds, BIND_ACTIONS, BIND_CATEGORIES, isReservedCode, keyLabel } from '../game/keybinds';
 import { Settings, GameSettings, BoolSettingKey, NumericSettingKey, SETTING_RANGES, normalizeClickMoveButton } from '../game/settings';
 import { PerfOverlaySettingsPanel, type PerfOverlayHooks, type PerfSettingsHost } from './perf_overlay_settings';
-import { PRESET_ORDER, THEME_KNOB_ORDER, THEME_KNOB_LABEL_KEY, THEME_PRESETS, resolveTheme, type PresetId, type ThemeKnob, type ThemeState } from './theme';
+import { PRESET_ORDER, THEME_KNOB_ORDER, THEME_KNOB_LABEL_KEY, resolveTheme, type PresetId, type ThemeKnob, type ThemeState } from './theme';
 import { isPhoneTouchDevice } from '../game/mobile_controls';
 import { chatPlayerContextActions } from './player_context_menu';
 import {
