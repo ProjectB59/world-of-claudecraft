@@ -433,7 +433,7 @@ export class Hud {
   private minimapZoom = MINIMAP_ZOOM_DEFAULT;
   private minimapZoomLabel: HTMLElement | null = null;
   // World-map terrain backgrounds, cached per zone. A background depends only on
-  // (seed, zone bounds) — both fixed for the session — so it is immutable and
+  // (seed, zone bounds), both fixed for the session, so it is immutable and
   // cached forever; rendering one is ~200ms (230k terrainHeight/roadDistance
   // samples), which is why it must never run on the open path (see mapPrewarm).
   private mapBgCache = new Map<string, HTMLCanvasElement>();
@@ -450,6 +450,11 @@ export class Hud {
     region: MapRegion;
   } | null = null;
   private mapPrewarmHandle = 0;
+  // Which scheduler produced mapPrewarmHandle. requestIdleCallback and setTimeout
+  // hand out ids from separate pools, so the handle must be cancelled with the
+  // matching canceller; a clearTimeout on an idle id (or vice versa) could cancel
+  // an unrelated timer that happens to share the number.
+  private mapPrewarmVia: 'idle' | 'timeout' | null = null;
   private openLootMobId: number | null = null;
   private openVendorNpcId: number | null = null;
   private openGossipNpcId: number | null = null;
@@ -2667,13 +2672,19 @@ export class Hud {
 
   private cancelMapPrewarm(): void {
     if (this.mapPrewarmHandle) {
-      // the handle came from one of the two schedulers; cancel via both, since a
-      // browser with requestIdleCallback but no cancelIdleCallback would
-      // otherwise leak the pending callback (harmless rework, but avoidable).
-      const cancel = (window as typeof window & { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback;
-      if (cancel) cancel(this.mapPrewarmHandle);
-      clearTimeout(this.mapPrewarmHandle);
+      // Cancel only with the scheduler that produced this handle (see
+      // mapPrewarmVia): the two id pools are separate per spec, so a cross
+      // canceller could clear an unrelated timer sharing the number. When the
+      // idle path lacks cancelIdleCallback there is nothing to call, but the
+      // pumpMapPrewarm `if (!job) return` guard makes the stale callback a no-op.
+      if (this.mapPrewarmVia === 'idle') {
+        const cancel = (window as typeof window & { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback;
+        if (cancel) cancel(this.mapPrewarmHandle);
+      } else {
+        clearTimeout(this.mapPrewarmHandle);
+      }
       this.mapPrewarmHandle = 0;
+      this.mapPrewarmVia = null;
     }
     this.mapPrewarm = null;
   }
@@ -2682,13 +2693,18 @@ export class Hud {
     const w = window as typeof window & {
       requestIdleCallback?: (cb: (d: { timeRemaining(): number }) => void, opts?: { timeout: number }) => number;
     };
-    if (w.requestIdleCallback) this.mapPrewarmHandle = w.requestIdleCallback(this.pumpMapPrewarm, { timeout: 2000 });
-    else this.mapPrewarmHandle = window.setTimeout(() => this.pumpMapPrewarm(), 16);
+    if (w.requestIdleCallback) {
+      this.mapPrewarmHandle = w.requestIdleCallback(this.pumpMapPrewarm, { timeout: 2000 });
+      this.mapPrewarmVia = 'idle';
+    } else {
+      this.mapPrewarmHandle = window.setTimeout(() => this.pumpMapPrewarm(), 16);
+      this.mapPrewarmVia = 'timeout';
+    }
   }
 
   // Paint a budgeted slice of the in-flight prewarm, then reschedule until the
   // zone is fully rendered. Whole rows per slice keeps it byte-identical to a
-  // one-shot render (the only per-row state — hillshade — resets each row).
+  // one-shot render (the only per-row state, hillshade, resets each row).
   // With an idle deadline we paint as many slices as fit; without one (the
   // setTimeout fallback) we paint a single slice and let the reschedule pace it,
   // so the no-requestIdleCallback path stays sliced instead of rendering the
@@ -2708,6 +2724,7 @@ export class Hud {
       this.mapBgCache.set(job.zoneId, job.canvas);
       this.mapPrewarm = null;
       this.mapPrewarmHandle = 0;
+      this.mapPrewarmVia = null;
       return;
     }
     this.scheduleMapPrewarm();

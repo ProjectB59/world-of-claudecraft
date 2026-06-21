@@ -5,7 +5,7 @@
 // (the same `Uint8ClampedArray` an `ImageData.data` exposes).
 //
 // The colours sample the SAME `terrainHeight`/`roadDistance` the renderer and
-// sim use, so the map always matches the real world — do not diverge them.
+// sim use, so the map always matches the real world, do not diverge them.
 import { ZONES } from '../sim/data';
 import { terrainHeight, roadDistance, WATER_LEVEL, zoneBiomeAt } from '../sim/world';
 
@@ -40,7 +40,7 @@ export function paintTerrainRows(
     let prevH = 0; // height of the left-neighbour pixel, for free hillshade
     for (let ix = 0; ix < W; ix++) {
       // +Z up, +X LEFT: facing 0 is +Z ("north") and turning right decreases
-      // facing, so the world's east is -X — drawing +X to the right mirrored
+      // facing, so the world's east is -X, and drawing +X to the right mirrored
       // the whole map east-west
       const x = region.maxX - (ix / W) * spanX;
       const z = region.maxZ - (iy / H) * spanZ;
@@ -59,7 +59,7 @@ export function paintTerrainRows(
       }
       if (nearHub) { r = 125; g = 100; b = 66; }
       else if (h >= WATER_LEVEL && roadDistance(x, z) < 2.4) { r = 138; g = 111; b = 71; }
-      // hillshade: relief from the west→east slope, reusing the already-computed
+      // hillshade: relief from the west-to-east slope, reusing the already-computed
       // left-neighbour height so it costs no extra terrainHeight() calls
       const left = ix === 0 ? h : prevH;
       prevH = h;
