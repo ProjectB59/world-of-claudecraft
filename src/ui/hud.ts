@@ -13,7 +13,7 @@ import {
   zoneWelcomeText,
 } from '../sim/data';
 import type { ZoneDef } from '../sim/data';
-import type { AbilityDef, EquipSlot, InvSlot, PetMode, PlayerClass, ResourceType, SkinRank, Stats } from '../sim/types';
+import type { AbilityDef, EquipSlot, InvSlot, LootRollChoice, PetMode, PlayerClass, ResourceType, SkinRank, Stats } from '../sim/types';
 import { EVENT_SKIN_TIERS, MECH_CHROMAS, SKIN_RANKS, skinRankOrder, type SkinTier } from '../sim/content/skins';
 import {
   AbilityEffect, CONSUME_DURATION, Entity, FISHING_CAST_ID, GCD, ItemDef, SimEvent,
@@ -23,6 +23,9 @@ import { xpBarView, formatXp } from './xp_bar';
 import { lowHealthVignette } from './low_health';
 import { absorbBarView } from './absorb_bar';
 import { itemStatDeltas } from './item_compare';
+import { buildStatTooltip, weaponDps, type StatId, type StatTooltipModel } from './stat_tooltip';
+import { statCellHtml, statTooltipHtml, type StatTooltipI18n } from './stat_tooltip_view';
+import { esc } from './esc';
 import { formatClockTime } from './clock';
 import { formatMinimapCoords } from './coords';
 import { compassView, type CardinalId } from './compass';
@@ -51,6 +54,7 @@ import { cardHostingAvailable, publishCard, fetchReferralInfo, fetchStanding, ty
 import { holderTierForBalance, holderTierByIndex, holderTierBadgeDataUrl, holderTierDisplayName } from './holder_tier';
 import { Keybinds, BIND_ACTIONS, BIND_CATEGORIES, isReservedCode, keyLabel } from '../game/keybinds';
 import { Settings, GameSettings, BoolSettingKey, NumericSettingKey, SETTING_RANGES, normalizeClickMoveButton } from '../game/settings';
+import { PerfOverlaySettingsPanel, type PerfOverlayHooks, type PerfSettingsHost } from './perf_overlay_settings';
 import { isPhoneTouchDevice } from '../game/mobile_controls';
 import { chatPlayerContextActions } from './player_context_menu';
 import {
@@ -86,12 +90,15 @@ import {
 import { talentChoiceIconDataUrl, talentNodeIconDataUrl } from './talent_icons';
 import { augmentCategory, type AugmentCategory } from '../sim/content/augments';
 import {
-  clearHotbarSlot, encodeHotbarAction, HOTBAR_ACTION_MIME, HotbarAction, parseHotbarAction, parseHotbarActions,
-  placeAbilityOnSlot, placeItemOnSlot, swapHotbarSlots, syncHotbarActions,
+  buildDefaultFormBar, classHasFormBars, clearHotbarSlot, encodeHotbarAction, HOTBAR_ACTION_MIME, HotbarAction,
+  parseHotbarAction, parseHotbarActions,
+  placeAbilityOnSlot, placeItemOnSlot, shouldSeedFormBar, swapHotbarSlots, syncHotbarActions,
 } from './hotbar';
 
 // hooks main wires after Input exists (the options menu drives input, audio,
-// graphics, and logout, all of which live outside the HUD)
+// graphics, and logout, all of which live outside the HUD). PerfOverlayHooks
+// (the customizable performance overlay's config seam) lives in
+// perf_overlay_settings.ts alongside the panel that consumes it.
 export interface OptionsHooks {
   logout(): void;
   captureKey(cb: (code: string | null) => void): void;
@@ -101,6 +108,11 @@ export interface OptionsHooks {
   // fans out woc:languagechange). onStatus receives localized progress/error text for an
   // aria-live element. Resolves false if the locale failed to load (active locale kept).
   changeLanguage(lang: SupportedLanguage, onStatus?: (msg: string) => void): Promise<boolean>;
+  // Re-fetch the connected/linked wallet's $WOC balance (server cache-bypassed) so the
+  // bag footer and player card reflect on-chain token changes. No-op when the wallet
+  // feature is off or no wallet is connected/linked.
+  refreshWocBalance(): void;
+  perfOverlay: PerfOverlayHooks;
 }
 
 export interface ReportHooks {
@@ -109,12 +121,17 @@ export interface ReportHooks {
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string): T => document.querySelector(sel) as T;
-const esc = (value: unknown): string => String(value ?? '')
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
+const trackMetaPixel = (eventName: string, data?: Record<string, unknown>): void => {
+  const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
+  if (typeof fbq !== 'function') return;
+  fbq('trackCustom', eventName, data ?? {});
+};
+// The HUD's i18n + number-formatting surface, handed to the pure stat-tooltip
+// view so it can render localized breakdowns without importing the i18n runtime.
+const STAT_VIEW_DEPS: StatTooltipI18n = {
+  t: (key, params) => t(key as TranslationKey, params),
+  fmt: (value, opts) => formatNumber(value, opts),
+};
 const castDisplayName = (id: string): string => {
   if (id === FISHING_CAST_ID) return t('abilityUi.cast.fishing');
   if (id === 'demon_heal') return t('abilityUi.cast.demonHeal');
@@ -347,6 +364,7 @@ function weaponSwingKey(cls: string): string {
 
 export class Hud {
   private static readonly BAR_ABILITY_SLOTS = 11; // bar slots 1..11; slot 0 is the fixed Attack toggle
+  private static readonly FORM_TOGGLE_IDS = new Set(['bear_form', 'cat_form']); // shift toggles, castable in any form
   private abilityButtons: { btn: HTMLButtonElement; label: HTMLSpanElement; countEl: HTMLSpanElement; keybindEl: HTMLSpanElement; cdOverlay: HTMLDivElement; cdText: HTMLDivElement; lastIcon: string }[] = [];
   private hotbarActions: HotbarAction[] = []; // index = barSlot-1
   private loadedSlotMapFromStorage = false;
@@ -360,7 +378,10 @@ export class Hud {
   // Soft swear terms from the server (online only), masked in chat when the
   // player's "Filter Profanity" setting is on. Fed by main.ts from ClientWorld.
   private profanityWords: string[] = [];
-  private optionsView: 'main' | 'keybinds' | 'graphics' | 'audio' | 'interface' = 'main';
+  private optionsView: 'main' | 'keybinds' | 'graphics' | 'audio' | 'interface' | 'performance' = 'main';
+  // The Options > Performance panel, lazily built and reused (it caches the live
+  // position-slider handles so a drag-to-move can update them in place).
+  private perfSettings: PerfOverlaySettingsPanel | null = null;
   private capturingKey: { action: string; index: number } | null = null; // binding awaiting a key
   private keybindNote = '';
   private emoteWheelOpen = false;
@@ -433,6 +454,7 @@ export class Hud {
   private minimapZoomLabel: HTMLElement | null = null;
   private mapBg: HTMLCanvasElement | null = null;
   private openLootMobId: number | null = null;
+  private activeLootRolls = new Map<number, { event: Extract<SimEvent, { type: 'lootRoll' }>; receivedAt: number; durationMs: number }>();
   private openVendorNpcId: number | null = null;
   private openGossipNpcId: number | null = null;
   private openQuestDetailId: string | null = null;
@@ -523,6 +545,10 @@ export class Hud {
   private mechAssetsPromise: Promise<void> | null = null;
   private cardModalEl: HTMLElement | null = null;
   private cardModalReturnFocus: HTMLElement | null = null;
+  // Set while the player-card modal is open: re-composites the card with the
+  // current pose so a $WOC balance change (the bag-footer path can't reach the
+  // card's canvas) is reflected. Cleared when the modal closes.
+  private recomposeOpenCard: (() => void) | null = null;
   // current typeahead state: which input, its results, and the keyboard-
   // highlighted row (-1 = none), so Enter/Arrow keys can pick a suggestion
   private socialSuggest: { field: string; items: { name: string; cls: string; level: number }[]; index: number } = { field: '', items: [], index: -1 };
@@ -546,8 +572,12 @@ export class Hud {
     this.refreshKeybindLabels();
     this.buildXpTicks();
     document.addEventListener('woc:languagechange', () => this.refreshLocalizedDynamicUi());
-    // re-render the bag footer when the connected wallet's $WOC balance changes
-    onWalletUiChange(() => { if ($('#bags').style.display === 'block') this.renderBags(); });
+    // re-render the bag footer (and re-composite an open player card) when the
+    // connected wallet's $WOC balance changes
+    onWalletUiChange(() => {
+      if ($('#bags').style.display === 'block') this.renderBags();
+      this.recomposeOpenCard?.();
+    });
     $('#pf-name').textContent = sim.player.name;
     this.drawPlayerFramePortrait();
     // Character GLBs preload after the HUD mounts; once the real 3D portraits are
@@ -1503,6 +1533,26 @@ export class Hud {
     return html;
   }
 
+  // Build the pure stat-breakdown model for the currently-shown player, the bridge
+  // from the live sim to the host-agnostic stat_tooltip core. The HTML + aria
+  // rendering lives in the unit-tested stat_tooltip_view module; this only feeds
+  // it the current numbers, so the visual tooltip and the screen-reader text read
+  // identical, live values.
+  private statModel(stat: StatId): StatTooltipModel {
+    const sim = this.sim;
+    const p = sim.player;
+    const wpn = sim.equipment.mainhand ? ITEMS[sim.equipment.mainhand] : null;
+    return buildStatTooltip(stat, {
+      cls: sim.cfg.playerClass,
+      stats: p.stats,
+      level: p.level,
+      attackPower: p.attackPower,
+      critChance: p.critChance,
+      dodgeChance: p.dodgeChance,
+      dps: weaponDps(wpn?.weapon, p.attackPower),
+    });
+  }
+
   private questNumber(value: number): string {
     return formatNumber(value, { maximumFractionDigits: 0 });
   }
@@ -1622,6 +1672,77 @@ export class Hud {
     return item?.kind === 'food' || item?.kind === 'drink' || item?.kind === 'potion' || item?.use?.type === 'fishing';
   }
 
+  // Whether an ability belongs on a given form's default bar. Bear/cat bars hold
+  // only that form's kit (its `requiresForm` abilities) plus the shift toggles;
+  // the caster ('normal') bar excludes form-only abilities so they no longer
+  // auto-dump onto it. Rogue stealth has no `requiresForm` kit, so it keeps the
+  // full caster set.
+  private shouldAutoPlaceOnForm(id: string, form: HotbarForm): boolean {
+    if (form === 'bear' || form === 'cat') {
+      return ABILITIES[id]?.requiresForm === form || Hud.FORM_TOGGLE_IDS.has(id);
+    }
+    return !ABILITIES[id]?.requiresForm;
+  }
+
+  // The known abilities that make up a form's default bar, in class/learn order.
+  private formKitAbilityIds(form: HotbarForm): string[] {
+    return this.sim.known.map((k) => k.def.id).filter((id) => this.shouldAutoPlaceOnForm(id, form));
+  }
+
+  // True for the druid form bars that own a dedicated kit (bear/cat). Rogue
+  // stealth is excluded: the sim does not lock the caster kit in stealth, so its
+  // bar legitimately mirrors the normal layout.
+  private isFormKitBar(form: HotbarForm = this.activeHotbarForm): boolean {
+    return this.sim.cfg.playerClass === 'druid' && (form === 'bear' || form === 'cat');
+  }
+
+  // Gates form-bar-only UI (e.g. the spellbook "Reset bar" button) so it never
+  // shows for single-bar classes. Delegates to the pure, unit-tested helper.
+  private classHasFormBars(): boolean {
+    return classHasFormBars(this.sim.cfg.playerClass);
+  }
+
+  // Per-form one-time marker so the migration of pre-existing form bars (empty or
+  // a clone of the caster bar) runs at most once and never clobbers a layout the
+  // player deliberately customized. Mirrors the emote-wheel version marker.
+  private formBarSeededKey(form: HotbarForm = this.activeHotbarForm): string {
+    return `${this.slotMapKey(form)}_seeded`;
+  }
+
+  private markFormBarSeeded(form: HotbarForm = this.activeHotbarForm): void {
+    try { localStorage.setItem(this.formBarSeededKey(form), '1'); } catch { /* storage unavailable */ }
+  }
+
+  // Seed/migrate a druid bear/cat bar to its form kit. Returns true if it took
+  // ownership of `hotbarActions`. Runs at most once per form (guarded by the
+  // marker): on first encounter it seeds an empty bar or migrates a bar that is a
+  // byte-identical clone of the caster bar, but leaves a customized bar untouched.
+  private seedFormBarIfNeeded(parsed: HotbarAction[]): boolean {
+    let alreadySeeded = false;
+    try { alreadySeeded = localStorage.getItem(this.formBarSeededKey()) === '1'; } catch { /* storage unavailable */ }
+    if (alreadySeeded) return false;
+
+    let normalRaw: unknown = null;
+    try { normalRaw = JSON.parse(localStorage.getItem(this.slotMapKey('normal')) ?? 'null'); } catch { /* corrupt */ }
+    const normalActions = parseHotbarActions(
+      normalRaw,
+      Hud.BAR_ABILITY_SLOTS,
+      (id) => !!ABILITIES[id],
+      (id) => this.isHotbarItemId(id),
+    );
+
+    // Mark before deciding so a deliberately customized bar is left untouched and
+    // this migration is never re-evaluated for the form.
+    this.markFormBarSeeded();
+    if (!shouldSeedFormBar(parsed, normalActions, false)) return false;
+
+    this.hotbarActions = buildDefaultFormBar(this.formKitAbilityIds(this.activeHotbarForm), Hud.BAR_ABILITY_SLOTS);
+    this.loadedSlotMapFromStorage = true;
+    this.knownAbilityIdsAtLastSlotSync = null;
+    this.saveSlotMap();
+    return true;
+  }
+
   private loadSlotMap(): void {
     let arr: unknown = null;
     let stored = false;
@@ -1636,6 +1757,15 @@ export class Hud {
       (id) => !!ABILITIES[id],
       (id) => this.isHotbarItemId(id),
     );
+    // Druid bear/cat bars auto-populate with that form's kit instead of cloning
+    // the caster bar; existing characters are migrated once (see seedFormBarIfNeeded).
+    if (this.isFormKitBar()) {
+      if (this.seedFormBarIfNeeded(parsed)) return;
+      this.loadedSlotMapFromStorage = stored;
+      this.hotbarActions = parsed;
+      this.knownAbilityIdsAtLastSlotSync = null;
+      return;
+    }
     const emptyFormMap = this.activeHotbarForm !== 'normal' && parsed.every((action) => action === null);
     if (emptyFormMap) {
       let fallback: unknown = null;
@@ -1699,6 +1829,22 @@ export class Hud {
     });
   }
 
+  // Rebuild the active bar from its default kit (form bars get their form kit;
+  // the caster/stealth bar gets the form-filtered known abilities). Item
+  // shortcuts and manual arrangement are intentionally discarded — it's a reset.
+  // The per-frame update() repaints the slot icons from hotbarActions, so we only
+  // mutate state here (same as addAbilityToHotbar / drag-drop).
+  private resetActiveFormBarToDefault(): void {
+    this.hotbarActions = buildDefaultFormBar(
+      this.formKitAbilityIds(this.activeHotbarForm),
+      Hud.BAR_ABILITY_SLOTS,
+    );
+    this.knownAbilityIdsAtLastSlotSync = new Set(this.sim.known.map((k) => k.def.id));
+    this.markFormBarSeeded();
+    this.saveSlotMap();
+    this.refreshSpellbookHotbarControls();
+  }
+
   private formToggleAbilityId(): string | null {
     if (this.activeHotbarForm === 'bear') return 'bear_form';
     if (this.activeHotbarForm === 'cat') return 'cat_form';
@@ -1720,13 +1866,18 @@ export class Hud {
   private syncSlotMap(): void {
     const knownAbilityIds = this.sim.known.map((k) => k.def.id);
     const autoPlaceAbilityIds = new Set<string>();
+    // Only auto-place abilities that belong on the active form's bar, so newly
+    // learned form abilities land on their form bar and not the caster bar.
+    const consider = (id: string) => {
+      if (this.shouldAutoPlaceOnForm(id, this.activeHotbarForm)) autoPlaceAbilityIds.add(id);
+    };
     if (this.knownAbilityIdsAtLastSlotSync === null) {
       if (!this.loadedSlotMapFromStorage) {
-        for (const id of knownAbilityIds) autoPlaceAbilityIds.add(id);
+        for (const id of knownAbilityIds) consider(id);
       }
     } else {
       for (const id of knownAbilityIds) {
-        if (!this.knownAbilityIdsAtLastSlotSync.has(id)) autoPlaceAbilityIds.add(id);
+        if (!this.knownAbilityIdsAtLastSlotSync.has(id)) consider(id);
       }
     }
     const formToggle = this.formToggleAbilityId();
@@ -2186,6 +2337,7 @@ export class Hud {
     if (slowHud) this.lastHudSlowAt = now;
 
     this.meters.update();
+    this.updateLootRollTimers(now);
     this.syncActiveHotbarForm();
     this.syncSlotMap(); // picks up newly learned abilities mid-session
 
@@ -3508,6 +3660,7 @@ export class Hud {
           this.showBanner(t('hud.core.levelBanner', { level: ev.level }));
           this.log(t('hud.core.levelLog', { level: ev.level }), '#ffd100');
           audio.levelUp();
+          if (ev.level === 5) trackMetaPixel('ReachedLevel5', { level: ev.level });
           // First talent point (and spec) unlock — nudge the player to the panel.
           if (ev.level === FIRST_TALENT_LEVEL && talentsFor(this.sim.cfg.playerClass)) {
             this.showBanner(t('game.talents.unlockBanner'));
@@ -3533,9 +3686,14 @@ export class Hud {
         case 'comboPoint': break;
         case 'loot': {
           this.log(this.localizeLootText(ev.text), '#7fdc4f');
+          if (/ wins .+ \(\d+\)$/.test(ev.text) || /^Everyone passed on .+\.$/.test(ev.text)) this.closeLootRollsForItem(ev.text);
           if (ev.text.includes('loot') || ev.text.includes('Sold') || ev.text.includes('Bought back')) audio.coin();
           else audio.lootItem();
           if ($('#bags').style.display !== 'none') this.renderBags();
+          break;
+        }
+        case 'lootRoll': {
+          this.showLootRoll(ev);
           break;
         }
         case 'vendor': {
@@ -4065,6 +4223,8 @@ export class Hud {
     if (match) return t('hud.logs.lootReceiveMoney', { money: this.localizeSimMoney(match[1]) });
     match = /^You loot (.+)\.$/.exec(text);
     if (match) return t('hud.logs.lootMoney', { money: this.localizeSimMoney(match[1]) });
+    match = /^Everyone passed on (.+)\.$/.exec(text);
+    if (match) return t('itemUi.lootRoll.everyonePassed', { item: itemDisplayNameFromSource(match[1]) });
     match = /^Sold (.+) for (.+)\.$/.exec(text);
     if (match) return t('hud.logs.soldItem', { item: itemDisplayNameFromSource(match[1]), money: this.localizeSimMoney(match[2]) });
     match = /^Listed (.+?)( x\d+)? on the World Market for (.+)\.$/.exec(text);
@@ -4614,6 +4774,100 @@ export class Hud {
   // Loot window
   // -------------------------------------------------------------------------
 
+  private lootRollRoot(): HTMLElement {
+    let root = document.getElementById('loot-rolls');
+    if (!root) {
+      root = document.createElement('div');
+      root.id = 'loot-rolls';
+      root.setAttribute('aria-live', 'polite');
+      document.body.appendChild(root);
+    }
+    return root;
+  }
+
+  private showLootRoll(ev: Extract<SimEvent, { type: 'lootRoll' }>): void {
+    this.activeLootRolls.set(ev.rollId, { event: ev, receivedAt: performance.now(), durationMs: 30_000 });
+    this.renderLootRolls();
+  }
+
+  private submitLootRoll(rollId: number, choice: LootRollChoice): void {
+    this.sim.submitLootRoll(rollId, choice);
+    this.activeLootRolls.delete(rollId);
+    this.renderLootRolls();
+  }
+
+  private updateLootRollTimers(now: number): void {
+    if (this.activeLootRolls.size === 0) return;
+    let changed = false;
+    for (const [rollId, roll] of this.activeLootRolls) {
+      if (now - roll.receivedAt >= roll.durationMs) {
+        this.activeLootRolls.delete(rollId);
+        changed = true;
+      }
+    }
+    if (changed) this.renderLootRolls();
+    const root = document.getElementById('loot-rolls');
+    if (!root) return;
+    for (const row of root.querySelectorAll<HTMLElement>('.loot-roll')) {
+      const rollId = Number(row.dataset.rollId);
+      const roll = this.activeLootRolls.get(rollId);
+      if (!roll) continue;
+      const remaining = Math.max(0, 1 - (now - roll.receivedAt) / roll.durationMs);
+      row.style.setProperty('--loot-roll-frac', remaining.toFixed(3));
+    }
+  }
+
+  private closeLootRollsForItem(text: string): void {
+    const match = /^.+ wins (.+) \(\d+\)$/.exec(text) ?? /^Everyone passed on (.+)\.$/.exec(text);
+    if (!match) return;
+    for (const [rollId, roll] of this.activeLootRolls) {
+      if (roll.event.itemName === match[1]) this.activeLootRolls.delete(rollId);
+    }
+    this.renderLootRolls();
+  }
+
+  private renderLootRolls(): void {
+    const root = this.lootRollRoot();
+    if (this.activeLootRolls.size === 0) {
+      root.style.display = 'none';
+      root.innerHTML = '';
+      return;
+    }
+    root.style.display = 'flex';
+    root.innerHTML = '';
+    for (const [rollId, roll] of this.activeLootRolls) {
+      const ev = roll.event;
+      const item = ITEMS[ev.itemId];
+      const itemName = item ? itemDisplayName(item) : ev.itemName;
+      const quality = item?.quality ?? ev.quality ?? 'common';
+      const row = document.createElement('div');
+      row.className = 'loot-roll panel';
+      row.dataset.rollId = String(rollId);
+      row.style.setProperty('--loot-roll-frac', '1');
+      row.innerHTML = `
+        <div class="loot-roll-item">
+          ${item ? this.itemIcon(item) : `<img class="item-icon q-${quality}" src="${iconDataUrl('item', ev.itemId)}" alt="" draggable="false">`}
+          <div class="loot-roll-copy">
+            <div class="loot-roll-title">${esc(t('itemUi.lootRoll.title'))}</div>
+            <div class="loot-roll-name" style="color:${QUALITY_COLOR[quality] ?? '#fff'}">${esc(itemName)}</div>
+          </div>
+        </div>
+        <div class="loot-roll-timer" aria-hidden="true"><span></span></div>
+        <div class="loot-roll-actions">
+          <button type="button" class="loot-roll-btn need" data-choice="need">${esc(t('itemUi.lootRoll.need'))}</button>
+          <button type="button" class="loot-roll-btn greed" data-choice="greed">${esc(t('itemUi.lootRoll.greed'))}</button>
+          <button type="button" class="loot-roll-btn pass" data-choice="pass">${esc(t('itemUi.lootRoll.pass'))}</button>
+        </div>`;
+      if (item) this.attachTooltip(row.querySelector('.loot-roll-item') as HTMLElement, () => this.itemTooltip(item));
+      row.querySelectorAll<HTMLButtonElement>('[data-choice]').forEach((btn) => {
+        const choice = btn.dataset.choice as LootRollChoice;
+        btn.setAttribute('aria-label', t(`itemUi.lootRoll.${choice}Aria`, { item: itemName }));
+        btn.addEventListener('click', () => this.submitLootRoll(rollId, choice));
+      });
+      root.appendChild(row);
+    }
+  }
+
   openLoot(mobId: number, screenX: number, screenY: number): void {
     const mob = this.sim.entities.get(mobId);
     if (!mob?.loot) return;
@@ -5141,9 +5395,9 @@ export class Hud {
     const g = Math.floor(suggested / 10000), s = Math.floor((suggested % 10000) / 100), c = suggested % 100;
     form.innerHTML = qtyRow
       + `<div class="mkt-price-row"><label>${esc(t('itemUi.market.priceEach'))}</label>`
-      + `<input class="coininput" id="mkt-g" type="number" min="0" value="${g}" aria-label="${esc(t('itemUi.money.gold'))}"><span class="mkt-coin-tag">${esc(t('itemUi.money.goldShort'))}</span>`
-      + `<input class="coininput" id="mkt-s" type="number" min="0" max="99" value="${s}" aria-label="${esc(t('itemUi.money.silver'))}"><span class="mkt-coin-tag">${esc(t('itemUi.money.silverShort'))}</span>`
-      + `<input class="coininput" id="mkt-c" type="number" min="0" max="99" value="${c}" aria-label="${esc(t('itemUi.money.copper'))}"><span class="mkt-coin-tag">${esc(t('itemUi.money.copperShort'))}</span></div>`;
+      + `<input class="coininput" id="mkt-g" type="number" min="0" value="${g}" aria-label="${esc(t('itemUi.money.gold'))}"><span class="coin g" aria-hidden="true"></span><span class="mkt-coin-tag">${esc(t('itemUi.money.goldShort'))}</span>`
+      + `<input class="coininput" id="mkt-s" type="number" min="0" max="99" value="${s}" aria-label="${esc(t('itemUi.money.silver'))}"><span class="coin s" aria-hidden="true"></span><span class="mkt-coin-tag">${esc(t('itemUi.money.silverShort'))}</span>`
+      + `<input class="coininput" id="mkt-c" type="number" min="0" max="99" value="${c}" aria-label="${esc(t('itemUi.money.copper'))}"><span class="coin c" aria-hidden="true"></span><span class="mkt-coin-tag">${esc(t('itemUi.money.copperShort'))}</span></div>`;
     body.appendChild(form);
 
     const listBtn = document.createElement('button');
@@ -5223,6 +5477,9 @@ export class Hud {
     this.renderBags();
     el.style.display = 'flex';
     audio.bagOpen();
+    // Pull a fresh on-chain $WOC balance for the footer; the async result
+    // re-renders the bag via the onWalletUiChange listener wired in the ctor.
+    this.optionsHooks?.refreshWocBalance();
   }
 
   // Called when an authoritative inventory delta lands (online snapshots
@@ -5244,6 +5501,10 @@ export class Hud {
   renderBags(): void {
     const el = $('#bags');
     const sim = this.sim;
+    // .bag-grid (not #bags) is the scroll container; it is recreated on every
+    // rebuild, so capture its scroll offset and reapply it to the fresh grid —
+    // otherwise using an item (e.g. a potion) snaps the list back to the top.
+    const prevScrollTop = el.querySelector('.bag-grid')?.scrollTop ?? 0;
     el.innerHTML = `<div class="panel-title"><span>${esc(t('itemUi.bags.title'))}</span><button type="button" class="x-btn" data-close aria-label="${esc(t('itemUi.bags.close'))}">${svgIcon('close')}</button></div>`;
     const grid = document.createElement('div');
     grid.className = 'bag-grid';
@@ -5321,6 +5582,7 @@ export class Hud {
       grid.appendChild(row);
     }
     el.appendChild(grid);
+    grid.scrollTop = prevScrollTop;
     const money = document.createElement('div');
     money.className = 'money';
     money.innerHTML = `${this.wocBalanceHtml()}${this.moneyHtml(sim.copper)}`;
@@ -5459,14 +5721,18 @@ export class Hud {
       </div>
       <div class="equip-col equip-col-right" id="equip-col-right"></div>
     </div>`;
-    const wpn = sim.equipment.mainhand ? ITEMS[sim.equipment.mainhand] : null;
-    const dps = wpn?.weapon ? ((wpn.weapon.min + wpn.weapon.max) / 2 + (p.attackPower / 14) * wpn.weapon.speed) / wpn.weapon.speed : 0;
+    // Ten focusable stat cells, primaries down the left column and derived stats
+    // down the right. The cell markup, value formatting, and the visually-hidden
+    // aria breakdown all come from the pure, unit-tested stat_tooltip_view module;
+    // each cell's value is read from the model so it cannot drift from the tooltip
+    // it opens, and the post-render pass below attaches the floating breakdown.
+    const statCell = (stat: StatId) => statCellHtml(this.statModel(stat), STAT_VIEW_DEPS);
     html += `<div class="char-stats">
-      <span>${esc(t('itemUi.stats.str'))}: <b>${formatNumber(p.stats.str, { maximumFractionDigits: 0 })}</b></span><span>${esc(t('itemUi.stats.armor'))}: <b>${formatNumber(p.stats.armor, { maximumFractionDigits: 0 })}</b></span>
-      <span>${esc(t('itemUi.stats.agi'))}: <b>${formatNumber(p.stats.agi, { maximumFractionDigits: 0 })}</b></span><span>${esc(t('itemUi.stats.attackPower'))}: <b>${formatNumber(p.attackPower, { maximumFractionDigits: 0 })}</b></span>
-      <span>${esc(t('itemUi.stats.sta'))}: <b>${formatNumber(p.stats.sta, { maximumFractionDigits: 0 })}</b></span><span>${esc(t('itemUi.stats.dps'))}: <b>${formatNumber(dps, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</b></span>
-      <span>${esc(t('itemUi.stats.int'))}: <b>${formatNumber(p.stats.int, { maximumFractionDigits: 0 })}</b></span><span>${esc(t('itemUi.stats.critChance'))}: <b>${formatNumber(p.critChance * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</b></span>
-      <span>${esc(t('itemUi.stats.spi'))}: <b>${formatNumber(p.stats.spi, { maximumFractionDigits: 0 })}</b></span><span>${esc(t('itemUi.stats.dodge'))}: <b>${formatNumber(p.dodgeChance * 100, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</b></span>
+      ${statCell('str')}${statCell('armor')}
+      ${statCell('agi')}${statCell('attackPower')}
+      ${statCell('sta')}${statCell('dps')}
+      ${statCell('int')}${statCell('critChance')}
+      ${statCell('spi')}${statCell('dodge')}
     </div>`;
     html += this.talentSummaryHtml();
     html += this.progressionHtml(p.level);
@@ -5507,6 +5773,12 @@ export class Hud {
     };
     for (const slot of leftSlots) leftCol.appendChild(buildSlotRow(slot));
     for (const slot of rightSlots) rightCol.appendChild(buildSlotRow(slot));
+    for (const cell of el.querySelectorAll<HTMLElement>('.char-stats [data-stat]')) {
+      const stat = cell.dataset.stat as StatId;
+      // Resolve the model lazily, on show, so the breakdown reflects the player's
+      // current stats (gear/buffs/talents) at the moment they hover, not at render.
+      this.attachTooltip(cell, () => statTooltipHtml(this.statModel(stat), STAT_VIEW_DEPS));
+    }
     this.renderCharPreview();
     this.renderCharSkinPicker();
     el.querySelector('[data-close]')?.addEventListener('click', () => { el.style.display = 'none'; this.hideTooltip(); });
@@ -5968,6 +6240,10 @@ export class Hud {
     if (!preview) return;
 
     this.closePlayerCardModal(false);
+    // Pull a fresh on-chain $WOC balance so the holder badge isn't stale. The
+    // async result lands via onWalletUiChange → recomposeOpenCard (below), which
+    // re-composites the card with the current pose once the new value arrives.
+    this.optionsHooks?.refreshWocBalance();
     this.cardModalReturnFocus = this.currentFocusableElement();
     const back = document.createElement('div');
     back.className = 'modal-backdrop';
@@ -6081,6 +6357,14 @@ export class Hud {
       if (metadataReady) void compose(requestedPoseIndex);
     });
 
+    // Re-composite the card with the current pose whenever the wallet balance
+    // (or availability) changes while this modal is open — e.g. the fresh read
+    // kicked at open lands, or tokens move during the session. Registered BEFORE
+    // the awaits below so a balance landing during that window isn't dropped; it
+    // no-ops until metadataReady, and the first compose picks up the fresh store
+    // value anyway.
+    this.recomposeOpenCard = () => { if (this.cardModalEl === back && metadataReady) void compose(requestedPoseIndex); };
+
     // Referral info + realm standing are online-only (null offline). Fetch once
     // and reuse across pose re-renders. Pose clicks before this resolves update
     // requestedPoseIndex, so the latest visible choice renders when ready.
@@ -6098,6 +6382,7 @@ export class Hud {
     if (!back) return;
     back.remove();
     if (this.cardModalEl === back) this.cardModalEl = null;
+    this.recomposeOpenCard = null;
     const target = this.cardModalReturnFocus;
     this.cardModalReturnFocus = null;
     if (restoreFocus) this.restoreFocus(target);
@@ -6270,9 +6555,7 @@ export class Hud {
     }
 
     const wpn = sim.equipment.mainhand ? ITEMS[sim.equipment.mainhand] : null;
-    const dps = wpn?.weapon
-      ? ((wpn.weapon.min + wpn.weapon.max) / 2 + (p.attackPower / 14) * wpn.weapon.speed) / wpn.weapon.speed
-      : 0;
+    const dps = weaponDps(wpn?.weapon, p.attackPower);
 
     const primaryStats: PlayerCardStat[] = [
       { label: t('itemUi.stats.str'), value: num(p.stats.str) },
@@ -6606,7 +6889,12 @@ export class Hud {
     const cls = CLASSES[sim.cfg.playerClass];
     const className = classDisplayName(cls.id);
     el.setAttribute('aria-label', t('abilityUi.spellbook.title'));
-    el.innerHTML = `<div class="panel-title"><span>${esc(t('abilityUi.spellbook.title'))} <span class="spellbook-class">${esc(t('abilityUi.spellbook.classSubtitle', { className }))}</span></span><button type="button" class="x-btn" data-close aria-label="${esc(t('abilityUi.spellbook.close'))}">${svgIcon('close')}</button></div>`;
+    // "Reset bar" only applies to classes with per-form bars (druid); other
+    // classes have a single bar, so the button is omitted for them.
+    const resetBtnHtml = this.classHasFormBars()
+      ? `<button type="button" class="x-btn spellbook-reset" data-reset-bar aria-label="${esc(t('abilityUi.spellbook.resetBarAria'))}">${esc(t('abilityUi.spellbook.resetBar'))}</button>`
+      : '';
+    el.innerHTML = `<div class="panel-title"><span>${esc(t('abilityUi.spellbook.title'))} <span class="spellbook-class">${esc(t('abilityUi.spellbook.classSubtitle', { className }))}</span></span><div class="panel-title-actions">${resetBtnHtml}<button type="button" class="x-btn" data-close aria-label="${esc(t('abilityUi.spellbook.close'))}">${svgIcon('close')}</button></div></div>`;
     const list = document.createElement('div');
     list.className = 'spell-list';
     list.setAttribute('role', 'list');
@@ -6677,6 +6965,14 @@ export class Hud {
       list.appendChild(empty);
     }
     el.querySelector('[data-close]')?.addEventListener('click', () => { el.style.display = 'none'; this.hideTooltip(); });
+    const resetBtn = el.querySelector('[data-reset-bar]');
+    resetBtn?.addEventListener('pointerdown', (ev) => ev.stopPropagation());
+    resetBtn?.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this.resetActiveFormBarToDefault();
+      audio.click();
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -7957,7 +8253,13 @@ export class Hud {
         <div class="trade-col ${info.myAccepted ? 'accepted' : ''}">
           <h4>${esc(t('hud.trade.yourOffer'))}</h4>
           <div class="trade-items">${info.myOffer.items.map((s) => itemRow(s, true)).join('') || `<div class="trade-empty">${esc(t('hud.trade.emptyMine'))}</div>`}</div>
-          <label class="trade-money" for="trade-copper">${esc(t('hud.trade.money'))}: <input id="trade-copper" type="number" min="0" value="${this.stagedTrade.copper}" /> ${esc(t('hud.trade.copper'))}</label>
+          <div class="trade-money"><span class="trade-money-label">${esc(t('hud.trade.money'))}:</span>
+            <span class="trade-coins">
+              <input class="coininput" id="trade-g" type="number" min="0" value="${Math.floor(this.stagedTrade.copper / 10000)}" aria-label="${esc(t('itemUi.money.gold'))}"><span class="coin g" aria-hidden="true"></span><span class="mkt-coin-tag">${esc(t('itemUi.money.goldShort'))}</span>
+              <input class="coininput" id="trade-s" type="number" min="0" max="99" value="${Math.floor((this.stagedTrade.copper % 10000) / 100)}" aria-label="${esc(t('itemUi.money.silver'))}"><span class="coin s" aria-hidden="true"></span><span class="mkt-coin-tag">${esc(t('itemUi.money.silverShort'))}</span>
+              <input class="coininput" id="trade-c" type="number" min="0" max="99" value="${this.stagedTrade.copper % 100}" aria-label="${esc(t('itemUi.money.copper'))}"><span class="coin c" aria-hidden="true"></span><span class="mkt-coin-tag">${esc(t('itemUi.money.copperShort'))}</span>
+            </span>
+          </div>
         </div>
         <div class="trade-col ${info.theirAccepted ? 'accepted' : ''}">
           <h4>${esc(t('hud.trade.theirOffer', { name: info.otherName }))}</h4>
@@ -7988,11 +8290,17 @@ export class Hud {
         }
       });
     });
-    const copperInput = el.querySelector('#trade-copper') as HTMLInputElement;
-    copperInput?.addEventListener('change', () => {
-      this.stagedTrade.copper = Math.max(0, Math.floor(Number(copperInput.value) || 0));
+    const goldInput = el.querySelector('#trade-g') as HTMLInputElement;
+    const silverInput = el.querySelector('#trade-s') as HTMLInputElement;
+    const copperInput = el.querySelector('#trade-c') as HTMLInputElement;
+    const syncTradeMoney = () => {
+      const gg = Math.max(0, Math.floor(Number(goldInput?.value) || 0));
+      const ss = Math.max(0, Math.floor(Number(silverInput?.value) || 0));
+      const cc = Math.max(0, Math.floor(Number(copperInput?.value) || 0));
+      this.stagedTrade.copper = gg * 10000 + ss * 100 + cc;
       this.pushTradeOffer();
-    });
+    };
+    [goldInput, silverInput, copperInput].forEach((input) => input?.addEventListener('change', syncTradeMoney));
     el.style.display = 'block';
   }
 
@@ -8032,18 +8340,23 @@ export class Hud {
   closeOptions(): void {
     $('#options-menu').style.display = 'none';
     this.capturingKey = null;
+    this.optionsHooks?.perfOverlay.setPlacement(false);
     this.hideTooltip();
     music.resumeFromMenu();
   }
 
   private renderOptions(): void {
-    // The wide multi-column layout belongs to the keybinds view only; clear it
-    // so the other sub-views (and the main menu) keep their default width.
+    // The wide multi-column layouts belong to their own sub-views; clear each when
+    // leaving it so the other sub-views (and the main menu) keep their default width.
     if (this.optionsView !== 'keybinds') $('#options-menu').classList.remove('kb-wide');
+    if (this.optionsView !== 'performance') $('#options-menu').classList.remove('perf-wide');
+    // The overlay is draggable only while the Performance sub-view is open.
+    this.optionsHooks?.perfOverlay.setPlacement(this.optionsView === 'performance');
     if (this.optionsView === 'keybinds') { this.renderKeybinds(); return; }
     if (this.optionsView === 'graphics') { this.renderGraphics(); return; }
     if (this.optionsView === 'audio') { this.renderAudio(); return; }
     if (this.optionsView === 'interface') { this.renderInterface(); return; }
+    if (this.optionsView === 'performance') { this.renderPerformance(); return; }
     const el = $('#options-menu');
     el.innerHTML = `<div class="panel-title"><span>${esc(t('hud.options.gameMenu'))}</span><button type="button" class="x-btn" data-close aria-label="${esc(t('hud.options.returnToGame'))}">${svgIcon('close')}</button></div>`;
     const list = document.createElement('div');
@@ -8055,11 +8368,12 @@ export class Hud {
       b.addEventListener('click', () => { audio.click(); onClick(); });
       list.appendChild(b);
     };
-    const goto = (view: 'keybinds' | 'graphics' | 'audio' | 'interface') => { this.optionsView = view; this.keybindNote = ''; this.renderOptions(); };
+    const goto = (view: 'keybinds' | 'graphics' | 'audio' | 'interface' | 'performance') => { this.optionsView = view; this.keybindNote = ''; this.renderOptions(); };
     add(t('hud.options.keyBindings'), () => goto('keybinds'));
     add(t('hud.options.graphics'), () => goto('graphics'));
     add(t('hud.options.interface'), () => goto('interface'));
     add(t('hud.options.audio'), () => goto('audio'));
+    add(t('hudChrome.perf.title'), () => goto('performance'));
     add(t('hud.options.logout'), () => this.optionsHooks?.logout());
     add(t('hud.options.returnToGame'), () => this.closeOptions());
     el.appendChild(list);
@@ -8399,7 +8713,6 @@ export class Hud {
     this.settingBoolToggle(body, t('hud.options.frostedPanels'), 'frostedPanels');
     this.settingBoolToggle(body, t('hud.options.highContrastText'), 'highContrastText');
     this.settingBoolToggle(body, t('hud.options.reduceMotion'), 'reduceMotion');
-    this.settingBoolToggle(body, t('hud.options.showFps'), 'showFps');
     this.settingBoolToggle(body, t('hudChrome.options.showWalletOnCharacterScreen'), 'showWalletOnCharacterScreen');
     this.settingBoolToggle(body, t('hudChrome.options.showWalletOnPlayerCard'), 'showWalletOnPlayerCard');
     this.settingBoolToggle(body, t('hud.options.invertLookY'), 'invertLookY');
@@ -8472,6 +8785,38 @@ export class Hud {
     back.addEventListener('click', () => { audio.click(); this.optionsView = 'main'; this.renderOptions(); });
     $('#options-menu').appendChild(back);
     $('#options-menu').querySelector('[data-close]')?.addEventListener('click', () => this.closeOptions());
+  }
+
+  // ---- Performance overlay panel -----------------------------------------
+  // Customizable in-game stats overlay (FPS, frame time, ping, draw calls, …).
+  // The wide, categorized panel lives in perf_overlay_settings.ts (the pure
+  // consumer of the overlay's config store); the HUD only owns this thin delegate
+  // + the master on/off wiring (showFps rides on GameSettings).
+
+  private renderPerformance(): void {
+    const hooks = this.optionsHooks;
+    if (!hooks) return;
+    this.perfSettings ??= new PerfOverlaySettingsPanel(this.perfSettingsHost(hooks));
+    this.perfSettings.render($('#options-menu'));
+  }
+
+  private perfSettingsHost(hooks: OptionsHooks): PerfSettingsHost {
+    return {
+      perf: hooks.perfOverlay,
+      getShowFps: () => hooks.settings.get('showFps'),
+      setShowFps: (on) => hooks.onSettingChange('showFps', on),
+      click: () => audio.click(),
+      onClose: () => this.closeOptions(),
+      onBack: () => { this.optionsView = 'main'; this.renderOptions(); },
+      closeIconHtml: svgIcon('close'),
+    };
+  }
+
+  /** Called by main.ts when a drag settles on the live overlay: push the dropped
+   *  normalized position into the open panel's Horizontal/Vertical sliders so they
+   *  do not lag behind the drag. No-op when the panel is not on screen. */
+  onPerfOverlayMoved(x: number, y: number): void {
+    this.perfSettings?.syncPosition(x, y);
   }
 
   // Display name for an action row. Action-bar slots show the shortcut that

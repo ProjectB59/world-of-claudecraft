@@ -15,7 +15,7 @@ export const SETTING_RANGES = {
   brightness: { min: 0.6, max: 1.5, def: 1 },
   // 1 low, 2 medium, 3 high, 4 ultra, 5 advanced. The renderer reads this
   // from localStorage during startup because tier choice controls preload.
-  graphicsPreset: { min: 1, max: 5, def: 1 },
+  graphicsPreset: { min: 1, max: 5, def: 4 },
   // Adaptive browser-effects tier for the DOM/CSS layer (distinct from the WebGL
   // graphicsPreset above). 0 = Auto: detect the engine (Chromium/WebKit/Gecko),
   // version and desktop-vs-mobile and tone down the most GPU-expensive CSS

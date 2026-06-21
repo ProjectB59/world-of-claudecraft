@@ -7,14 +7,21 @@ import { MobileControls, PHONE_TOUCH_QUERY, isPhoneTouchDevice } from './game/mo
 import { readBrowserEnv, cssEffectsTier, browserBodyClasses } from './game/browser_env';
 import { GFX } from './render/gfx';
 import { Hud } from './ui/hud';
+import { PerfOverlay } from './ui/perf_overlay';
+import { PerfOverlayConfigStore, type PerfOverlayConfig } from './ui/perf_overlay_config';
+import { FrameMeter, buildPerfOverlayView } from './ui/perf_overlay_model';
+import { createMetricsSampler } from './ui/perf_metrics_sampler';
 import { audio } from './game/audio';
 import { music } from './game/music';
 import { voice } from './game/voice';
 import { sfx } from './game/sfx';
 import { activePvpOpponentIds, handlePickedEntity, hoverCursorKind, isAttackableEntity } from './game/interactions';
 import { clickMoveShouldCancel, clickMoveShouldWalk, clickMoveStep, distance2d, latencyAdjustedStopDistance, stepAngleToward } from './game/click_move';
-import { Api, ClientWorld, CharacterSummary, type ReleaseEntry } from './net/online';
-import { setWalletDisplayAvailable, setWocBalance, setWalletUiEnabled } from './ui/wallet_balance';
+import { Api, isAuthError, ClientWorld, CharacterSummary, type ReleaseEntry } from './net/online';
+import { setWalletDisplayAvailable, setWocBalance, setWalletUiEnabled, resolveWocBalanceUpdate } from './ui/wallet_balance';
+import {
+  accountPortalModel, validatePasswordChange, validateEmailShape, deactivateConfirmReady,
+} from './ui/account_portal';
 import { absolutePublishedCardUrl, setCardUploader, setReferralProvider, setStandingProvider } from './ui/player_card_share';
 // The wallet module is loaded lazily via dynamic import() in the wallet
 // controller below, so it stays out of the main entry chunk and only loads when
@@ -30,6 +37,7 @@ import { skinCount } from './render/characters/manifest';
 import { DT, INTERACT_RANGE, MELEE_RANGE, PlayerClass, RUN_SPEED, dist2d } from './sim/types';
 import { togglePasswordVisibility, syncInputAriaState, validateForm, handleKeyboardActivation, validateCharacterName } from './ui/auth_utils';
 import { CLASSES, ABILITIES } from './sim/content/classes';
+import { CLASS_DETAILS, SIGNATURE_ABILITIES } from './ui/class_details_data';
 import { iconDataUrl } from './ui/icons';
 import { ensureLocaleLoaded, formatDateTime, formatNumber, getLanguage, isLocaleResident, isSupportedLanguage, languageTag, setLanguage, t, tPlural, type SupportedLanguage, type TranslationKey } from './ui/i18n';
 import { tServer } from './ui/server_i18n';
@@ -158,6 +166,18 @@ function userFacingApiError(err: unknown): string {
   if (normalized === 'character already in world') return t('errors.api.alreadyInWorld');
   if (normalized === 'this character must be renamed before entering the world.') return t('errors.api.renameBeforeEntering');
   if (normalized === 'logins are only allowed from the game client') return t('errors.api.webLoginOnly');
+  // Account portal REST errors (server/main.ts /api/account/*). English-source,
+  // re-localized here onto the English-only hudChrome.account.* keys.
+  if (normalized === 'current password is incorrect') return t('hudChrome.account.errCurrentPassword');
+  if (normalized === 'enter a valid email address') return t('hudChrome.account.errEmailInvalid');
+  if (normalized === 'username does not match') return t('hudChrome.account.errUsernameMatch');
+  if (normalized === 'password is incorrect') return t('hudChrome.account.errPasswordIncorrect');
+  if (normalized === 'log out all characters before deactivating') return t('hudChrome.account.errCharactersOnline');
+  if (normalized === 'this account has been deactivated.') return t('hudChrome.account.deactivatedLocked');
+  if (normalized === 'password must be at most 128 chars') return t('hudChrome.account.errPasswordLong');
+  // The account row vanished mid-session (404 from /api/account/*); treat as a
+  // dropped session rather than rendering raw English in the form.
+  if (normalized === 'account not found') return t('errors.api.notAuthenticated');
   // Cloudflare Turnstile rejection on login/register (server/main.ts passesTurnstile).
   if (normalized === 'verification failed, please try again') return t('errors.api.verificationFailed');
   // WebSocket disconnect reasons surfaced through the fatal overlay (net/online.ts).
@@ -712,14 +732,33 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
   // from a prior session, persisted in localStorage)
   document.getElementById('mobile-music')?.classList.toggle('mm-muted', !music.enabled);
 
-  // Optional FPS readout (settings: showFps). Exponentially-smoothed so the
-  // number is readable rather than flickering every frame; throttled to ~4 Hz.
-  // Declared here (before applySetting + the startup apply loop) so toggling the
-  // setting on boot doesn't hit the const's temporal dead zone.
-  const fpsOverlay = $('#fps-overlay') as HTMLDivElement;
-  let fpsEnabled = false;
-  let fpsSmoothed = 60;
-  let fpsLastPaintMs = 0;
+  // Customizable performance overlay (master toggle: showFps, kept for back-compat
+  // with the old FPS switch). The pure metrics + view core lives in
+  // ui/perf_overlay_model; this owns the frame meter, the persisted appearance/
+  // layout config (ui/perf_overlay_config, its own localStorage key), and the thin
+  // DOM painter (ui/perf_overlay). Declared here (before applySetting + the startup
+  // apply loop) so toggling showFps on boot doesn't hit a const's temporal dead zone.
+  const perfOverlay = new PerfOverlay($('#perf-overlay') as HTMLDivElement);
+  const perfConfig = new PerfOverlayConfigStore();
+  const perfMeter = new FrameMeter();
+  function toPerfViewCfg(c: PerfOverlayConfig): { metrics: typeof c.metrics; thresholds: boolean; graph: boolean } {
+    return { metrics: c.metrics, thresholds: c.thresholds, graph: c.graph };
+  }
+  let perfViewCfg = toPerfViewCfg(perfConfig.get());
+  function applyPerfOverlayConfig(): void {
+    const c = perfConfig.get();
+    perfOverlay.applyConfig(c);
+    perfViewCfg = toPerfViewCfg(c);
+  }
+  // Settle a drag-to-move from the overlay: persist the dropped position, refresh
+  // the overlay's live cfg (so reposition() does not snap it back on the next
+  // render), and push the new X/Y into the open Performance panel's sliders.
+  perfOverlay.onPositionChange = (x, y) => {
+    perfConfig.patch({ posX: x, posY: y });
+    applyPerfOverlayConfig();
+    hud.onPerfOverlayMoved(x, y);
+  };
+  applyPerfOverlayConfig();
 
   // apply a setting to its live subsystem (also used to apply all on startup)
   function syncClickMoveInput(): void {
@@ -799,8 +838,7 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
       return;
     }
     if (key === 'showFps') {
-      fpsEnabled = settings.set('showFps', !!value);
-      fpsOverlay.style.display = fpsEnabled ? 'block' : 'none';
+      perfOverlay.setEnabled(settings.set('showFps', !!value));
       return;
     }
     if (key === 'showWalletOnCharacterScreen') {
@@ -865,6 +903,15 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
     settings,
     onSettingChange: (key, value) => applySetting(key, value),
     changeLanguage: (lang, onStatus) => changeLanguage(lang, onStatus),
+    refreshWocBalance: () => refreshWocBalanceOnDemand(),
+    perfOverlay: {
+      get: () => perfConfig.get(),
+      patch: (p) => { perfConfig.patch(p); applyPerfOverlayConfig(); },
+      setMetric: (k, on) => { perfConfig.setMetric(k, on); applyPerfOverlayConfig(); },
+      reset: () => { perfConfig.reset(); applyPerfOverlayConfig(); },
+      resetPosition: () => { perfConfig.resetPosition(); applyPerfOverlayConfig(); },
+      setPlacement: (on) => perfOverlay.setPlacementMode(on),
+    },
   });
   if (online) {
     hud.attachReporting({
@@ -1092,6 +1139,9 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
   let last = performance.now();
   let acc = 0;
   let onlineInputEchoMs = 0;
+  // Smoothed input-echo jitter (mean absolute deviation of RTT samples) for the
+  // perf overlay's Jitter row.
+  let onlineJitterMs = 0;
   let gameInputReady = false;
 
   // Camera follow state: keyboard turning advances facing in 20Hz sim steps,
@@ -1265,13 +1315,28 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
     return !!(mi.forward || mi.back || mi.strafeLeft || mi.strafeRight) && !world.player.dead;
   }
 
-  function updateFpsOverlay(frameDt: number, nowMs: number): void {
-    if (!fpsEnabled) return;
-    if (frameDt > 0) fpsSmoothed += (1 / frameDt - fpsSmoothed) * 0.1;
-    if (nowMs - fpsLastPaintMs < 250) return;
-    fpsLastPaintMs = nowMs;
-    fpsOverlay.textContent = t('hud.options.fpsReadout', { fps: formatNumber(Math.round(fpsSmoothed)) });
+  // Feed the frame meter every frame (so stats stay warm even when hidden) and,
+  // when the overlay is on, repaint at the meter's throttle (~4 Hz). Sample
+  // assembly + the DOM paint only happen on a repaint tick, never per frame.
+  function syncPerfOverlay(frameDt: number, nowMs: number): void {
+    const repaint = perfMeter.step(frameDt, nowMs);
+    if (!perfOverlay.isEnabled() || !repaint) return;
+    perfOverlay.render(buildPerfOverlayView(sampleMetrics(), perfViewCfg));
   }
+
+  // Gather the raw, nullable signals the overlay can surface. Renderer/browser
+  // fields reflect the last rendered frame (fine at 4 Hz); network fields are
+  // online-only and null offline; Chromium-only sources (heap, connection) report
+  // null elsewhere so their rows simply hide. The pure assembly lives in
+  // perf_metrics_sampler.ts; here we inject the live sources.
+  const sampleMetrics = createMetricsSampler({
+    renderer,
+    meter: perfMeter,
+    getOnline: () => online,
+    getEntityCount: () => world.entities.size,
+    getEchoMs: () => onlineInputEchoMs,
+    getJitterMs: () => onlineJitterMs,
+  });
 
   function frame(now: number): void {
     requestAnimationFrame(frame);
@@ -1279,7 +1344,7 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
     last = now;
     if (frameDt > 0.25) frameDt = 0.25;
     perf.frame(frameDt);
-    updateFpsOverlay(frameDt, now);
+    syncPerfOverlay(frameDt, now);
 
     // freeze movement while the game menu is up so WASD doesn't walk the
     // character behind it (other windows stay non-modal, as before)
@@ -1340,7 +1405,12 @@ async function startGame(world: IWorld, offlineSim: Sim | null, online: ClientWo
     const echoSamples = net.consumeInputEchoSamples();
     for (const sample of echoSamples) {
       if (Number.isFinite(sample) && sample >= 0) {
-        onlineInputEchoMs = onlineInputEchoMs === 0 ? sample : onlineInputEchoMs + 0.2 * (sample - onlineInputEchoMs);
+        // Jitter is the mean absolute deviation against the PRIOR mean (measuring
+        // it after the EMA update would bias it low).
+        const prevMean = onlineInputEchoMs;
+        onlineInputEchoMs = prevMean === 0 ? sample : prevMean + 0.2 * (sample - prevMean);
+        const dev = prevMean === 0 ? 0 : Math.abs(sample - prevMean);
+        onlineJitterMs = onlineJitterMs === 0 ? dev : onlineJitterMs + 0.2 * (dev - onlineJitterMs);
       }
       perf.markInputEcho(sample);
     }
@@ -1615,7 +1685,7 @@ const hoverTimeouts: Record<string, number | null> = {
 };
 
 function switchMainView(targetId: string): void {
-  const views = ['#hero-view', '#highscores-view', '#wiki-view', '#news-view', '#download-view'];
+  const views = ['#hero-view', '#highscores-view', '#wiki-view', '#news-view', '#download-view', '#account-view'];
   const currentViewId = views.find(id => {
     const el = $(id);
     return el && !el.hasAttribute('hidden');
@@ -1628,7 +1698,8 @@ function switchMainView(targetId: string): void {
     '#highscores-view': 'nav-btn-highscores',
     '#wiki-view': 'nav-btn-wiki',
     '#news-view': 'nav-btn-news',
-    '#download-view': 'nav-btn-download'
+    '#download-view': 'nav-btn-download',
+    '#account-view': 'nav-btn-account'
   };
 
   const activeNavId = navMap[targetId];
@@ -1838,6 +1909,192 @@ async function enterRealmFlow(): Promise<void> {
   const auto = dir.realms.find((r) => r.name === remembered);
   if (auto) { selectRealm(auto); return; }
   showRealmList(dir);
+}
+
+// ── Home-page account portal ("Account" nav tab) ────────────────────────────
+// The nav swaps Login/Register → Account once a session exists; the portal page
+// is a thin consumer of the pure account_portal.ts model + the REST Api.
+function loginNavItem(): HTMLElement | null {
+  return ($('#nav-btn-login') as HTMLElement).closest('.nav-item') as HTMLElement | null;
+}
+
+const loggedInNavItems = ['#nav-item-account', '#nav-item-logout'];
+
+function enterLoggedInChrome(): void {
+  loggedInNavItems.forEach((sel) => { ($(sel) as HTMLElement).hidden = false; });
+  const li = loginNavItem();
+  if (li) li.hidden = true;
+}
+
+function enterLoggedOutChrome(): void {
+  loggedInNavItems.forEach((sel) => { ($(sel) as HTMLElement).hidden = true; });
+  const li = loginNavItem();
+  if (li) li.hidden = false;
+}
+
+function logoutAccount(): void {
+  const finish = () => {
+    api.clearSession();
+    location.reload();
+  };
+  if (!api.token) { finish(); return; }
+  void api.logout().finally(finish);
+}
+
+function setAccountFieldMsg(sel: string, text: string, ok: boolean): void {
+  const el = $(sel);
+  el.textContent = text;
+  el.classList.toggle('is-error', !ok && text !== '');
+  el.classList.toggle('is-ok', ok && text !== '');
+}
+
+function paintAccountPortal(
+  model: ReturnType<typeof accountPortalModel>,
+  // When the account fetch failed transiently we re-render the shell but must
+  // NOT clobber an already-populated email field: a blank value would otherwise
+  // be submitted as a null email update on the next save.
+  preserveEmailInput = false,
+): void {
+  ($('#account-logged-out') as HTMLElement).hidden = model.loggedIn;
+  ($('#account-sections') as HTMLElement).hidden = !model.loggedIn;
+  $('#account-username').textContent = model.header.username;
+  const since = $('#account-member-since');
+  since.textContent = model.header.memberSinceIso
+    ? t('hudChrome.account.memberSince', { date: formatDateTime(new Date(model.header.memberSinceIso), { dateStyle: 'medium' }) })
+    : '';
+  $('#account-char-count').textContent = t('hudChrome.account.charactersCount', {
+    count: formatNumber(model.header.characterCount),
+  });
+  if (!preserveEmailInput) ($('#account-email') as HTMLInputElement).value = model.email;
+}
+
+const loggedOutModel = () => accountPortalModel({ loggedIn: false, username: '', email: '', createdAt: '', characterCount: 0 });
+
+function handleAccountSessionExpired(): void {
+  api.clearSession();
+  enterLoggedOutChrome();
+  paintAccountPortal(loggedOutModel());
+}
+
+// Load the account portal from a (possibly restored) token. A 401/403 means the
+// token is genuinely stale → clear the session. Any other failure (5xx from a
+// restarting server, a captive-portal blip, being briefly offline) is transient:
+// keep the token and stay optimistically logged in, since only the local copy
+// would be lost. `setChrome` flips the nav into the logged-in state (boot path).
+async function loadAccountPortal(setChrome: boolean): Promise<void> {
+  if (!api.token) { paintAccountPortal(loggedOutModel()); return; }
+  try {
+    const acct = await api.getAccount();
+    if (setChrome) enterLoggedInChrome();
+    paintAccountPortal(accountPortalModel({
+      loggedIn: true, username: acct.username, email: acct.email,
+      createdAt: acct.createdAt, characterCount: acct.characterCount,
+    }));
+  } catch (err) {
+    if (isAuthError(err)) { handleAccountSessionExpired(); return; }
+    console.warn('account session check deferred (transient):', err);
+    if (setChrome) enterLoggedInChrome();
+    paintAccountPortal(accountPortalModel({
+      loggedIn: true, username: api.username ?? '', email: '', createdAt: '', characterCount: 0,
+    }), true);
+  }
+}
+
+// Boot path: a restored token re-validates and sets the logged-in nav chrome.
+const revalidateAccountSession = (): Promise<void> => loadAccountPortal(true);
+// Navigating to the Account view: refresh the portal without touching the chrome.
+const renderAccountPortal = (): Promise<void> => loadAccountPortal(false);
+
+// `focusWallet` differentiates the Wallet card's CTA from "View Characters":
+// both land on the realm/character picker, but Manage Wallet then scrolls to and
+// focuses the wallet control once it renders.
+let pendingWalletFocus = false;
+function accountGoToCharacters(focusWallet = false): void {
+  pendingWalletFocus = focusWallet;
+  switchMainView('#hero-view');
+  void enterRealmFlow().then(() => { if (pendingWalletFocus) tryFocusWalletButton(); });
+}
+
+function tryFocusWalletButton(attempt = 0): void {
+  const btn = document.getElementById('btn-wallet');
+  if (btn && btn.offsetParent !== null) {
+    pendingWalletFocus = false;
+    btn.scrollIntoView({ block: 'center' });
+    btn.focus();
+    return;
+  }
+  if (attempt < 20) window.setTimeout(() => tryFocusWalletButton(attempt + 1), 100);
+  else pendingWalletFocus = false;
+}
+
+let accountPortalWired = false;
+function setupAccountPortal(): void {
+  if (accountPortalWired) return;
+  accountPortalWired = true;
+
+  ($('#account-password-form') as HTMLFormElement).addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const current = ($('#account-current-pass') as HTMLInputElement).value;
+    const next = ($('#account-new-pass') as HTMLInputElement).value;
+    const confirm = ($('#account-confirm-pass') as HTMLInputElement).value;
+    const err = validatePasswordChange(current, next, confirm);
+    if (err) {
+      const key = err === 'empty-current' ? 'errCurrentRequired'
+        : err === 'too-short' ? 'errPasswordShort'
+        : err === 'too-long' ? 'errPasswordLong'
+        : err === 'confirm-mismatch' ? 'errPasswordConfirm'
+        : 'errPasswordUnchanged';
+      setAccountFieldMsg('#account-password-msg', t(`hudChrome.account.${key}` as TranslationKey), false);
+      return;
+    }
+    try {
+      await api.changePassword(current, next);
+      setAccountFieldMsg('#account-password-msg', t('hudChrome.account.passwordChanged'), true);
+      ($('#account-current-pass') as HTMLInputElement).value = '';
+      ($('#account-new-pass') as HTMLInputElement).value = '';
+      ($('#account-confirm-pass') as HTMLInputElement).value = '';
+    } catch (e2) {
+      setAccountFieldMsg('#account-password-msg', userFacingApiError(e2), false);
+    }
+  });
+
+  ($('#account-email-form') as HTMLFormElement).addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = ($('#account-email') as HTMLInputElement).value;
+    if (!validateEmailShape(email)) {
+      setAccountFieldMsg('#account-email-msg', t('hudChrome.account.errEmailInvalid'), false);
+      return;
+    }
+    try {
+      const saved = await api.setEmail(email);
+      ($('#account-email') as HTMLInputElement).value = saved;
+      setAccountFieldMsg('#account-email-msg', t('hudChrome.account.emailSaved'), true);
+    } catch (e2) {
+      setAccountFieldMsg('#account-email-msg', userFacingApiError(e2), false);
+    }
+  });
+
+  const deUser = $('#account-deactivate-user') as HTMLInputElement;
+  const dePass = $('#account-deactivate-pass') as HTMLInputElement;
+  const deBtn = $('#account-deactivate-btn') as HTMLButtonElement;
+  const syncDeactivate = () => { deBtn.disabled = !deactivateConfirmReady(api.username ?? '', deUser.value, dePass.value); };
+  deUser.addEventListener('input', syncDeactivate);
+  dePass.addEventListener('input', syncDeactivate);
+  ($('#account-deactivate-form') as HTMLFormElement).addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api.deactivateAccount(deUser.value, dePass.value);
+      api.clearSession();
+      setAccountFieldMsg('#account-deactivate-msg', t('hudChrome.account.deactivated'), true);
+      window.setTimeout(() => location.reload(), 1200);
+    } catch (e2) {
+      setAccountFieldMsg('#account-deactivate-msg', userFacingApiError(e2), false);
+    }
+  });
+
+  ($('#account-manage-wallet') as HTMLElement).addEventListener('click', () => accountGoToCharacters(true));
+  ($('#account-go-characters') as HTMLElement).addEventListener('click', () => accountGoToCharacters(false));
+  ($('#account-logout') as HTMLElement).addEventListener('click', logoutAccount);
 }
 
 function showRealmList(dir?: import('./net/online').RealmDirectory): void {
@@ -2172,91 +2429,8 @@ async function enterWorld(c: CharacterSummary, button?: HTMLButtonElement): Prom
   };
 }
 
-interface ClassDetails {
-  roleKey: TranslationKey;
-  roleType: 'tank' | 'dps' | 'ranged' | 'healer' | 'hybrid';
-  armorKey: TranslationKey;
-  weaponsKey: TranslationKey;
-  loreKey: TranslationKey;
-}
-
-const CLASS_DETAILS: Record<PlayerClass, ClassDetails> = {
-  warrior: {
-    roleKey: 'classDetails.roles.warrior',
-    roleType: 'hybrid',
-    armorKey: 'classDetails.armor.chainLeatherCloth',
-    weaponsKey: 'classDetails.weapons.swordsMacesAxes',
-    loreKey: 'classDetails.lore.warrior',
-  },
-  paladin: {
-    roleKey: 'classDetails.roles.paladin',
-    roleType: 'hybrid',
-    armorKey: 'classDetails.armor.chainLeatherCloth',
-    weaponsKey: 'classDetails.weapons.swordsMaces',
-    loreKey: 'classDetails.lore.paladin',
-  },
-  hunter: {
-    roleKey: 'classDetails.roles.hunter',
-    roleType: 'ranged',
-    armorKey: 'classDetails.armor.leatherCloth',
-    weaponsKey: 'classDetails.weapons.axesSwords',
-    loreKey: 'classDetails.lore.hunter',
-  },
-  rogue: {
-    roleKey: 'classDetails.roles.rogue',
-    roleType: 'dps',
-    armorKey: 'classDetails.armor.leatherCloth',
-    weaponsKey: 'classDetails.weapons.daggersSwords',
-    loreKey: 'classDetails.lore.rogue',
-  },
-  priest: {
-    roleKey: 'classDetails.roles.priest',
-    roleType: 'healer',
-    armorKey: 'classDetails.armor.cloth',
-    weaponsKey: 'classDetails.weapons.staves',
-    loreKey: 'classDetails.lore.priest',
-  },
-  shaman: {
-    roleKey: 'classDetails.roles.shaman',
-    roleType: 'hybrid',
-    armorKey: 'classDetails.armor.chainLeatherCloth',
-    weaponsKey: 'classDetails.weapons.macesAxes',
-    loreKey: 'classDetails.lore.shaman',
-  },
-  mage: {
-    roleKey: 'classDetails.roles.mage',
-    roleType: 'ranged',
-    armorKey: 'classDetails.armor.cloth',
-    weaponsKey: 'classDetails.weapons.staves',
-    loreKey: 'classDetails.lore.mage',
-  },
-  warlock: {
-    roleKey: 'classDetails.roles.warlock',
-    roleType: 'ranged',
-    armorKey: 'classDetails.armor.cloth',
-    weaponsKey: 'classDetails.weapons.staves',
-    loreKey: 'classDetails.lore.warlock',
-  },
-  druid: {
-    roleKey: 'classDetails.roles.druid',
-    roleType: 'hybrid',
-    armorKey: 'classDetails.armor.leatherCloth',
-    weaponsKey: 'classDetails.weapons.staves',
-    loreKey: 'classDetails.lore.druid',
-  }
-};
-
-const SIGNATURE_ABILITIES: Record<PlayerClass, string[]> = {
-  warrior: ['charge', 'heroic_strike', 'rend'],
-  paladin: ['holy_light', 'judgement', 'seal_of_righteousness'],
-  hunter: ['serpent_sting', 'aimed_shot', 'aspect_of_the_hawk'],
-  rogue: ['sinister_strike', 'eviscerate', 'evasion'],
-  priest: ['smite', 'power_word_shield', 'shadow_word_pain'],
-  shaman: ['lightning_bolt', 'rockbiter_weapon', 'ghost_wolf'],
-  mage: ['fireball', 'frostbolt', 'polymorph'],
-  warlock: ['shadow_bolt', 'corruption', 'life_tap'],
-  druid: ['wrath', 'bear_form', 'rejuvenation']
-};
+// CLASS_DETAILS / SIGNATURE_ABILITIES live in a pure module so a Vitest guard
+// can verify they never drift from the sim's class/ability definitions.
 
 const activeClassDetailsTimeouts: Record<string, number | null> = {};
 
@@ -3302,16 +3476,47 @@ async function disconnectUnverifiedWalletIfIdle(): Promise<void> {
 
 // Read the connected wallet's $WOC balance and re-render. Ignores a stale
 // response if the connected wallet changed while the RPC call was in flight.
-async function refreshWocBalance(address: string): Promise<void> {
-  connectedWocBalance = null;
-  updateWalletButton();
-  const wallet = await loadWallet();
-  const balance = await wallet.fetchWocBalance(address);
-  if (wallet.currentWallet().address === address) {
-    connectedWocBalance = balance;
-    if (linkedWalletPubkey === address) linkedWocBalance = balance;
+// `fresh` bypasses the server's per-wallet cache (used when the player opens a
+// surface that shows the balance, so an on-chain token change shows up); an
+// initial (non-fresh) read clears the prior value first to show a loading state.
+async function refreshWocBalance(address: string, fresh = false): Promise<void> {
+  if (!fresh) {
+    connectedWocBalance = null;
     updateWalletButton();
   }
+  const wallet = await loadWallet();
+  const balance = await wallet.fetchWocBalance(address, fresh);
+  // Skip stale results (wallet switched mid-flight) and fresh-read transport blips
+  // that would wipe a shown balance — see resolveWocBalanceUpdate.
+  const { apply, setLinked } = resolveWocBalanceUpdate({
+    address, fresh, balance,
+    currentAddress: wallet.currentWallet().address,
+    linkedAddress: linkedWalletPubkey,
+  });
+  if (!apply) return;
+  connectedWocBalance = balance;
+  if (setLinked) linkedWocBalance = balance;
+  updateWalletButton();
+}
+
+// Re-fetch the connected/linked wallet's balance on demand (server cache
+// bypassed) so surfaces that display it — the bag footer and the player card —
+// reflect on-chain changes. No-op when the wallet feature is off or nothing is
+// connected/linked. Prefers the account-LINKED wallet (whose balance the badge
+// shows) over a merely-connected one, and a short throttle coalesces rapid
+// bag/card toggles so they don't burn the per-IP fresh-read budget.
+let lastOnDemandRefreshAddress: string | null = null;
+let lastOnDemandRefreshAt = 0;
+const ON_DEMAND_REFRESH_THROTTLE_MS = 5000;
+function refreshWocBalanceOnDemand(): void {
+  if (!WALLET_ENABLED) return;
+  const address = linkedWalletPubkey ?? walletMod?.currentWallet().address ?? null;
+  if (!address) return;
+  const now = Date.now();
+  if (address === lastOnDemandRefreshAddress && now - lastOnDemandRefreshAt < ON_DEMAND_REFRESH_THROTTLE_MS) return;
+  lastOnDemandRefreshAddress = address;
+  lastOnDemandRefreshAt = now;
+  void refreshWocBalance(address, true);
 }
 
 function flashWalletError(message: string): void {
@@ -3534,7 +3739,34 @@ function wireStartScreens(): void {
   const offlineNameInput = $('#char-name') as HTMLInputElement;
   const offlineError = $('#offline-error');
   
-  const handleOnlineSelect = () => show('#login-panel');
+  const goToLoggedInPlay = () => {
+    void enterRealmFlow().catch((err) => {
+      if (isAuthError(err)) {
+        api.clearSession();
+        enterLoggedOutChrome();
+      } else {
+        loginError(userFacingApiError(err));
+      }
+      show('#login-panel');
+    });
+  };
+
+  const enterOnlinePlayFlow = () => {
+    switchMainView('#hero-view');
+    if (api.token) {
+      goToLoggedInPlay();
+      return;
+    }
+    show('#mode-select');
+  };
+
+  const handleOnlineSelect = () => {
+    if (api.token) {
+      goToLoggedInPlay();
+      return;
+    }
+    show('#login-panel');
+  };
 
   const handleOfflineStart = (cls: PlayerClass) => {
     const rawName = offlineNameInput.value.trim();
@@ -3848,6 +4080,10 @@ function wireStartScreens(): void {
     // so don't reset the widget or let the user re-submit the (now duplicate) auth.
     try {
       $('#charselect-user').textContent = api.username ?? '';
+      // Persist the session so a reload restores the logged-in "Account" tab,
+      // and reveal that tab now.
+      api.saveSession();
+      enterLoggedInChrome();
       // bind-on-login: surface the account's linked wallet (and flip a
       // connected-but-unlinked button into a "Link" call-to-action).
       void refreshWalletLinkStatus();
@@ -4215,10 +4451,7 @@ function wireStartScreens(): void {
     });
   };
 
-  setupNavBtn(navBtnPlay, '#hero-view', () => {
-    switchMainView('#hero-view');
-    show('#mode-select');
-  });
+  setupNavBtn(navBtnPlay, '#hero-view', enterOnlinePlayFlow);
 
   setupNavBtn(navBtnHighscores, '#highscores-view', () => {
     switchMainView('#highscores-view');
@@ -4233,6 +4466,20 @@ function wireStartScreens(): void {
   setupNavBtn(navBtnLogin, '#hero-view', () => {
     show('#login-panel');
   });
+  setupNavBtn($('#nav-btn-account'), '#account-view', () => {
+    switchMainView('#account-view');
+    void renderAccountPortal();
+  });
+  setupNavBtn($('#nav-btn-logout'), '#hero-view', logoutAccount);
+  setupAccountPortal();
+  // Restore a persisted session: show the Account tab immediately, then confirm
+  // the stored token is still valid against the server (clearing it if not).
+  if (api.restoreSession()) {
+    enterLoggedInChrome();
+    void revalidateAccountSession();
+  } else {
+    enterLoggedOutChrome();
+  }
 
   // Header Logo click listener to return to homepage
   const headerLogoBtn = $('#header-logo-btn');
