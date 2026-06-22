@@ -30,19 +30,23 @@
   --g-role-dps: #ff9b7a;
   --g-rare: #6ea8ff;
 
-  /* Hover/active washes: one source for the repeated alpha overlays. */
+  /* Hover/active washes: one source for the repeated alpha overlays, including the
+     tinted callout fills so a theme tweak is one line. */
   --g-wash: #ffffff0f;
   --g-wash-soft: #ffffff0a;
   --g-wash-gold: #ffd1000f;
   --g-wash-gold-strong: #ffd1001a;
+  --g-wash-note: #7ab8ff12;
+  --g-wash-warn: #e8b84b14;
 
   /* Typography (loaded by guide.html). */
   --g-font-display: 'Cinzel', 'Palatino Linotype', Palatino, Georgia, serif;
   --g-font-ui: 'Alegreya Sans', 'Segoe UI', system-ui, 'Helvetica Neue', sans-serif;
   --g-font-serif: 'Alegreya', 'Palatino Linotype', Palatino, Georgia, serif;
 
-  /* Spacing scale (2xs to xl) with two in-between steps, so paddings and gaps route
-     through the scale instead of ad-hoc pixels. */
+  /* Spacing scale (2xs to 3xl) with the in-between steps, so paddings and gaps route
+     through the scale instead of ad-hoc pixels. 2xl (32) closes the old 24 to 40 gap
+     and 3xl (48) names the large rhythm step. */
   --g-2xs: 2px;
   --g-xs: 4px;
   --g-xs2: 6px;
@@ -50,7 +54,9 @@
   --g-sm2: 12px;
   --g-md: 16px;
   --g-lg: 24px;
+  --g-2xl: 32px;
   --g-xl: 40px;
+  --g-3xl: 48px;
 
   /* Radii. */
   --g-radius-sm: 4px;
@@ -58,25 +64,33 @@
   --g-radius-lg: 14px;
   --g-radius-pill: 999px;
 
-  /* Control + touch sizing. Every tappable target is at least --g-touch tall. */
+  /* Control + touch sizing. Every tappable target is at least --g-touch tall.
+     Two heights only: --g-control-h for primary actions, --g-control-h-sm for compact
+     controls (it rises to the touch floor under pointer: coarse, below). --g-chip-h
+     names the tall chooser-chip / class-chip cell so it is not a bare 56px. */
   --g-touch: 44px;
   --g-control-h: 44px;
   --g-control-h-sm: 38px;
+  --g-chip-h: 56px;
 
   /* Control + label padding. One source for the inline insets so buttons, selects,
-     chips, and pills stay visually aligned instead of each picking its own px. */
+     chips, and pills route their padding through the scale instead of each picking
+     its own px. */
   --g-pad-control: var(--g-md);
   --g-pad-pill-y: var(--g-2xs);
-  --g-pad-pill-x: 10px;
+  --g-pad-pill-x: var(--g-sm2);
 
   /* Type scale. Discrete sizes map every rule onto one ladder; the fluid steps carry
-     their own clamp so headings scale with the viewport from one definition. */
-  --g-text-3xs: 10px;
-  --g-text-2xs: 11px;
-  --g-text-xs: 12px;
-  --g-text-sm: 13px;
-  --g-text-base: 14px;
-  --g-text-md: 16px;
+     their own clamp so headings scale with the viewport from one definition. The scale
+     is bumped for readability: body resolves to --g-text-md (18px) and nothing
+     player-facing drops below 12px (the 11px floor is decorative bands only). */
+  --g-text-3xs: 11px;
+  --g-text-2xs: 12px;
+  --g-text-xs: 13px;
+  --g-text-sm: 14px;
+  --g-text-base: 16px;
+  --g-text-md: 18px;
+  --g-text-lead: 18px;
   --g-text-lg: 18px;
   --g-text-xl: 20px;
   --g-text-fluid-lead: clamp(16px, 2.2vw, 20px);
@@ -238,7 +252,7 @@ img { max-width: 100%; height: auto; }
   color: var(--g-text-dim);
   font-weight: 600;
   font-size: var(--g-text-base);
-  padding-block: 6px;
+  padding-block: var(--g-xs2);
   border-block-end: 2px solid transparent;
 }
 .guide-nav-link:hover { color: var(--g-text); text-decoration: none; }
@@ -369,7 +383,7 @@ body.guide-has-sidebar .guide-layout {
 .guide-side-group ul { margin: 0; padding: 0; list-style: none; }
 .guide-side-link {
   display: block;
-  padding: 7px var(--g-sm);
+  padding: var(--g-xs2) var(--g-sm);
   color: var(--g-text-dim);
   font-size: var(--g-text-base);
   border-inline-start: 2px solid transparent;
@@ -407,21 +421,21 @@ body.guide-has-sidebar .guide-layout {
   color: var(--g-gold-dim);
 }
 .guide-article p { margin: 0 0 var(--g-md); }
-.guide-lead { font-size: 1.1rem; color: var(--g-text-dim); }
+.guide-lead { font-size: var(--g-text-lead); color: var(--g-text-dim); }
 .guide-placeholder, .guide-notfound { padding-block-start: var(--g-md); }
 .guide-article h3 { font-family: var(--g-font-display); color: var(--g-text); font-size: var(--g-text-lg); margin: 0 0 var(--g-xs); }
 .guide-block { margin-block-start: var(--g-xl); }
 
 /* numbered "first 15 minutes" steps */
 .guide-steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: grid; gap: var(--g-md); }
-.guide-steps li { counter-increment: step; position: relative; padding-inline-start: 48px; min-height: 32px; }
+.guide-steps li { counter-increment: step; position: relative; padding-inline-start: var(--g-3xl); min-height: var(--g-2xl); }
 .guide-steps li::before {
   content: counter(step);
   position: absolute;
   inset-inline-start: 0;
   inset-block-start: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--g-2xl);
+  height: var(--g-2xl);
   display: grid;
   place-items: center;
   background: var(--g-gold);
@@ -440,8 +454,8 @@ body.guide-has-sidebar .guide-layout {
 .guide-callout {
   margin-block-start: var(--g-lg);
   padding: var(--g-md);
-  border-inline-start: 3px solid var(--g-gold);
-  background: #ffd1000d;
+  border-inline-start: var(--g-bw-accent) solid var(--g-gold);
+  background: var(--g-wash-gold);
   border-radius: 0 var(--g-radius) var(--g-radius) 0;
   color: var(--g-text-dim);
 }
@@ -477,7 +491,7 @@ body.guide-has-sidebar .guide-layout {
 /* glossary */
 .guide-glossary { margin-block-start: var(--g-lg); }
 .guide-term { padding-block: var(--g-sm); border-block-end: 1px solid var(--g-border-soft); }
-.guide-term dt { font-family: var(--g-font-display); color: var(--g-gold-dim); font-weight: 700; margin-block-end: 2px; }
+.guide-term dt { font-family: var(--g-font-display); color: var(--g-gold-dim); font-weight: 700; margin-block-end: var(--g-2xs); }
 .guide-term dd { margin: 0; color: var(--g-text-dim); }
 
 /* opt-in disclosure (spoilers / walkthroughs) */
@@ -488,11 +502,11 @@ body.guide-has-sidebar .guide-layout {
 
 /* --------------------------------------------------------- classes (Phase 03) */
 /* role + resource badges; never color-only, each carries a text label */
-.guide-badges { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.guide-badges { display: inline-flex; flex-wrap: wrap; gap: var(--g-xs2); align-items: center; }
 .guide-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
+  padding: var(--g-pad-pill-y) var(--g-pad-pill-x);
   border-radius: var(--g-radius-pill);
   font-size: var(--g-text-2xs);
   font-weight: 700;
@@ -520,7 +534,7 @@ body.guide-has-sidebar .guide-layout {
   padding: var(--g-md);
   background: var(--g-bg-2);
   border: 1px solid var(--g-border-soft);
-  border-block-start: 3px solid var(--class-color, var(--g-gold));
+  border-block-start: var(--g-bw-accent) solid var(--class-color, var(--g-gold));
   border-radius: var(--g-radius-lg);
   color: var(--g-text);
 }
@@ -574,7 +588,7 @@ body.guide-has-sidebar .guide-layout {
 .guide-family { margin-block-start: var(--g-xl); }
 .guide-family-head { display: flex; align-items: center; gap: var(--g-md); }
 .guide-family-crest { width: 56px; height: 56px; flex: none; }
-.guide-family-name { margin: 0 0 2px; font-family: var(--g-font-display); font-size: var(--g-text-xl); color: var(--g-gold-dim); }
+.guide-family-name { margin: 0 0 var(--g-2xs); font-family: var(--g-font-display); font-size: var(--g-text-xl); color: var(--g-gold-dim); min-width: 0; overflow-wrap: anywhere; }
 .guide-family-desc { margin: 0; color: var(--g-text-dim); }
 .guide-creatures {
   list-style: none;
@@ -597,8 +611,8 @@ body.guide-has-sidebar .guide-layout {
 .guide-creature-name { color: var(--g-text); font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 .guide-creature-band { color: var(--g-text-muted); font-size: var(--g-text-xs); }
 .guide-badge-rare {
-  margin-inline-start: 6px;
-  padding: 1px 7px;
+  margin-inline-start: var(--g-xs2);
+  padding: var(--g-pad-pill-y) var(--g-pad-pill-x);
   border-radius: var(--g-radius-pill);
   font-size: var(--g-text-3xs);
   font-weight: 700;
@@ -711,7 +725,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 .guide-class-chip {
   display: flex;
   align-items: center;
-  min-height: 56px;
+  min-height: var(--g-chip-h);
   padding: var(--g-md);
   background: var(--g-bg-2);
   border: 1px solid var(--g-border-soft);
@@ -888,7 +902,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
   }
   .guide-primary-nav.is-open { display: flex; }
   .guide-nav-list { flex-direction: column; align-items: stretch; gap: 0; }
-  .guide-nav-link { padding-block: 12px; border-block-end: 1px solid var(--g-border-soft); }
+  .guide-nav-link { padding-block: var(--g-sm2); border-block-end: 1px solid var(--g-border-soft); }
   .guide-nav-link.is-active { border-block-end-color: var(--g-border-soft); padding-inline-start: var(--g-sm); }
   .guide-nav-actions { flex-direction: column; align-items: stretch; gap: var(--g-sm); padding-block-start: var(--g-sm); }
   .guide-lang { justify-content: space-between; }
@@ -917,8 +931,8 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 
 /* Callout variants. The base .guide-callout is the gold "tip"; these recolor it. */
 .guide-callout-title { display: block; font-family: var(--g-font-display); font-weight: 700; color: var(--g-text); margin-block-end: var(--g-2xs); }
-.guide-callout-note { border-inline-start-color: var(--g-role-tank); background: #7ab8ff12; }
-.guide-callout-warn { border-inline-start-color: var(--g-warn); background: #e8b84b14; }
+.guide-callout-note { border-inline-start-color: var(--g-role-tank); background: var(--g-wash-note); }
+.guide-callout-warn { border-inline-start-color: var(--g-warn); background: var(--g-wash-warn); }
 
 /* Related-links block at the foot of a page (cross-linking). */
 .guide-related { margin-block-start: var(--g-xl); padding-block-start: var(--g-md); border-block-start: 1px solid var(--g-border-soft); }
@@ -928,7 +942,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
   display: inline-flex;
   align-items: center;
   min-height: var(--g-control-h-sm);
-  padding-inline: var(--g-md);
+  padding-inline: var(--g-pad-control);
   background: var(--g-bg-2);
   border: 1px solid var(--g-border-soft);
   border-radius: var(--g-radius-pill);
@@ -939,11 +953,14 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 .guide-related-list a:hover { color: var(--g-gold); border-color: var(--g-border); text-decoration: none; }
 
 /* Coarse-pointer touch floor: every interactive control reaches the 44px target on
-   touch devices, even where its desktop size is smaller. */
+   touch devices, even where its desktop size is smaller. Bumping --g-control-h-sm to
+   the touch size lifts every compact control (selects, chips, related links, gear
+   slots, search input) from one place; the listed selectors are the ones whose floor
+   is a min-height rather than the control token. */
 @media (pointer: coarse) {
-  .guide-lang-select,
+  :root { --g-control-h-sm: var(--g-touch); }
   .guide-side-link,
-  .guide-related-list a { min-height: var(--g-touch); }
+  a.guide-poi { min-height: var(--g-touch); }
   .guide-side-link { display: flex; align-items: center; }
 }
 
@@ -965,7 +982,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 .guide-chips { display: flex; flex-wrap: wrap; gap: var(--g-xs2); }
 .guide-chip {
   min-height: var(--g-control-h-sm);
-  padding-inline: var(--g-md);
+  padding-inline: var(--g-pad-control);
   background: var(--g-bg);
   color: var(--g-text-dim);
   border: 1px solid var(--g-border-soft);
@@ -980,7 +997,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 .guide-chip[aria-pressed="true"] { color: var(--g-on-gold); background: var(--g-gold); border-color: var(--g-gold-dim); }
 .guide-chooser-clear {
   min-height: var(--g-control-h-sm);
-  padding-inline: var(--g-md);
+  padding-inline: var(--g-pad-control);
   background: transparent;
   color: var(--g-text-muted);
   border: 1px solid transparent;
@@ -1007,7 +1024,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 .guide-tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px var(--g-sm);
+  padding: var(--g-pad-pill-y) var(--g-pad-pill-x);
   border-radius: var(--g-radius-pill);
   font-size: var(--g-text-xs);
   font-weight: 600;
@@ -1053,7 +1070,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 }
 .guide-kit-item .guide-ability-icon { flex: none; }
 .guide-kit-text { min-width: 0; display: flex; flex-direction: column; gap: var(--g-2xs); }
-.guide-kit-name { font-family: var(--g-font-display); font-weight: 600; color: var(--g-text); }
+.guide-kit-name { font-family: var(--g-font-display); font-weight: 600; color: var(--g-text); min-width: 0; overflow-wrap: anywhere; }
 .guide-kit-line { color: var(--g-text-dim); font-size: var(--g-text-sm); }
 
 /* Specialization cards. */
@@ -1089,7 +1106,7 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
   border: 1px solid var(--g-border-soft);
   border-radius: var(--g-radius);
 }
-.guide-pet-name { display: block; font-family: var(--g-font-display); font-weight: 600; color: var(--g-text); }
+.guide-pet-name { display: block; font-family: var(--g-font-display); font-weight: 600; color: var(--g-text); min-width: 0; overflow-wrap: anywhere; }
 .guide-pet-line { display: block; margin-block-start: var(--g-2xs); color: var(--g-text-dim); font-size: var(--g-text-sm); }
 
 @media (pointer: coarse) {
@@ -1130,13 +1147,14 @@ body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
 .guide-poi {
   display: inline-flex;
   align-items: center;
-  min-height: 0;
-  padding: var(--g-2xs) var(--g-sm);
+  min-width: 0;
+  padding: var(--g-pad-pill-y) var(--g-pad-pill-x);
   background: var(--g-bg);
   border: 1px solid var(--g-border-soft);
   border-radius: var(--g-radius-pill);
   font-size: var(--g-text-sm);
   color: var(--g-text-dim);
+  overflow-wrap: anywhere;
 }
 a.guide-poi:hover { color: var(--g-gold); border-color: var(--g-border); text-decoration: none; }
 
@@ -1164,7 +1182,7 @@ a.guide-poi:hover { color: var(--g-gold); border-color: var(--g-border); text-de
   padding: var(--g-md) var(--g-lg);
   background: var(--g-bg-2);
   border: 1px solid var(--g-border-soft);
-  border-inline-start: 3px solid var(--g-gold);
+  border-inline-start: var(--g-bw-accent) solid var(--g-gold);
   border-radius: 0 var(--g-radius) var(--g-radius) 0;
 }
 .guide-wish-title { font-family: var(--g-font-display); font-size: var(--g-text-lg); color: var(--g-text); margin: 0 0 var(--g-2xs); }

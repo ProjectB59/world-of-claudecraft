@@ -73,10 +73,12 @@ export const controls: GuidePage = {
         return `
           <section class="guide-block">
             <h2>${esc(t(g.heading))}</h2>
-            <table class="guide-keytable">
-              <thead><tr><th>${esc(t('guide.controls.keyHeader'))}</th><th>${esc(t('guide.controls.actionHeader'))}</th></tr></thead>
-              <tbody>${rows}</tbody>
-            </table>
+            <div class="guide-table-scroll">
+              <table class="guide-keytable">
+                <thead><tr><th>${esc(t('guide.controls.keyHeader'))}</th><th>${esc(t('guide.controls.actionHeader'))}</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
           </section>`;
       })
       .join('');
