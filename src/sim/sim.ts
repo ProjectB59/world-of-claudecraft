@@ -23,6 +23,7 @@ import {
 import { Rng } from './rng';
 import { SpatialGrid } from './spatial';
 import { orderTabTargets } from './tab_target';
+import { questFallbackGrants } from './quest_fallback';
 import {
   HEAL_THREAT_FACTOR, MELEE_SWITCH_MULT, RANGED_SWITCH_MULT,
   TAUNT_FORCE_SECONDS, addThreat, clearThreat, stealthDetectionRadius, threatEntries, threatModifier, topThreatValue,
@@ -287,9 +288,18 @@ const FOLLOW_STOP_DIST = 3; // /follow trails this close behind the leader (yard
 const FOLLOW_MAX_RANGE = 60; // give up follow once the leader is this far away
 const PET_LEASH = 40; // yards from the owner before a pet gives up its target
 const PET_FOLLOW_DISTANCE = 3.5;
-const PET_TELEPORT_DISTANCE = 60; // owner this far away: pet warps to heel
+const PET_TELEPORT_DISTANCE = 60; // owner this far AND no route exists: pet warps to heel (last resort)
+const PET_PATH_RECALC = 0.5; // seconds between heel-path A* recomputes per pet (throttle)
+const PET_PATH_SPAN = 96; // A* search half-window in cells; covers the teleport distance + slack
+const PET_PATH_STALE_DISTANCE = 4; // path end this far from the (now-moved) owner: recompute the heel route
+const PET_WAYPOINT_REACHED = 1; // pet within this of the next waypoint: pop it and home on the next leg
 const PET_ASSIST_RANGE = 50; // how far the pet scans for enemies engaging the pair
 const PET_AGGRESSIVE_RANGE = 18; // aggressive pets look for idle enemies this close
+// Anti-AFK: an aggressive pet only proactively pulls fresh targets while its
+// owner has acted (moved, cast, or commanded the pet) within this many ticks.
+// 1200 ticks = 60s at 20Hz. Stops hunters/warlocks parking an aggressive pet to
+// farm XP/loot while AFK; the pet still DEFENDS an idle owner. Tunable.
+const PET_OWNER_IDLE_TICKS = 1200;
 // A pet only keeps its OWNER flagged in combat while it is actively trading blows
 // (its combatTimer resets to 0 on every hit dealt/taken). A pet that merely holds a
 // target it is chasing or can't reach stops dragging the owner into perpetual combat
@@ -528,6 +538,11 @@ export interface PlayerMeta {
   // sim.time when this character entered the world; powers /played. Session-only
   // (sim.time resets to 0 each server boot), so it reports time this session.
   joinedAt: number;
+  // Tick of the player's last deliberate action (movement, ability cast, or pet
+  // command). Session-only, never persisted. Powers the anti-AFK gate on
+  // aggressive pet auto-pull (see PET_OWNER_IDLE_TICKS) so an idle owner's pet
+  // cannot farm the area alone.
+  lastActiveTick: number;
   // Ashen Coliseum standings. Legacy arenaRating/Wins/Losses are the 1v1
   // bracket; 2v2 is fully independent and persisted alongside them.
   arenaRating: number;
@@ -978,6 +993,7 @@ export class Sim {
       counters: freshCounters(),
       autoEquip: opts?.autoEquip ?? false,
       joinedAt: this.time,
+      lastActiveTick: this.tickCount,
       arenaRating: savedArena1v1.rating,
       arenaWins: savedArena1v1.wins,
       arenaLosses: savedArena1v1.losses,
@@ -2095,6 +2111,11 @@ export class Sim {
   }
 
   private updatePlayerMovement(p: Entity, meta: PlayerMeta): void {
+    // Any locomotion key counts as a deliberate action for the anti-AFK pet gate.
+    const mv = meta.moveInput;
+    if (mv.forward || mv.back || mv.strafeLeft || mv.strafeRight || mv.turnLeft || mv.turnRight || mv.jump) {
+      meta.lastActiveTick = this.tickCount;
+    }
     if (this.updateChargeMovement(p)) return;
     if (this.updateFollowMovement(p, meta)) return;
     if (this.updateFearMovement(p)) return;
@@ -2479,6 +2500,7 @@ export class Sim {
     const { meta, e: p } = r;
     const res = this.resolvedAbility(abilityId, p.id);
     if (!res || p.dead) return;
+    meta.lastActiveTick = this.tickCount; // a cast attempt is a deliberate action
     const ability = res.def;
     if (this.isStunned(p)) { this.error(p.id, 'You are stunned!'); return; }
     if (ability.school !== 'physical' && this.isSilenced(p)) { this.error(p.id, 'You are silenced!'); return; }
@@ -3636,6 +3658,7 @@ export class Sim {
     const r = this.resolve(pid);
     if (!r) return;
     if (!isPetClass(r.meta.cls)) { this.error(r.e.id, 'Only pet classes can command pets.'); return; }
+    r.meta.lastActiveTick = this.tickCount; // commanding the pet is a deliberate action
     const pet = this.petOf(r.e.id);
     if (!pet) { this.error(r.e.id, 'You have no living pet.'); return; }
     const target = r.e.targetId !== null ? this.entities.get(r.e.targetId) : null;
@@ -3652,6 +3675,7 @@ export class Sim {
     const r = this.resolve(pid);
     if (!r) return;
     if (!isPetClass(r.meta.cls)) { this.error(r.e.id, 'Only pet classes can command pets.'); return; }
+    r.meta.lastActiveTick = this.tickCount; // commanding the pet is a deliberate action
     const pet = this.petOf(r.e.id);
     if (!pet) { this.error(r.e.id, 'You have no living pet.'); return; }
     if (pet.petTauntTimer > 0) { this.error(r.e.id, 'Pet taunt is not ready.'); return; }
@@ -3738,6 +3762,7 @@ export class Sim {
     const r = this.resolve(pid);
     if (!r) return;
     if (!isPetClass(r.meta.cls)) { this.error(r.e.id, 'Only pet classes can command pets.'); return; }
+    r.meta.lastActiveTick = this.tickCount; // commanding the pet is a deliberate action
     const pet = this.petOf(r.e.id, true);
     if (!pet) { this.error(r.e.id, 'You have no pet.'); return; }
     pet.petMode = mode;
@@ -3848,6 +3873,7 @@ export class Sim {
     if (!t || t.dead || !this.isHostileTo(p, t)) { this.error(p.id, 'Invalid attack target.'); return; }
     if (p.sitting) this.standUp(p);
     p.autoAttack = true;
+    r.meta.lastActiveTick = this.tickCount; // starting auto-attack is a deliberate action
     const d = dist2d(p.pos, t.pos);
     const ranged = CLASSES[r.meta.cls].ranged;
     const inAutoAttackRange = ranged
@@ -6135,17 +6161,59 @@ export class Sim {
 
     // heel
     pet.swingTimer = Math.max(0, pet.swingTimer - DT);
+    this.petFollow(pet, owner);
+  }
+
+  // Heel locomotion: route the pet to its owner AROUND obstacles instead of
+  // letting greedy slide-steering wedge on a wall and then snapping the pet to
+  // the owner. Mirrors the warrior-charge path cache (`petPath`): A* is recomputed
+  // at most every PET_PATH_RECALC and otherwise the cached waypoints are followed.
+  // The 60yd teleport is kept only as a true last resort, for when no route to the
+  // owner exists at all (e.g. owner stranded across un-navigable terrain).
+  private petFollow(pet: Entity, owner: Entity): void {
+    pet.petPathCooldown = Math.max(0, pet.petPathCooldown - DT);
     const d = dist2d(pet.pos, owner.pos);
-    if (d > PET_TELEPORT_DISTANCE) {
-      pet.pos = { ...owner.pos };
-      pet.prevPos = { ...pet.pos };
-      // a warp is a teleport: keep the spatial grid exact this tick instead of
-      // waiting for the end-of-tick refresh, so same-tick aggro/AoE queries
-      // don't miss the pet at its old cell (matches every other teleport site)
-      this.rebucket(pet);
-    } else if (d > PET_FOLLOW_DISTANCE && !this.isRooted(pet)) {
-      this.moveToward(pet, owner.pos, Math.max(pet.moveSpeed, RUN_SPEED * 1.1) * this.moveSpeedMult(pet));
+    if (d <= PET_FOLLOW_DISTANCE) { pet.petPath = []; return; }
+    if (this.isRooted(pet)) return;
+
+    const swim = this.mobCanSwim(MOBS[pet.templateId]);
+    const recompute = (): void => {
+      pet.petPath = findPlayerPath(this.cfg.seed, pet.pos, owner.pos, PET_PATH_SPAN, false, swim)
+        .map((w) => ({ x: w.x, y: 0, z: w.z }));
+      pet.petPathCooldown = PET_PATH_RECALC;
+    };
+    // recompute when the throttle has elapsed and the cache is stale: empty, or
+    // its end no longer lands near the (now-moved) owner. findPlayerPath returns a
+    // single-waypoint straight line (length 1) when the goal is unreachable.
+    const end = pet.petPath[pet.petPath.length - 1];
+    const stale = !end || dist2d(end, owner.pos) > PET_PATH_STALE_DISTANCE;
+    if (pet.petPathCooldown <= 0 && stale) recompute();
+    // drop waypoints we've reached; the last leg homes on the live owner position.
+    while (pet.petPath.length > 1 && dist2d(pet.pos, pet.petPath[0]) < PET_WAYPOINT_REACHED) pet.petPath.shift();
+
+    // Last-resort teleport: only when the owner is far AND genuinely unreachable.
+    // We confirm with a FRESH path (ignoring the throttle) so a stale single-point
+    // cache from a moment ago can never trigger a spurious snap while a real route
+    // exists — e.g. right after a combat→heel transition.
+    if (pet.petPath.length <= 1 && d > PET_TELEPORT_DISTANCE
+      && !lineOfSightClear(this.cfg.seed, pet.pos, owner.pos, BODY_RADIUS)) {
+      recompute();
+      if (pet.petPath.length <= 1) {
+        pet.pos = { ...owner.pos };
+        pet.prevPos = { ...pet.pos };
+        pet.petPath = [];
+        // a warp is a teleport: keep the spatial grid exact this tick instead of
+        // waiting for the end-of-tick refresh, so same-tick aggro/AoE queries
+        // don't miss the pet at its old cell (matches every other teleport site)
+        this.rebucket(pet);
+        return;
+      }
     }
+
+    const routed = pet.petPath.length > 1;
+    const aim = routed ? pet.petPath[0] : owner.pos;
+    const speed = Math.max(pet.moveSpeed, RUN_SPEED * 1.1) * this.moveSpeedMult(pet);
+    this.moveToward(pet, aim, speed);
   }
 
   /** A ranged demon pet (imp) hurls a spell-school bolt: a telegraphed
@@ -6186,13 +6254,18 @@ export class Sim {
 
   private petPickTarget(pet: Entity, owner: Entity): Entity | null {
     if (pet.petMode === 'passive') return null;
+    // Anti-AFK: an aggressive pet only proactively pulls fresh targets while its
+    // owner is actually playing. An idle owner's pet still defends (engagingUs /
+    // ownerOffense below) but cannot farm the area alone (hunter/warlock).
+    const ownerMeta = this.players.get(owner.id);
+    const ownerIdle = !ownerMeta || this.tickCount - ownerMeta.lastActiveTick > PET_OWNER_IDLE_TICKS;
     let best: Entity | null = null;
     let bestD = pet.petMode === 'aggressive' ? PET_AGGRESSIVE_RANGE : PET_ASSIST_RANGE;
     for (const m of this.entities.values()) {
       if (m.id === pet.id || m.dead || !this.isHostileTo(pet, m)) continue;
       const engagingUs = m.kind === 'mob' && (m.aggroTargetId === owner.id || m.aggroTargetId === pet.id);
       const ownerOffense = owner.targetId === m.id && (owner.autoAttack || (m.kind === 'mob' && m.threat.has(owner.id)));
-      const aggressive = pet.petMode === 'aggressive' && dist2d(pet.pos, m.pos) <= PET_AGGRESSIVE_RANGE;
+      const aggressive = pet.petMode === 'aggressive' && !ownerIdle && dist2d(pet.pos, m.pos) <= PET_AGGRESSIVE_RANGE;
       if (!engagingUs && !ownerOffense && !aggressive) continue;
       const d = dist2d(pet.pos, m.pos);
       if (d < bestD) { best = m; bestD = d; }
@@ -7097,7 +7170,11 @@ export class Sim {
       && e.templateId === NYTHRAXIS_BOSS_ID
       && !e.dead
       && dist2d(e.spawnPos, ward.pos) < NYTHRAXIS_WARDSTONE_RANGE);
-    if (!boss?.nythraxis || boss.nythraxis.deathlessCastRemaining <= 0) return true;
+    // No Nythraxis boss in range: this is not a raid wardstone but the overworld
+    // "Sunken Bastion" quest ward stone (same item id). Fall through so the normal
+    // quest pickup runs, instead of swallowing the interaction.
+    if (!boss) return false;
+    if (!boss.nythraxis || boss.nythraxis.deathlessCastRemaining <= 0) return true;
     const channel = boss.nythraxis.wardChannels.find((c) => c.objectId === ward.id);
     if (!channel || channel.complete) return true;
     if (channel.playerId === player.id) return true;
@@ -7969,8 +8046,10 @@ export class Sim {
       return;
     }
     meta.questLog.set(questId, { questId, counts: quest.objectives.map(() => 0), state: 'active' });
-    if (questId === 'q_nythraxis_bound_guardian' && this.countItem('crypt_keystone', meta.entityId) <= 0) {
-      this.addItem('crypt_keystone', 1, meta.entityId);
+    // Re-grant any quest item this quest needs from earlier progression but the player
+    // no longer holds, so a missing item can never permanently block the quest.
+    for (const itemId of questFallbackGrants(quest, (id) => this.countItem(id, meta.entityId) > 0)) {
+      this.addItem(itemId, 1, meta.entityId);
     }
     this.emit({ type: 'questAccepted', questId, pid: meta.entityId });
     this.emit({ type: 'log', text: `Quest accepted: ${quest.name}`, color: '#ff0', pid: meta.entityId });
