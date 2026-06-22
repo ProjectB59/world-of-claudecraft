@@ -37,7 +37,12 @@ try {
   check('Play CTA points at /play', (await page.$eval('.guide-cta', (el) => el.getAttribute('href'))) === '/play');
   check('home hides the docs sidebar', await page.$eval('#guide-sidebar', (el) => el.hidden));
   check('html lang set', (await page.$eval('html', (el) => el.lang)).length > 0);
-  await page.screenshot({ path: 'tmp/guide-home.png' });
+  check('what-it-is pillars (3)', (await page.$$('.guide-pillar')).length === 3);
+  check('nine class chips', (await page.$$('.guide-class-chip')).length === 9);
+  check('three zone cards', (await page.$$('.guide-zone-card')).length === 3);
+  check('faq disclosures (>=4)', (await page.$$('.guide-faq-item')).length >= 4);
+  check('single h1 on the page', (await page.$$('.guide-main h1')).length === 1);
+  await page.screenshot({ path: 'tmp/guide-home.png', fullPage: true });
 
   // Client-side navigation to a docs section (placeholder this phase).
   await page.click('.guide-nav-link[data-sub="how-to-play"]');

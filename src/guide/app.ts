@@ -65,6 +65,7 @@ export class GuideApp {
       titleKey = 'guide.notFound.title';
       this.chrome.setActive('');
       this.chrome.setSidebarVisible(false);
+      document.body.dataset.guideRoute = 'notfound';
     } else {
       const { route, params } = match;
       const ctx: PageContext = { params, sub: route.sub, titleKey: route.navKey };
@@ -73,6 +74,7 @@ export class GuideApp {
       titleKey = page?.titleKey ?? route.navKey;
       this.chrome.setActive(route.sub);
       this.chrome.setSidebarVisible(route.id !== 'home');
+      document.body.dataset.guideRoute = route.id;
     }
 
     const pageTitle = t(titleKey);

@@ -55,6 +55,7 @@ html { scroll-behavior: smooth; }
 body.guide-body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: clip;
   background:
     radial-gradient(1200px 600px at 50% -10%, #15131d 0%, transparent 60%),
     var(--g-bg);
@@ -338,14 +339,159 @@ body.guide-has-sidebar .guide-layout {
 .guide-placeholder, .guide-notfound { padding-block-start: var(--g-md); }
 
 /* -------------------------------------------------------------------- hero */
+/* Full-bleed cinematic hero over the game's loading art (kintara-style: one backdrop
+   carries the mood, sparse foreground). The breakout reaches the viewport edges; body
+   overflow-x: clip prevents a scrollbar. */
 .guide-hero {
-  min-height: min(72svh, 620px);
+  position: relative;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  min-height: min(78svh, 640px);
   display: grid;
   place-items: center;
   text-align: center;
-  padding-block: var(--g-xl);
+  padding: var(--g-xl) var(--g-md);
+  overflow: hidden;
+  isolation: isolate;
+}
+.guide-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(8, 8, 13, 0.5) 0%, rgba(8, 8, 13, 0.78) 62%, var(--g-bg) 100%),
+    url('/loading-screen.jpg') center / cover no-repeat;
 }
 .guide-hero-inner { max-width: 640px; }
+
+/* home main starts flush under the header so the hero touches it */
+body[data-guide-route="home"] .guide-main { padding-block-start: 0; }
+
+/* --------------------------------------------------------- landing sections */
+.guide-section {
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-block: var(--g-xl);
+}
+.guide-section-h {
+  font-family: var(--g-font-display);
+  font-size: clamp(22px, 3vw, 30px);
+  text-align: center;
+  margin: 0 0 var(--g-sm);
+  color: var(--g-text);
+}
+.guide-section-sub {
+  text-align: center;
+  color: var(--g-text-dim);
+  max-width: 54ch;
+  margin: 0 auto var(--g-lg);
+}
+.guide-section-more { text-align: center; margin-block-start: var(--g-lg); }
+.guide-section-more a { font-weight: 700; }
+
+.guide-pillars,
+.guide-zone-grid,
+.guide-group-grid {
+  display: grid;
+  gap: var(--g-md);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.guide-pillar,
+.guide-group-card {
+  background: var(--g-panel);
+  border: 1px solid var(--g-border-soft);
+  border-radius: var(--g-radius-lg);
+  padding: var(--g-lg);
+}
+.guide-pillar h3,
+.guide-group-card h3 {
+  font-family: var(--g-font-display);
+  color: var(--g-gold-dim);
+  margin: 0 0 var(--g-sm);
+  font-size: 18px;
+}
+.guide-pillar p,
+.guide-group-card p { margin: 0; color: var(--g-text-dim); }
+
+/* class chooser chips (class-color accent; real crests arrive on the Classes pages) */
+.guide-class-grid {
+  display: grid;
+  gap: var(--g-sm);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.guide-class-chip {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: var(--g-md);
+  background: var(--g-bg-2);
+  border: 1px solid var(--g-border-soft);
+  border-inline-start: 4px solid var(--class-color, var(--g-gold));
+  border-radius: var(--g-radius);
+  color: var(--g-text);
+  font-family: var(--g-font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.guide-class-chip:hover {
+  border-color: var(--class-color, var(--g-gold));
+  background: #ffffff0a;
+  text-decoration: none;
+}
+
+/* zone cards */
+.guide-zone-card {
+  display: block;
+  border: 1px solid var(--g-border-soft);
+  border-radius: var(--g-radius-lg);
+  overflow: hidden;
+  background: var(--g-bg-2);
+  color: var(--g-text);
+}
+.guide-zone-card:hover { border-color: var(--g-border); text-decoration: none; }
+.guide-zone-body { padding: var(--g-lg); }
+.guide-zone-band {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--g-gold-dim);
+  margin-block-end: var(--g-xs);
+}
+.guide-zone-name {
+  font-family: var(--g-font-display);
+  margin: 0 0 var(--g-xs);
+  font-size: 20px;
+  color: var(--g-text);
+}
+.guide-zone-blurb { margin: 0; color: var(--g-text-dim); }
+
+/* FAQ disclosures */
+.guide-faq { max-width: 720px; margin-inline: auto; }
+.guide-faq-item {
+  border: 1px solid var(--g-border-soft);
+  border-radius: var(--g-radius);
+  margin-block-end: var(--g-sm);
+  background: var(--g-bg-2);
+}
+.guide-faq-item summary {
+  cursor: pointer;
+  padding: var(--g-md);
+  font-family: var(--g-font-display);
+  font-weight: 600;
+  color: var(--g-text);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.guide-faq-item summary:hover { color: var(--g-gold); }
+.guide-faq-item p { margin: 0; padding: 0 var(--g-md) var(--g-md); color: var(--g-text-dim); }
+
+/* community */
+.guide-community { text-align: center; }
+.guide-community-cta { display: flex; flex-wrap: wrap; gap: var(--g-md); justify-content: center; }
 .guide-eyebrow {
   margin: 0 0 var(--g-sm);
   font-size: 12px;

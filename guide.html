@@ -26,6 +26,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
+<!-- LCP: the overview hero backdrop. Preload it high-priority since the SPA renders the
+     hero after the module parses, so the image is not otherwise parser-discoverable. -->
+<link rel="preload" as="image" href="/loading-screen.jpg" fetchpriority="high" />
+
 <!-- i18n stored-locale modulepreload (mirrors index.html / play.html). For a returning
      visitor whose stored locale is non-English, preload that locale's content-hashed
      chunk before the main module parses. The production build templates the
