@@ -2184,13 +2184,15 @@ function loginNavItem(): HTMLElement | null {
 const loggedInNavItems = ['#nav-item-account', '#nav-item-logout'];
 
 function enterLoggedInChrome(): void {
-  loggedInNavItems.forEach((sel) => { ($(sel) as HTMLElement).hidden = false; });
+  // Entries that lack the homepage account/logout nav tabs (e.g. the focused
+  // play.html entry) won't have these <li>s; toggling them is a no-op there.
+  loggedInNavItems.forEach((sel) => { const li = document.querySelector<HTMLElement>(sel); if (li) li.hidden = false; });
   const li = loginNavItem();
   if (li) li.hidden = true;
 }
 
 function enterLoggedOutChrome(): void {
-  loggedInNavItems.forEach((sel) => { ($(sel) as HTMLElement).hidden = true; });
+  loggedInNavItems.forEach((sel) => { const li = document.querySelector<HTMLElement>(sel); if (li) li.hidden = true; });
   const li = loginNavItem();
   if (li) li.hidden = false;
 }
@@ -2235,7 +2237,12 @@ function paintAccountPortal(
   preserveEmailInput = false,
   twoFactorEnabled = false,
 ): void {
-  ($('#account-logged-out') as HTMLElement).hidden = model.loggedIn;
+  // The account portal lives only in index.html; focused entries such as
+  // play.html omit it, so there is nothing to paint (token revalidation and the
+  // nav chrome in loadAccountPortal still run).
+  const loggedOut = $('#account-logged-out') as HTMLElement | null;
+  if (!loggedOut) return;
+  loggedOut.hidden = model.loggedIn;
   ($('#account-sections') as HTMLElement).hidden = !model.loggedIn;
   if (model.loggedIn) paintTwoFactorStatus(twoFactorEnabled);
   $('#account-username').textContent = model.header.username;
@@ -2311,6 +2318,9 @@ function tryFocusWalletButton(attempt = 0): void {
 let accountPortalWired = false;
 function setupAccountPortal(): void {
   if (accountPortalWired) return;
+  // The homepage account portal lives only in index.html; focused entries such
+  // as play.html omit it entirely, so there is nothing to wire there.
+  if (!document.getElementById('account-password-form')) return;
   accountPortalWired = true;
 
   ($('#account-password-form') as HTMLFormElement).addEventListener('submit', async (e) => {
