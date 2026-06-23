@@ -1242,6 +1242,7 @@
     flex-direction: column;
   }
   #bags .panel-title { flex: none; }
+  #bags .bag-filter-bar { flex: none; }
   #bags .bag-grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
   #bags .money { flex: none; display: flex; align-items: center; gap: 10px; }
   /* coins stay right-aligned whether or not the $WOC chip is present */
@@ -1254,6 +1255,19 @@
   .bag-item { display: flex; gap: 8px; align-items: center; width: 100%; font-size: 12px; padding: 3px 4px; border: 0; border-radius: 3px; cursor: var(--cursor-point); background: transparent; color: inherit; font-family: var(--ui-font); text-align: left; }
   .bag-item:hover { background: #ffffff12; }
   .bag-item .bi-count { margin-left: auto; color: #ccc; }
+  .bag-filter-bar { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 6px; }
+  .bag-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .bag-chip { font-family: var(--ui-font); font-size: 11px; line-height: 1; padding: 5px 9px; min-height: 26px; border-radius: 11px; border: 1px solid #5a4a2e; background: #1c1812; color: var(--color-text-muted); cursor: var(--cursor-point); white-space: nowrap; }
+  .bag-chip:hover { background: #ffffff12; color: inherit; }
+  .bag-chip.active { background: var(--gold-dim, #8a6f3a); border-color: var(--gold-dim, #8a6f3a); color: #15110a; font-weight: 600; }
+  .bag-chip:focus-visible { outline: 2px solid #d9c27a; outline-offset: 1px; }
+  body.mobile-touch .bag-chip { min-height: 40px; padding: 9px 13px; }
+  body.mobile-touch .bag-search { min-height: 40px; }
+  body.mobile-touch .bag-sort { min-height: 40px; }
+  .bag-tools { display: flex; gap: 6px; align-items: center; }
+  .bag-search { flex: 1 1 auto; min-width: 0; font-family: var(--ui-font); font-size: 16px; padding: 4px 7px; border-radius: 4px; border: 1px solid #5a4a2e; background: #14110b; color: inherit; }
+  .bag-search:focus-visible { outline: 2px solid #d9c27a; outline-offset: 1px; }
+  .bag-sort { flex: none; font-family: var(--ui-font); font-size: 16px; padding: 4px 6px; border-radius: 4px; border: 1px solid #5a4a2e; background: #14110b; color: inherit; cursor: var(--cursor-point); }
   .bag-empty { font-size: 12px; color: var(--color-text-muted); padding: 6px; }
   .money { margin-top: 8px; font-size: 12px; color: var(--gold); text-align: right; }
   .money-inline, .coin-part { display: inline-flex; align-items: center; }

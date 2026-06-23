@@ -6118,7 +6118,9 @@ export class Hud {
     // otherwise using an item (e.g. a potion) snaps the list back to the top.
     const prevScrollTop = el.querySelector('.bag-grid')?.scrollTop ?? 0;
     el.innerHTML = `<div class="panel-title"><span>${esc(t('itemUi.bags.title'))}</span><button type="button" class="x-btn" data-close aria-label="${esc(t('itemUi.bags.close'))}">${svgIcon('close')}</button></div>`;
-    el.appendChild(this.buildBagFilterBar());
+    // Skip the chip/search row entirely when the bag is empty: a full filter bar
+    // above a single "(empty)" line is just noise.
+    if (sim.inventory.length > 0) el.appendChild(this.buildBagFilterBar());
     const grid = document.createElement('div');
     grid.className = 'bag-grid';
     this.fillBagGrid(grid);

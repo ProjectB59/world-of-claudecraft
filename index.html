@@ -1520,16 +1520,17 @@
   /* Modular bag filtering: category chips + sort/search tools above the grid. */
   .bag-filter-bar { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 6px; }
   .bag-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-  .bag-chip { font-family: var(--ui-font); font-size: 11px; line-height: 1; padding: 5px 9px; min-height: 26px; border-radius: 11px; border: 1px solid var(--panel-border, #5a4a2e); background: var(--panel-base, #1c1812); color: var(--color-text-muted); cursor: var(--cursor-point); white-space: nowrap; }
+  .bag-chip { font-family: var(--ui-font); font-size: 11px; line-height: 1; padding: 5px 9px; min-height: 26px; border-radius: 11px; border: 1px solid #5a4a2e; background: #1c1812; color: var(--color-text-muted); cursor: var(--cursor-point); white-space: nowrap; }
   .bag-chip:hover { background: #ffffff12; color: inherit; }
   .bag-chip.active { background: var(--gold-dim, #8a6f3a); border-color: var(--gold-dim, #8a6f3a); color: #15110a; font-weight: 600; }
-  .bag-chip:focus-visible { outline: 2px solid var(--color-focus, #d9c27a); outline-offset: 1px; }
+  .bag-chip:focus-visible { outline: 2px solid #d9c27a; outline-offset: 1px; }
   body.mobile-touch .bag-chip { min-height: 40px; padding: 9px 13px; }
+  body.mobile-touch .bag-search { min-height: 40px; }
   body.mobile-touch .bag-sort { min-height: 40px; }
   .bag-tools { display: flex; gap: 6px; align-items: center; }
-  .bag-search { flex: 1 1 auto; min-width: 0; font-family: var(--ui-font); font-size: 12px; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--panel-border, #5a4a2e); background: var(--panel-base, #14110b); color: inherit; }
-  .bag-search:focus-visible { outline: 2px solid var(--color-focus, #d9c27a); outline-offset: 1px; }
-  .bag-sort { flex: none; font-family: var(--ui-font); font-size: 12px; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--panel-border, #5a4a2e); background: var(--panel-base, #14110b); color: inherit; cursor: var(--cursor-point); }
+  .bag-search { flex: 1 1 auto; min-width: 0; font-family: var(--ui-font); font-size: 16px; padding: 4px 7px; border-radius: 4px; border: 1px solid #5a4a2e; background: #14110b; color: inherit; }
+  .bag-search:focus-visible { outline: 2px solid #d9c27a; outline-offset: 1px; }
+  .bag-sort { flex: none; font-family: var(--ui-font); font-size: 16px; padding: 4px 6px; border-radius: 4px; border: 1px solid #5a4a2e; background: #14110b; color: inherit; cursor: var(--cursor-point); }
   .money { margin-top: 8px; font-size: 12px; color: var(--gold); text-align: right; }
   .money-inline, .coin-part { display: inline-flex; align-items: center; }
   .coin { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: -1px; margin-left: 6px; margin-right: 2px; }
