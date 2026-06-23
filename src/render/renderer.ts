@@ -5,7 +5,7 @@ import { groundHeight, WATER_LEVEL, zoneBiomeAt } from '../sim/world';
 import { drapeRingLocalY } from './selection_ring';
 import { buildFlaredConeFan, buildRingXZ, drapeConeWorld } from './target_cone_debug';
 import {
-  CLASSES, MOBS, ABILITIES, DUNGEON_X_THRESHOLD, DUNGEON_LIST, QUESTS,
+  CLASSES, MOBS, NPCS, ABILITIES, DUNGEON_X_THRESHOLD, DUNGEON_LIST, QUESTS,
   instanceOrigin, INSTANCE_SLOT_COUNT, ARENA_SLOT_COUNT, arenaOrigin, isArenaPos, dungeonAt,
   WORLD_MAX_Z, WORLD_MIN_Z, ZONES,
 } from '../sim/data';
@@ -68,7 +68,19 @@ const VIEW_CREATE_SLOW_FRAME_MS = 33;
 const VIEW_CREATE_HITCH_FRAME_MS = 50;
 const VIEW_CREATE_BACKOFF_SECONDS = 0.75;
 const VIEW_PREWARM_RANGE_SQ = ENTITY_VIEW_CREATE_RANGE_SQ;
-const VIEW_PREWARM_MAX_MS = 5000;
+const VIEW_PREWARM_MAX_MS = 12000;
+// Shader linking is the whole point of the prewarm: if it doesn't finish, the
+// first in-world frame that needs a program compiles it synchronously — the
+// multi-hundred-ms (up to ~1.7s) freeze players feel when new model types
+// appear. So the compile step gets its own budget (it normally drains in <~100ms
+// with KHR_parallel_shader_compile) rather than racing the leftover view-build
+// budget, which could starve it to a timeout. The cap only bites if a driver
+// stalls the parallel-compile queue; keep it modest, since a long hold here is
+// itself worse than the freeze it prevents.
+const PREWARM_COMPILE_MAX_MS = 10000;
+// Reserve at the tail of the view-build budget so the compile + final-frame
+// steps always start before the prewarm deadline (runEntry skips late entries).
+const PREWARM_BUILD_RESERVE_MS = 3000;
 const VIEW_PREWARM_MAX_VIEWS_LOW = 48;
 const VIEW_PREWARM_MAX_VIEWS_HIGH = 72;
 const VIEW_CREATED_TYPE_SAMPLE_LIMIT = 24;
@@ -175,6 +187,9 @@ const PREWARM_OBJECT_ITEM_IDS = [
 ] as const;
 const PREWARM_MOB_POOL_COPIES = 3;
 const PREWARM_OBJECT_POOL_COPIES = 2;
+// The common templates above are pooled several-deep (they spawn in groups); every
+// OTHER mob model is still built once so its shader program compiles at load.
+const PREWARM_MOB_COMMON_IDS = new Set<string>(PREWARM_MOB_TEMPLATE_IDS);
 
 function prewarmPlayerSkinVariantCount(): number {
   return ALL_CLASSES.reduce((sum, cls) => sum + skinCount(`player_${cls}`), 0);
@@ -1645,7 +1660,7 @@ export class Renderer {
     this.updateChatBubbles();
   }
 
-  private prewarmEntity(kind: 'player' | 'mob', templateId: string, color: number, scale: number, skin = 0, id = -10_000): Entity {
+  private prewarmEntity(kind: 'player' | 'mob' | 'npc', templateId: string, color: number, scale: number, skin = 0, id = -10_000): Entity {
     const p = this.sim.player;
     return {
       ...p,
@@ -1740,7 +1755,7 @@ export class Renderer {
     pool.push(object);
   }
 
-  private buildEntityPrewarmGroup(): THREE.Group {
+  private buildEntityPrewarmGroup(deadline: number): THREE.Group {
     const group = new THREE.Group();
     const p = this.sim.player;
     group.position.set(p.pos.x, p.pos.y, p.pos.z - 14);
@@ -1751,17 +1766,64 @@ export class Renderer {
       group.add(obj);
       idx++;
     };
-    for (const templateId of PREWARM_MOB_TEMPLATE_IDS) {
+    // Track which visual MODELS have been built (visualKeyFor = the model selector;
+    // distinct shader programs are per-model, so this is what we must cover). The
+    // pool itself is still keyed per template via visualPoolKeyFor.
+    const builtModels = new Set<string>();
+    const build = (templateId: string, copies: number): void => {
       const template = MOBS[templateId];
-      if (!template) continue;
-      for (let i = 0; i < PREWARM_MOB_POOL_COPIES; i++) {
+      if (!template) return;
+      for (let i = 0; i < copies; i++) {
         const entity = this.prewarmEntity('mob', template.id, template.color, template.scale);
+        builtModels.add(visualKeyFor(entity));
         const visual = createCharacterVisual(entity);
-        const key = this.visualPoolKeyFor(entity);
-        if (key) this.storePooledVisual(key, visual);
+        const poolKey = this.visualPoolKeyFor(entity);
+        if (poolKey) this.storePooledVisual(poolKey, visual);
         visual.root.visible = true;
         place(visual.root);
       }
+    };
+    // Common mobs spawn in packs → pool several copies per template (this also
+    // compiles their shaders).
+    for (const templateId of PREWARM_MOB_TEMPLATE_IDS) build(templateId, PREWARM_MOB_POOL_COPIES);
+    // Then every remaining mob whose visual MODEL hasn't been built yet — one copy,
+    // so its shader program is compiled at load and never hitches in-world. Mobs that
+    // share a family model are built only once.
+    for (const templateId of Object.keys(MOBS)) {
+      if (PREWARM_MOB_COMMON_IDS.has(templateId)) continue;
+      if (performance.now() >= deadline) break;
+      const template = MOBS[templateId];
+      if (!template) continue;
+      const modelKey = visualKeyFor(this.prewarmEntity('mob', template.id, template.color, template.scale));
+      if (builtModels.has(modelKey)) continue;
+      build(templateId, 1);
+    }
+    return group;
+  }
+
+  // Every NPC visual MODEL once (NPCs were not prewarmed at all — entering a zone hub
+  // compiled their shaders live). Most NPCs share a handful of models (npc_knight,
+  // npc_mage, ...), so dedup by model key (visualKeyFor) builds each only once.
+  private buildNpcPrewarmGroup(deadline: number): THREE.Group {
+    const group = new THREE.Group();
+    const p = this.sim.player;
+    group.position.set(p.pos.x, p.pos.y, p.pos.z - 24);
+    setRenderCategory(group, 'prewarm');
+    let idx = 0;
+    const builtModels = new Set<string>();
+    for (const npc of Object.values(NPCS)) {
+      if (performance.now() >= deadline) break;
+      const entity = this.prewarmEntity('npc', npc.id, npc.color, 1);
+      const modelKey = visualKeyFor(entity);
+      if (builtModels.has(modelKey)) continue;
+      builtModels.add(modelKey);
+      const visual = createCharacterVisual(entity);
+      const poolKey = this.visualPoolKeyFor(entity);
+      if (poolKey) this.storePooledVisual(poolKey, visual);
+      visual.root.visible = true;
+      visual.root.position.set(((idx % 8) - 3.5) * 2.8, 0, Math.floor(idx / 8) * 2.8);
+      group.add(visual.root);
+      idx++;
     }
     return group;
   }
@@ -1892,6 +1954,10 @@ export class Renderer {
     const maxMs = Math.max(0, options.maxMs ?? VIEW_PREWARM_MAX_MS);
     const started = performance.now();
     const deadline = started + maxMs;
+    // Stop the archetype-build steps early so the later entries — crucially
+    // programs.compile — still START before `deadline` (runEntry skips anything
+    // that begins past it). Compiling is what kills the in-world freeze.
+    const buildDeadline = deadline - PREWARM_BUILD_RESERVE_MS;
     const manifestEntries: RendererPrewarmManifestEntryStats[] = [];
     const startCounts = this.prewarmCounts();
     const createdViewTypes: string[] = [];
@@ -1900,6 +1966,7 @@ export class Renderer {
     let candidateViews = 0;
     let doorPrewarmGroup: THREE.Group | null = null;
     let entityPrewarmGroup: THREE.Group | null = null;
+    let npcPrewarmGroup: THREE.Group | null = null;
     let playerPrewarmGroup: THREE.Group | null = null;
     let objectPrewarmGroup: THREE.Group | null = null;
     let propMaterialPrewarmGroup: THREE.Group | null = null;
@@ -2011,28 +2078,41 @@ export class Renderer {
         },
       },
       {
-        id: 'entities.mob-archetypes',
-        category: 'entities',
-        priority: 35,
-        required: true,
-        run: () => {
-          entityPrewarmGroup = this.buildEntityPrewarmGroup();
-          this.scene.add(entityPrewarmGroup);
-        },
-        detail: () => `templates=${PREWARM_MOB_TEMPLATE_IDS.length};copies=${PREWARM_MOB_POOL_COPIES}`,
-      },
-      {
+        // Players are the #1 shader-compile trigger in a crowd, so build their
+        // archetypes first (before the long mob tail) — guaranteed within budget.
         id: 'entities.player-archetypes',
         category: 'entities',
-        priority: 37,
+        priority: 34,
         required: true,
         run: () => {
-          const built = this.buildPlayerPrewarmGroup(deadline);
+          const built = this.buildPlayerPrewarmGroup(buildDeadline);
           playerPrewarmGroup = built.group;
           playerPrewarmVisuals = built.visualCount;
           this.scene.add(playerPrewarmGroup);
         },
         detail: () => `classes=${ALL_CLASSES.length};skins=${prewarmPlayerSkinVariantCount()};visuals=${playerPrewarmVisuals}`,
+      },
+      {
+        id: 'entities.mob-archetypes',
+        category: 'entities',
+        priority: 35,
+        required: true,
+        run: () => {
+          entityPrewarmGroup = this.buildEntityPrewarmGroup(buildDeadline);
+          this.scene.add(entityPrewarmGroup);
+        },
+        detail: () => `mobs=${Object.keys(MOBS).length};common=${PREWARM_MOB_TEMPLATE_IDS.length};copies=${PREWARM_MOB_POOL_COPIES}`,
+      },
+      {
+        id: 'entities.npc-archetypes',
+        category: 'entities',
+        priority: 36,
+        required: true,
+        run: () => {
+          npcPrewarmGroup = this.buildNpcPrewarmGroup(buildDeadline);
+          this.scene.add(npcPrewarmGroup);
+        },
+        detail: () => `npcs=${Object.keys(NPCS).length}`,
       },
       {
         id: 'objects.quest-archetypes',
@@ -2105,8 +2185,11 @@ export class Renderer {
         required: true,
         run: async () => {
         const compileStart = performance.now();
-        const compileBudgetMs = Math.max(0, deadline - compileStart);
-        if (compileBudgetMs > 0 && this.webgl.compileAsync) {
+        // Use a dedicated budget, not `deadline - now`: linking every program now is
+        // exactly what prevents the in-world freeze, so a near-empty leftover budget
+        // must not cut it short (the old bug — the async compile timed out and the
+        // programs linked synchronously on first sight instead).
+        if (this.webgl.compileAsync) {
           compileMode = 'async';
           let settled = false;
           const compilePromise = this.webgl.compileAsync(this.scene, this.camera)
@@ -2115,10 +2198,10 @@ export class Renderer {
               settled = true;
               console.warn('Renderer async prewarm compile failed', err);
             });
-          await Promise.race([compilePromise, sleep(compileBudgetMs)]);
+          await Promise.race([compilePromise, sleep(PREWARM_COMPILE_MAX_MS)]);
           compileTimedOut = !settled;
           compileMs = roundMs(performance.now() - compileStart);
-        } else if (compileBudgetMs > 0) {
+        } else {
           compileMode = 'sync';
           this.webgl.compile(this.scene, this.camera);
           compileMs = roundMs(performance.now() - compileStart);
@@ -2176,6 +2259,7 @@ export class Renderer {
       this.vfx.clear();
       if (doorPrewarmGroup) this.scene.remove(doorPrewarmGroup);
       if (entityPrewarmGroup) this.scene.remove(entityPrewarmGroup);
+      if (npcPrewarmGroup) this.scene.remove(npcPrewarmGroup);
       if (playerPrewarmGroup) this.scene.remove(playerPrewarmGroup);
       if (objectPrewarmGroup) this.scene.remove(objectPrewarmGroup);
       if (propMaterialPrewarmGroup) this.scene.remove(propMaterialPrewarmGroup);
