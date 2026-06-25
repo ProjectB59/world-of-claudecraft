@@ -82,9 +82,12 @@ describe('P1 CSS extraction: base.css', () => {
 });
 
 describe('P1 CSS extraction: barrel + seam wiring', () => {
-  it('declares the single @layer order once, with the later layers ahead of the per-entry extras', () => {
+  it('declares the single @layer order once, with hud-mobile after shell and the per-entry extras last', () => {
+    // Flat (hyphenated) layer names: a DOT would make hud-mobile/index-extra/play-extra
+    // SUBLAYERS, not top-level layers (P4b fix). hud-mobile is ordered AFTER shell so the
+    // in-game mobile overrides of pre-game shell elements win as they did when inline.
     expect(barrel).toContain(
-      '@layer tokens, base, layout, components, hud, hud.mobile, shell, index.extra, play.extra;',
+      '@layer tokens, base, layout, components, hud, shell, hud-mobile, index-extra, play-extra;',
     );
   });
 

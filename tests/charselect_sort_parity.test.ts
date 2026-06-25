@@ -22,8 +22,10 @@ const mainTs = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8').
   '\n',
 );
 // Phase P4a moved index.html's char-select CSS into src/styles/shell.css (@layer shell),
-// loaded by the index entry via the barrel; play.html keeps its inline copy until the
-// P4b per-entry .extra split. So the index-side CSS parity check reads shell.css.
+// loaded by the index entry via the barrel. P4b emptied play.html's inline <style> and
+// reconciled it to the same canonical modules: play.html now loads shell.css through the
+// shared src/main.ts barrel (it carries NO inline char-select copy). So the CSS parity is
+// now structural: both entries load the one shell.css, which both checks below read.
 const shellCss = readFileSync(new URL('../src/styles/shell.css', import.meta.url), 'utf8').replace(
   /\r\n/g,
   '\n',
@@ -50,12 +52,15 @@ describe('character-select sort control parity', () => {
   }
 
   for (const rule of REQUIRED_SORT_CSS) {
-    it(`shell.css styles ${rule} (moved from index.html inline in P4a)`, () => {
+    it(`shell.css styles ${rule} (moved from index.html inline in P4a; shared by both entries)`, () => {
       expect(shellCss).toContain(`${rule} {`);
     });
 
-    it(`play.html styles ${rule} (mirrors index.html; play.html .extra split is P4b)`, () => {
-      expect(playHtml).toContain(`${rule} {`);
+    it(`play.html reconciles ${rule} via the shared shell.css (P4b emptied its inline)`, () => {
+      // play.html no longer carries an inline copy of this rule (its <style> was
+      // emptied in P4b); it gets the rule from shell.css through the shared barrel.
+      expect(playHtml).not.toContain(`${rule} {`);
+      expect(playHtml).toContain('/src/main.ts');
     });
   }
 });
