@@ -17,11 +17,11 @@
 // mobSwing, spawnDelveModule), never reaching into not-yet-extracted internals
 // in a way the sim itself does not already expose.
 
-import { MOBS, DELVES } from '../../src/sim/data';
+import { MOBS, DELVES, PROPS } from '../../src/sim/data';
 import { createMob } from '../../src/sim/entity';
 import { Sim } from '../../src/sim/sim';
 import { solveLockActions } from '../../src/sim/lockpick';
-import { FISHING_CAST_ID } from '../../src/sim/types';
+import { FISHING_CAST_ID, MAX_LEVEL, PRESTIGE_XP_PER_RANK, xpForLevel } from '../../src/sim/types';
 import type { Aura, Entity } from '../../src/sim/types';
 import { terrainHeight } from '../../src/sim/world';
 import type { Recorder, Scenario } from './record';
@@ -1405,6 +1405,65 @@ function c5AutoAttack(): Scenario {
   };
 }
 
+// XP / prestige (G1b): the residual XP-shaping surface C1 left on Sim. Parks a
+// warrior inside an inn footprint to accrue rested XP (updateRested + isResting),
+// spends it on a kill-flagged award (the grantXp rested double-up), dings the
+// level, jumps to the cap and overflows one prestige bar into lifetimeXp
+// (accrueLifetimeXp, C1), then prestiges once (accept) and once below threshold
+// (reject). Pins the moved rested/prestige mutations in samplePlayerMeta
+// (restedXp / xp / lifetimeXp / prestigeRank) so the G1b move stays byte-identical.
+function g1bXpPrestige(): Scenario {
+  return {
+    name: 'g1b_xp_prestige',
+    coverage: [
+      'rested-XP accrual inside an inn footprint (updateRested + isResting, G1b)',
+      'rested double-up on a kill award (grantXp restedBonus consumption, C1)',
+      'a level-up ding (grantXp level loop, C1)',
+      'max-level overflow -> lifetimeXp / virtualLevelUp (accrueLifetimeXp, C1)',
+      'cosmetic prestige accept + below-threshold reject (prestige, G1b)',
+    ],
+    build: () => new Sim({ seed: 42, playerClass: 'warrior', autoEquip: true }),
+    drive(rec: Recorder) {
+      const sim = rec.sim as AnySim;
+      const meta = sim.meta(sim.playerId) as any;
+      const p = sim.player as AnyEntity;
+
+      // 1. Rested accrual: park inside an inn footprint, out of combat, and tick.
+      //    updateRested fires each regen-phase tick while isResting(p) is true,
+      //    accruing a positive (sub-unit) pool off DT.
+      const innB = PROPS.buildings.find((b: any) => b.kind === 'inn')!;
+      teleport(sim, p, innB.x, innB.z);
+      rec.tick(60);
+      rec.notes.restedAfterAccrual = meta.restedXp;
+      rec.snapshot('rested-accrued');
+
+      // 2. Seed a full pool (as rested_xp.test.ts does) so a kill-flagged award
+      //    fires the grantXp rested double-up: 80 base + 80 bonus, pool 1000 -> 920.
+      meta.restedXp = 1000;
+      sim.grantXp(80, meta, { fromKill: true });
+      rec.notes.restedAfterConsume = meta.restedXp;
+      rec.snapshot('rested-consumed');
+
+      // 3. A non-kill (quest-style) award that dings the level (rested untouched).
+      sim.grantXp(xpForLevel(p.level) + 50, meta);
+      rec.snapshot('ding');
+
+      // 4. Jump to the cap and earn one prestige bar of post-cap XP -> the award
+      //    overflows into lifetimeXp (the bar stays 0) and fires virtualLevelUp.
+      sim.setPlayerLevel(MAX_LEVEL);
+      sim.grantXp(PRESTIGE_XP_PER_RANK, meta);
+      rec.snapshot('overflow');
+
+      // 5. Prestige: the first call succeeds (one bar earned), the second is
+      //    refused (no post-cap XP left for a second rank) and mutates nothing.
+      rec.notes.prestigeAccepted = sim.prestige();
+      rec.snapshot('prestige-accept');
+      rec.notes.prestigeRejected = sim.prestige();
+      rec.snapshot('prestige-reject');
+    },
+  };
+}
+
 export const SCENARIOS: Scenario[] = [
   soloWarrior(),
   soloMage(),
@@ -1426,4 +1485,5 @@ export const SCENARIOS: Scenario[] = [
   c4aCastingLifecycle(),
   c4bEffectDispatch(),
   c5AutoAttack(),
+  g1bXpPrestige(),
 ];

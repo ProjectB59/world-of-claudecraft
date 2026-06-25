@@ -280,4 +280,21 @@ describe('coverage: each scenario fires its subsystem', () => {
     // a queued on-next-swing ability was consumed in the swing path (its name rode through).
     expect(ev.some((e) => e.type === 'damage' && (e.ability === 'Heroic Strike' || e.ability === 'Raptor Strike'))).toBe(true);
   });
+
+  it('g1b_xp_prestige: rested XP accrues in the inn, then prestige resets the bar and bumps rank', () => {
+    const rec = run('g1b_xp_prestige');
+    // updateRested (+ isResting) accrued a positive rested pool while parked in the inn.
+    expect(rec.notes.restedAfterAccrual as number).toBeGreaterThan(0);
+    // the kill-flagged award doubled up off the seeded pool and drew it down (1000 -> 920).
+    expect(rec.notes.restedAfterConsume as number).toBe(920);
+    // prestige fired: the first call accepted, the below-threshold second was refused.
+    expect(rec.notes.prestigeAccepted).toBe(true);
+    expect(rec.notes.prestigeRejected).toBe(false);
+    // the gold prestige log emit fired through ctx.emit.
+    expect(
+      (rec.allEvents as Ev[]).some((e) => e.type === 'log' && typeof e.text === 'string' && e.text.includes('prestiged')),
+    ).toBe(true);
+    // the anti-abuse cap held: rank is exactly 1, never inflated by the second call.
+    expect((rec.sim as any).prestigeRank).toBe(1);
+  });
 });
