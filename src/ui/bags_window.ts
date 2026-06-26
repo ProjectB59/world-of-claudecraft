@@ -40,6 +40,7 @@ import {
 } from './bags_view';
 import { itemDisplayName } from './entity_i18n';
 import { esc } from './esc';
+import { FOCUSABLE_SELECTOR } from './focus_manager';
 import { encodeHotbarAction, HOTBAR_ACTION_MIME } from './hotbar';
 import { formatNumber, type TranslationKey, t } from './i18n';
 import { QUALITY_COLOR } from './icons';
@@ -47,6 +48,10 @@ import type { PainterHostPresentation } from './painter_host';
 import { svgIcon } from './ui_icons';
 
 const BAG_FILTER_KEY = 'woc_bag_filter';
+
+// Monotonic id source for the ad-hoc prompt dialogs' aria-labelledby target, so the
+// id never couples to class ordering (P15b re-audit: was prompt.classList[last]).
+let promptDialogSeq = 0;
 
 // The unranked quality fallback as a CSS custom property (decision 12). The shared
 // QUALITY_COLOR map carries the real per-quality hex; this token covers the rare
@@ -367,8 +372,17 @@ export class BagsWindow {
     prompt.setAttribute('aria-modal', 'true');
     const titleEl = prompt.querySelector('.prompt-text') as HTMLElement | null;
     if (titleEl) {
-      if (!titleEl.id) titleEl.id = `${prompt.classList[prompt.classList.length - 1]}-title`;
+      if (!titleEl.id) titleEl.id = `bags-prompt-title-${promptDialogSeq++}`;
       prompt.setAttribute('aria-labelledby', titleEl.id);
+      // Name an unlabeled quantity field by the prompt's own question (the same titled
+      // text, e.g. "Destroy how many Linen Cloth?") so a number input is never anonymous
+      // (WCAG 1.3.1 / 4.1.2). The discard prompt's input had no name (the new bags axe
+      // case caught it); the sell prompt's input already carries a dedicated aria-label,
+      // so leave that one alone (aria-labelledby would otherwise shadow the better name).
+      const numInput = prompt.querySelector('.prompt-number');
+      if (numInput && !numInput.hasAttribute('aria-label')) {
+        numInput.setAttribute('aria-labelledby', titleEl.id);
+      }
     }
     const closeAndReturn = (): void => {
       close();
@@ -382,9 +396,9 @@ export class BagsWindow {
         return;
       }
       if (ke.key !== 'Tab') return;
-      const f = Array.from(
-        prompt.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled])'),
-      );
+      // Reuse the one canonical focusable set (P15b re-audit) so a prompt that ever
+      // gains an [href] / [tabindex] control stays inside the trap.
+      const f = Array.from(prompt.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
       if (f.length === 0) return;
       const first = f[0];
       const last = f[f.length - 1];

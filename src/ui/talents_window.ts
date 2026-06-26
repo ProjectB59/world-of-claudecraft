@@ -473,11 +473,17 @@ export class TalentsWindow {
     pop.className = 'tal-choice-pop';
     pop.setAttribute('role', 'menu');
     pop.setAttribute('aria-label', tTalent({ kind: 'talentNode', node, field: 'name' }));
-    pop.innerHTML = (node.choices ?? [])
-      .map((o) => {
+    // Roving tabindex: only the selected option (else the first) is in the tab order;
+    // the Arrow/Home/End handler below moves focus among the rest (P15b re-audit, so the
+    // role=menu announces a pattern the keyboard actually implements).
+    const choices = node.choices ?? [];
+    const selIdx = choices.findIndex((o) => stage.choices[node.id] === o.id);
+    const rovingIdx = selIdx >= 0 ? selIdx : 0;
+    pop.innerHTML = choices
+      .map((o, i) => {
         const sel = stage.choices[node.id] === o.id;
         return (
-          `<div class="tal-choice-opt${sel ? ' sel' : ''}" role="menuitemradio" tabindex="0" aria-checked="${sel}" data-opt="${esc(o.id)}"><span class="tco-icon" style="background-image:url(${esc(talentChoiceIconDataUrl(o))})"></span>` +
+          `<div class="tal-choice-opt${sel ? ' sel' : ''}" role="menuitemradio" tabindex="${i === rovingIdx ? '0' : '-1'}" aria-checked="${sel}" data-opt="${esc(o.id)}"><span class="tco-icon" style="background-image:url(${esc(talentChoiceIconDataUrl(o))})"></span>` +
           `<span class="tco-text"><b>${esc(tTalent({ kind: 'talentChoice', choice: o, field: 'name' }))}</b><span>${esc(tTalent({ kind: 'talentChoice', choice: o, field: 'description' }))}</span></span></div>`
         );
       })
@@ -491,6 +497,18 @@ export class TalentsWindow {
     pop.style.left = `${left}px`;
     pop.style.top = `${top}px`;
     pop.style.setProperty('--tal-choice-caret-left', `${caretLeft}px`);
+    // One idempotent close path. returnFocus lands focus back on the still-attached
+    // anchor (Escape / outside click / Tab-out / can't-afford); a successful choose()
+    // re-renders the tree, detaching its anchor, so it dismisses WITHOUT a refocus and
+    // lets render() own focus. The body.contains guard keeps a stale anchor from being
+    // focused if it was already rebuilt.
+    let dismissed = false;
+    const dismiss = (returnFocus: boolean): void => {
+      if (dismissed) return;
+      dismissed = true;
+      pop.remove();
+      if (returnFocus && document.body.contains(anchor)) anchor.focus();
+    };
     const choose = (optEl: Element): void => {
       const optId = optEl.getAttribute('data-opt') ?? '';
       if (ranks === 0) {
@@ -498,16 +516,27 @@ export class TalentsWindow {
         cand.ranks[node.id] = 1;
         cand.choices[node.id] = optId;
         if (!validateAllocation(cls, cand, total).ok) {
-          pop.remove();
+          dismiss(true); // can't afford / gated: no re-render, so return focus to the node
           return;
-        } // can't afford / gated
+        }
         stage.ranks[node.id] = 1;
       }
       stage.choices[node.id] = optId;
-      pop.remove();
+      dismiss(false);
       this.render();
     };
-    pop.querySelectorAll('.tal-choice-opt').forEach((optEl) => {
+    const opts = Array.from(pop.querySelectorAll<HTMLElement>('.tal-choice-opt'));
+    // Move the roving focus among the options (no selection on move; Enter/Space picks).
+    const focusOpt = (idx: number): void => {
+      const n = opts.length;
+      if (n === 0) return;
+      const next = ((idx % n) + n) % n;
+      opts.forEach((o, j) => {
+        o.setAttribute('tabindex', j === next ? '0' : '-1');
+      });
+      opts[next].focus();
+    };
+    opts.forEach((optEl, i) => {
       optEl.addEventListener('click', (e) => {
         e.stopPropagation();
         choose(optEl);
@@ -516,29 +545,52 @@ export class TalentsWindow {
         const ke = e as KeyboardEvent;
         if (ke.key === 'Escape') {
           ke.preventDefault();
-          pop.remove();
-          anchor.focus();
+          dismiss(true);
+          return;
+        }
+        if (ke.key === 'ArrowDown' || ke.key === 'ArrowRight') {
+          ke.preventDefault();
+          focusOpt(i + 1);
+          return;
+        }
+        if (ke.key === 'ArrowUp' || ke.key === 'ArrowLeft') {
+          ke.preventDefault();
+          focusOpt(i - 1);
+          return;
+        }
+        if (ke.key === 'Home') {
+          ke.preventDefault();
+          focusOpt(0);
+          return;
+        }
+        if (ke.key === 'End') {
+          ke.preventDefault();
+          focusOpt(opts.length - 1);
           return;
         }
         this.keyboardActivate(ke, () => choose(optEl));
       });
     });
-    const firstOpt = (pop.querySelector('.tal-choice-opt.sel') ??
-      pop.querySelector('.tal-choice-opt')) as HTMLElement | null;
-    firstOpt?.focus();
-    // Return focus to the node that opened the flyout when it is dismissed by an
-    // outside click, mirroring the Escape path (keyboard users are not dumped to body).
-    // Guard on the popup still being attached: a prior Escape / selection dismiss
-    // (choose() -> render()) already removed it, and this once:true listener would
-    // otherwise fire on the NEXT click and yank focus onto a stale/detached anchor.
+    focusOpt(rovingIdx);
+    // The popup is appended to document.body (its position:fixed math needs the
+    // viewport, and the .window transform would otherwise become its containing
+    // block), so it lives OUTSIDE the talents dialog's focus trap. Dismiss it the
+    // moment focus leaves it (Tab-out, click-away), returning focus to the anchor, so
+    // a keyboard user can never escape the dialog through the flyout (P15b re-audit).
+    pop.addEventListener('focusout', (e) => {
+      if (!pop.contains((e as FocusEvent).relatedTarget as Node | null)) dismiss(true);
+    });
+    // A click anywhere outside also dismisses it (added a tick later so the opening
+    // click does not immediately close it). dismiss() is idempotent; the contains(pop)
+    // guard means a stale listener left by a popup that was replaced (opening a second
+    // choice node removes the first via getElementById without calling its dismiss) no
+    // longer fires and cannot yank focus to the old anchor.
     setTimeout(
       () =>
         document.addEventListener(
           'click',
           () => {
-            if (!document.body.contains(pop)) return;
-            pop.remove();
-            anchor.focus();
+            if (document.body.contains(pop)) dismiss(true);
           },
           { once: true },
         ),

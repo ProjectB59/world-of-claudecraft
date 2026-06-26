@@ -158,14 +158,22 @@ export class SpellbookWindow {
         const id = btn.dataset.abilityId;
         if (!id) return;
         const onBar = barIds.has(id);
-        btn.textContent = onBar ? '-' : '+';
-        btn.classList.toggle('remove', onBar);
-        btn.setAttribute('aria-pressed', onBar ? 'true' : 'false');
-        // Keep the accessible name in sync with the toggle state (P15b): appendRow
-        // sets `${name} +/-`, but this in-place refresh used to leave it stale when
-        // the bar changed under an open window. Same symbol-concat format as appendRow.
-        const def = ABILITIES[id];
-        if (def) btn.setAttribute('aria-label', `${this.abilityName(def)} ${onBar ? '-' : '+'}`);
+        // Elide the toggle-state writes: this runs every frame while the window is
+        // open, but the +/- text, the remove class, and the accessible name only
+        // change when on-bar membership flips (a drag-drop / keybind use), which
+        // aria-pressed already records. Recomputing the i18n name + rewriting the
+        // attribute every frame was avoidable churn (P15b re-audit, matches the
+        // P12a elided-writer doctrine). `disabled` stays per-frame: it also depends
+        // on hasFree, which can change without an on-bar flip.
+        if ((btn.getAttribute('aria-pressed') === 'true') !== onBar) {
+          btn.textContent = onBar ? '-' : '+';
+          btn.classList.toggle('remove', onBar);
+          btn.setAttribute('aria-pressed', onBar ? 'true' : 'false');
+          // Keep the accessible name in sync with the toggle state (P15b): appendRow
+          // sets `${name} +/-`. Same symbol-concat format as appendRow.
+          const def = ABILITIES[id];
+          if (def) btn.setAttribute('aria-label', `${this.abilityName(def)} ${onBar ? '-' : '+'}`);
+        }
         btn.disabled = !onBar && !hasFree;
       });
   }

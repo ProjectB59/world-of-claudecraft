@@ -262,12 +262,24 @@ export class OptionsWindow {
   private render(): void {
     const el = this.deps.root();
     // WCAG 2.2 AA (P15b): the Esc/options menu is a focus-trapped window, so name the
-    // root and give it a dialog role. Each sub-view's panelTitle carries id=options-title
-    // (only one is in the DOM at a time), so aria-labelledby names whichever sub-view shows.
+    // root and give it a dialog role.
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'false');
     el.setAttribute('tabindex', '-1');
-    el.setAttribute('aria-labelledby', 'options-title');
+    // Name the dialog per sub-view. Every sub-view paints a <span id="options-title">
+    // via panelTitle()/settingsViewShell() EXCEPT Performance, whose title comes from
+    // the self-contained perf_overlay_settings panel (buildTitle has no such id). That
+    // one view names itself with aria-label from the same key its title renders
+    // (hudChrome.perf.title, no new key), so aria-labelledby never dangles on a nameless
+    // dialog. Keeping the choice here, beside the role, avoids leaking the options-title
+    // DOM-id contract into the perf module (P15b re-audit fix).
+    if (this.view === 'performance') {
+      el.removeAttribute('aria-labelledby');
+      el.setAttribute('aria-label', t('hudChrome.perf.title'));
+    } else {
+      el.removeAttribute('aria-label');
+      el.setAttribute('aria-labelledby', 'options-title');
+    }
     // The wide multi-column layouts belong to their own sub-views; clear each when
     // leaving it so the other sub-views (and the main menu) keep their default width.
     if (this.view !== 'keybinds') el.classList.remove('kb-wide');

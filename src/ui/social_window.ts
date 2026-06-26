@@ -620,7 +620,13 @@ export class SocialWindow {
           level: formatNumber(r.level, { maximumFractionDigits: 0 }),
           className: playerClassDisplayName(r.cls),
         });
-        return `<button type="button" id="soc-sugg-${field}-${i}" class="soc-sugg-item" data-i="${i}" data-name="${esc(r.name)}" role="option"><span class="soc-name">${esc(r.name)}</span><span class="soc-meta">${esc(meta)}</span></button>`;
+        // A non-focusable <div role=option>, not a <button> (P15b re-audit): in an
+        // aria-activedescendant combobox the DOM focus stays on the input while the
+        // arrow keys move the active option, so the options must NOT be in the tab
+        // order (a focusable button would also be pulled into the window's focus-trap
+        // cycle). Mirrors the .ui-dd-item listbox; the mousedown/mousemove handlers
+        // below key off .soc-sugg-item, so a div keeps them working.
+        return `<div id="soc-sugg-${field}-${i}" class="soc-sugg-item" data-i="${i}" data-name="${esc(r.name)}" role="option" aria-selected="false"><span class="soc-name">${esc(r.name)}</span><span class="soc-meta">${esc(meta)}</span></div>`;
       })
       .join('');
     box.style.display = 'block';
@@ -655,6 +661,7 @@ export class SocialWindow {
     box.querySelectorAll('.soc-sugg-item').forEach((it) => {
       const on = Number((it as HTMLElement).dataset.i) === this.suggest.index;
       it.classList.toggle('active', on);
+      it.setAttribute('aria-selected', on ? 'true' : 'false');
       if (on) (it as HTMLElement).scrollIntoView({ block: 'nearest' });
     });
     const input = this.suggestInput(field);
