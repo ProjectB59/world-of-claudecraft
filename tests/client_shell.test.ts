@@ -735,14 +735,19 @@ describe('client HTML shell', () => {
     expect(partyFrameRowTs).toContain("btn.id = 'party-leave';");
 
     // Aura slots (P12b): one node per aura id, held in a keyed pool and built once in
-    // createNode() as .buff > .dur + .stacks.
+    // createNode() as .buff > .dur + .stacks. The hud.ts-wiring assertion (mirroring the
+    // party-frame pattern) pins that hud.ts DELEGATES to the painter, so re-inlining the
+    // pool into hud.ts fails here, not just deleting the builder from the painter file.
+    expect(hudTs).toContain('new AurasPainter(');
     expect(aurasPainterTs).toContain('private readonly pool = new Map<string, PooledAura>();');
     expect(aurasPainterTs).toContain("const DUR_CLASS = 'dur';");
     expect(aurasPainterTs).toContain("const STACKS_CLASS = 'stacks';");
     expect(aurasPainterTs).toContain('this.createNode()');
 
     // FCT nodes (P13b): a fixed-size pre-allocated div ring capped at FCT_POOL_CAP, each
-    // node aria-hidden, never createElement'd per combat event.
+    // node aria-hidden, never createElement'd per combat event. hud.ts delegates to the
+    // painter (the wiring assertion), so a re-inline fails here too.
+    expect(hudTs).toContain('new FctPainter(');
     expect(fctPainterTs).toContain('export const FCT_POOL_CAP = 64;');
     expect(fctPainterTs).toContain("const FCT_BASE_CLASS = 'fct';");
     expect(fctPainterTs).toContain('node.className = FCT_BASE_CLASS;');
