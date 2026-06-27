@@ -186,6 +186,7 @@ import {
 } from './i18n';
 import { iconDataUrl, QUALITY_COLOR, raidMarkerDataUrl } from './icons';
 import { itemStatDeltas } from './item_compare';
+import { ReannounceMarker } from './live_region_reannounce';
 import { PICK_ACTION_HOTKEYS } from './lockpick_panel';
 import { LockpickWindow } from './lockpick_window';
 import { reconcileLootRolls as computeLootRollReconcile } from './loot_roll_reconcile';
@@ -672,13 +673,21 @@ export class Hud {
   });
   // Off-screen polite live region for the current target's name, announced once per target
   // CHANGE (P18d item 1), never per frame. A separate node from #combat-live so it never
-  // re-announces what the combat summary speaks; the announce is written through the elided
-  // setText writer so the per-frame target path stays write-elided.
+  // re-announces what the combat summary speaks. The announce writes textContent DIRECTLY
+  // (NOT the per-frame elided setText, like the combat + chat announcer sinks): two distinct
+  // mobs of the same TEMPLATE share a display name, and the elided writer skips an identical
+  // write, so routing through it would swallow every same-named re-target and the region would
+  // fall silent on a screen reader. The path is change-gated on the target id, so it is an
+  // event write, not a per-frame write; the perf tour acquires no target, so the floor holds.
   private targetLiveEl = $('#target-live');
   // The last target id announced into #target-live, tracked SEPARATELY from the paint
   // cadence id (lastTargetFrameId) so the announce fires on the real id change, not the
   // throttled repaint; reset to null on no-target so re-acquiring the SAME target re-announces.
   private lastAnnouncedTargetId: number | null = null;
+  // Forces a byte-different write when consecutive targets share a display name (a pack of
+  // identically-named mobs) so the polite region re-reads on every re-target, mirroring the
+  // combat-summary re-announce (P18d item 4). The shared DOM-free deterministic marker.
+  private readonly targetReannounce = new ReannounceMarker();
   // Dedicated tab-independent off-screen polite live region for chat (P18d items 3 + 5):
   // #chatlog goes display:none on the combat tab (a display:none live region is silent), so
   // chat rides this always-present region instead, throttled by ChatAnnouncer so a chat
@@ -4226,12 +4235,13 @@ export class Hud {
       const targetChanged = target.id !== this.lastTargetFrameId;
       // Announce the new target's name into the polite #target-live region once per target
       // CHANGE (P18d item 1), tracked by lastAnnouncedTargetId independently of the paint
-      // cadence so it fires on the real id change, not the throttled repaint. The change gate
-      // means it does not write per frame; the write itself routes through the elided setText
-      // writer so the per-frame target path stays write-elided.
+      // cadence so it fires on the real id change, not the throttled repaint. Write textContent
+      // DIRECTLY through the re-announce marker (NOT the elided setText): a pack of same-template
+      // mobs share a display name, so the elided writer would skip every same-named re-target and
+      // the region would fall silent; the marker forces a byte-different value so it re-reads. The
+      // change gate means this is an event write, not a per-frame write.
       if (target.id !== this.lastAnnouncedTargetId) {
-        this.setText(
-          this.targetLiveEl,
+        this.targetLiveEl.textContent = this.targetReannounce.mark(
           t('hudChrome.unitFrame.targetAnnounce', { name: entityDisplayName(target) }),
         );
         this.lastAnnouncedTargetId = target.id;
@@ -4328,13 +4338,15 @@ export class Hud {
       // the P14a cadence id too, so re-acquiring a target bypasses the low-tier throttle
       // and paints immediately (targetChanged becomes true on the next frame with a target).
       this.lastTargetFrameId = null;
-      // Clear the target-name live region on the transition to no-target, and reset the
-      // tracker so re-acquiring the SAME target re-announces (P18d item 1). GATED on the
-      // tracker so it fires only on the clear EDGE, never per frame: with no target (e.g. the
-      // whole perf tour, which acquires none) the region is never written, so the hot-write
-      // bypass count anchor is unchanged. The write routes through the elided setText writer.
+      // Clear the target-name live region on the transition to no-target, and reset BOTH the
+      // tracker and the re-announce marker so re-acquiring the SAME target re-announces cleanly
+      // (P18d item 1). GATED on the tracker so it fires only on the clear EDGE, never per frame:
+      // with no target (e.g. the whole perf tour, which acquires none) the region is never
+      // written, so the per-frame floor is unchanged. Direct textContent write (matching the
+      // announce above), not the elided setText.
       if (this.lastAnnouncedTargetId !== null) {
-        this.setText(this.targetLiveEl, '');
+        this.targetLiveEl.textContent = '';
+        this.targetReannounce.reset();
         this.lastAnnouncedTargetId = null;
       }
       this.targetFramePainter.paint(unitFrameView(ABSENT_TARGET_DESCRIPTOR));

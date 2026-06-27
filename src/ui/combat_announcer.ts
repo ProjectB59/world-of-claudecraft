@@ -9,25 +9,25 @@
 // this module owns only the buffer + throttle state. It announces the latest combat
 // line per interval (a burst collapses to the most recent), and never re-localizes:
 // the line it relays is already a t()-localized string built at the combatLog call
-// site, so no new player-visible text is introduced here.
+// site, so no new player-visible text is introduced here. An identical consecutive
+// summary is re-read via the shared ./live_region_reannounce marker (P18d item 4).
 import {
   COMBAT_ANNOUNCE_INTERVAL_MS,
   combatAnnounceDue,
   combatLineKind,
   liveRegionPoliteness,
 } from './live_region_politeness';
+import { ReannounceMarker } from './live_region_reannounce';
 
 export class CombatAnnouncer {
   // The latest buffered line awaiting announcement, or null when nothing is pending.
   private pending: string | null = null;
   // Last announcement time; -Infinity so the first line announces immediately.
   private lastAnnounce = Number.NEGATIVE_INFINITY;
-  // The last LOGICAL text actually announced (before any re-announce marker), plus a
-  // deterministic toggle, so an identical consecutive summary still mutates the sink text
-  // and a screen reader that suppresses unchanged live text re-reads it (P18d item 4).
-  // State only (no clock, no randomness), so the module stays DOM-free and deterministic.
-  private lastText: string | null = null;
-  private reannounceToggle = false;
+  // Forces a byte-different sink write on an identical consecutive summary so a screen reader
+  // that suppresses unchanged live text still re-reads it (P18d item 4). DOM-free + deterministic
+  // (internal toggle, no clock / randomness); shared with the chat + target-name regions.
+  private readonly reannounce = new ReannounceMarker();
 
   constructor(
     private readonly setText: (summary: string) => void,
@@ -49,33 +49,15 @@ export class CombatAnnouncer {
 
   /**
    * Flush the buffered summary if the throttle interval has elapsed. Called from
-   * push() and from the HUD per-frame tick so a trailing burst still drains.
+   * push() and from the HUD per-frame tick so a trailing burst still drains. The
+   * shared ReannounceMarker forces a byte-different write when the summary is identical
+   * to the one last announced, so an unchanged summary still re-reads.
    */
   flush(now: number): void {
     if (this.pending === null) return;
     if (!combatAnnounceDue(now, this.lastAnnounce, this.interval)) return;
-    this.setText(this.markedFor(this.pending));
-    this.lastText = this.pending;
+    this.setText(this.reannounce.mark(this.pending));
     this.pending = null;
     this.lastAnnounce = now;
-  }
-
-  /**
-   * Force a byte-different string when the new summary equals the one last announced, so an
-   * identical consecutive announcement still re-reads on a screen reader that suppresses
-   * unchanged live text. The marker is a single trailing non-breaking space (U+00A0)
-   * toggled on then off: it does not change how the summary reads aloud, and because push()
-   * trims (and trim() strips U+00A0) the logical text can never naturally end in the marker,
-   * so a marked and an unmarked string never collide with a real line. A changed summary is
-   * returned byte-faithful (the toggle resets). Deterministic: the toggle is internal state,
-   * never a clock or a random draw, so the same sequence yields the same sink writes.
-   */
-  private markedFor(text: string): string {
-    if (text !== this.lastText) {
-      this.reannounceToggle = false;
-      return text;
-    }
-    this.reannounceToggle = !this.reannounceToggle;
-    return this.reannounceToggle ? `${text}\u00a0` : text;
   }
 }

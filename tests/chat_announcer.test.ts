@@ -70,3 +70,30 @@ describe('ChatAnnouncer burst throttle (CHAT_ANNOUNCE_INTERVAL_MS, never asserti
     expect(calls).toEqual(['a', 'c']);
   });
 });
+
+describe('ChatAnnouncer identical-consecutive re-announce (parity with combat)', () => {
+  it('forces a byte-different sink write when the same line repeats across intervals', () => {
+    const { sink, calls } = recorder();
+    const announcer = new ChatAnnouncer(sink);
+    // Same sender repeating the same message (chat timestamps default off, so byte-identical):
+    // a content-deduping screen reader would stay silent on the repeats without a forced mutation.
+    announcer.push('Thrall: lol', 0);
+    announcer.push('Thrall: lol', CHAT_ANNOUNCE_INTERVAL_MS);
+    announcer.push('Thrall: lol', CHAT_ANNOUNCE_INTERVAL_MS * 2);
+    expect(calls.length).toBe(3);
+    expect(calls[0]).toBe('Thrall: lol');
+    expect(calls[1]).not.toBe(calls[0]);
+    expect(calls[2]).not.toBe(calls[1]);
+    // The marker never changes how the line reads aloud: trimming it returns the original.
+    expect(calls[1].trim()).toBe('Thrall: lol');
+    expect(calls[2].trim()).toBe('Thrall: lol');
+  });
+
+  it('leaves a changed line byte-faithful (no marker on non-identical text)', () => {
+    const { sink, calls } = recorder();
+    const announcer = new ChatAnnouncer(sink);
+    announcer.push('Thrall: hi', 0);
+    announcer.push('Aria: hi', CHAT_ANNOUNCE_INTERVAL_MS);
+    expect(calls).toEqual(['Thrall: hi', 'Aria: hi']);
+  });
+});

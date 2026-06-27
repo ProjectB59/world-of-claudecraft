@@ -20,19 +20,26 @@
 // agnostic time comparison), so chat reuses it rather than re-spelling the cadence math. It
 // announces the latest chat line per interval (a burst collapses to the most recent), and
 // never re-localizes: the line it relays is the already-rendered chat text built at the
-// append site, so no new player-visible text is introduced here.
+// append site, so no new player-visible text is introduced here. An identical consecutive
+// line is re-read via the shared ./live_region_reannounce marker, exactly as combat does.
 import {
   CHAT_ANNOUNCE_INTERVAL_MS,
   chatLineKind,
   combatAnnounceDue,
   liveRegionPoliteness,
 } from './live_region_politeness';
+import { ReannounceMarker } from './live_region_reannounce';
 
 export class ChatAnnouncer {
   // The latest buffered line awaiting announcement, or null when nothing is pending.
   private pending: string | null = null;
   // Last announcement time; -Infinity so the first line announces immediately.
   private lastAnnounce = Number.NEGATIVE_INFINITY;
+  // Forces a byte-different sink write on an identical consecutive line (e.g. the same player
+  // repeating the same message, which with chat timestamps off is byte-identical) so a screen
+  // reader that suppresses unchanged live text still re-reads it, matching combat. DOM-free +
+  // deterministic; the shared marker the combat + target-name regions also use.
+  private readonly reannounce = new ReannounceMarker();
 
   constructor(
     private readonly setText: (summary: string) => void,
@@ -59,7 +66,7 @@ export class ChatAnnouncer {
   flush(now: number): void {
     if (this.pending === null) return;
     if (!combatAnnounceDue(now, this.lastAnnounce, this.interval)) return;
-    this.setText(this.pending);
+    this.setText(this.reannounce.mark(this.pending));
     this.pending = null;
     this.lastAnnounce = now;
   }
