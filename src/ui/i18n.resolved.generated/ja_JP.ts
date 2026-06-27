@@ -227,7 +227,8 @@ export const ja_JP: EnTranslations = {
       "targetLabel": "Your Mark",
       "targetAnnounce": "Mark {name}",
       "partyLabel": "Your Band",
-      "partyGroup": "グループ {n}"
+      "partyGroup": "グループ {n}",
+      "durationUnitSeconds": "s"
     },
     "character": {
       "modelPreview": "キャラクターモデルプレビュー"

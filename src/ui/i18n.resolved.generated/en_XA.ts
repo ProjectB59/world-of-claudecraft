@@ -227,7 +227,8 @@ export const en_XA: EnTranslations = {
       "targetLabel": "[Ýóúŕ Ɱáŕķ]",
       "targetAnnounce": "[Ɱáŕķ {name}]",
       "partyLabel": "[Ýóúŕ Ɓáñð]",
-      "partyGroup": "[Ĝŕóúþ {n}]"
+      "partyGroup": "[Ĝŕóúþ {n}]",
+      "durationUnitSeconds": "[š]"
     },
     "character": {
       "modelPreview": "[Çĥáŕáçţéŕ Ɱóðéļ Þŕéʋíéŵ]"

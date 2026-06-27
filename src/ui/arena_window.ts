@@ -30,13 +30,21 @@ import {
   buildArenaView,
 } from './arena_window_view';
 import { markDialogRoot } from './dialog_root';
-import { tEntity } from './entity_i18n';
+import { classDisplayName } from './entity_i18n';
 import { esc } from './esc';
 import { formatNumber, t } from './i18n';
 import { svgIcon } from './ui_icons';
 
 // Best-effort all-time ladder pull is throttled per bracket to this interval.
 const LEADERBOARD_REFETCH_MS = 15000;
+
+// Render-skip sentinel for the offline panel: once-per-open guard so the static offline
+// note is not rebuilt every ~250ms mediumHud tick. The live signature is always
+// `JSON.stringify([...])` (it starts with '['), so this plain token (which never starts with
+// '[') can never equal a real sig: an offline->live transition rebuilds (live sig never matches
+// the sentinel) and a
+// live->offline transition rebuilds once (lastSig holds a real sig, not the sentinel).
+const ARENA_OFFLINE_SIG = 'arena-offline';
 
 /**
  * Hud-supplied glue. The arena window renders entirely from IWorld + these
@@ -144,8 +152,11 @@ export class ArenaWindow {
     });
 
     if (view.kind === 'offline') {
-      // offline / not yet synced: arena is an online ranked feature. Rebuilt each
-      // call (no skip), matching the inline site.
+      // offline / not yet synced: arena is an online ranked feature. The static note is
+      // built once per open (skip-guarded by the offline sentinel) instead of every
+      // ~250ms mediumHud tick.
+      if (this.lastSig === ARENA_OFFLINE_SIG) return;
+      this.lastSig = ARENA_OFFLINE_SIG;
       el.innerHTML = this.offlineHtml();
       el.querySelector('[data-close]')?.addEventListener('click', () => this.close());
       return;
@@ -236,7 +247,7 @@ export class ArenaWindow {
     if (section.kind === 'members') {
       const rows = section.members
         .map((m) => {
-          const cls = m.knownClass ? this.classDisplayName(m.cls) : m.cls;
+          const cls = m.knownClass ? classDisplayName(m.cls as PlayerClass) : m.cls;
           return (
             `<div class="arena-party-row${m.me ? ' me' : ''}"><span class="apr-name">${esc(m.name)}</span>` +
             `<span class="apr-meta">${esc(
@@ -277,7 +288,7 @@ export class ArenaWindow {
   private ladderHtml(rows: ArenaLadderRow[]): string {
     const html = rows
       .map((r) => {
-        const cls = r.knownClass ? this.classDisplayName(r.cls) : r.cls;
+        const cls = r.knownClass ? classDisplayName(r.cls as PlayerClass) : r.cls;
         return (
           `<div class="ladder-row${r.me ? ' me' : ''}"><span class="rank">${esc(formatNumber(r.rank, { maximumFractionDigits: 0 }))}</span>` +
           `<span class="lr-name" title="${esc(t('hud.arena.playerClassTitle', { name: r.name, className: cls }))}">${esc(r.name)}</span>` +
@@ -292,7 +303,7 @@ export class ArenaWindow {
   private allTimeHtml(rows: ArenaAllTimeRow[]): string {
     return rows
       .map((r) => {
-        const cls = r.knownClass ? this.classDisplayName(r.cls) : r.cls;
+        const cls = r.knownClass ? classDisplayName(r.cls as PlayerClass) : r.cls;
         return (
           `<div class="ladder-row${r.me ? ' me' : ''}"><span class="rank">${esc(formatNumber(r.rank, { maximumFractionDigits: 0 }))}</span>` +
           `<span class="lr-name" title="${esc(
@@ -311,9 +322,5 @@ export class ArenaWindow {
 
   private bracketLabel(fmt: ArenaFormat): string {
     return fmt === 'fiesta' ? t('fiesta.bracket') : fmt;
-  }
-
-  private classDisplayName(cls: string): string {
-    return tEntity({ kind: 'class', id: cls as PlayerClass, field: 'name' });
   }
 }

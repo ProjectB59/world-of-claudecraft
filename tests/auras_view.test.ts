@@ -24,6 +24,7 @@ function deps(): AurasDeps {
     iconId: (a) => (a.id.startsWith('aura_') ? `aura_${a.kind}` : a.id),
     auraName: (a) => `name:${a.name}`,
     formatStacks: (n) => String(n),
+    durationUnitSuffix: () => 's',
   };
 }
 
@@ -130,6 +131,13 @@ describe('createAurasView: derivation per mode', () => {
     expect(s.stacksText).toBe('5');
     expect(s.name).toBe('name:Rend');
     expect(s.remaining).toBe(4.2);
+  });
+
+  it('appends the INJECTED duration unit suffix (so an in-game language switch lands next tick)', () => {
+    // The suffix is a fired dep, not a hardcoded 's': a localized host swaps it per language.
+    const localized: AurasDeps = { ...deps(), durationUnitSuffix: () => ' sec' };
+    const state = createAurasView('all', localized).tick(entity([aura({ id: 'a', remaining: 4.2 })]));
+    expect(state.slots[0].durationText).toBe('5 sec'); // ceil(4.2)=5 + injected suffix
   });
 
   it('hides the duration label at/above the permanent threshold (>= 99s)', () => {

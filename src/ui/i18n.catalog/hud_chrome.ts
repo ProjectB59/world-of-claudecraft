@@ -117,6 +117,12 @@ export const hudChromeStrings = {
     // ru_RU) carry real fills, the Latin overlays stay pending. Title Case does not help
     // (M16 is per-word consecutive-lowercase, not word count).
     partyGroup: 'Group {n}',
+    // durationUnitSeconds is the unit suffix appended to an aura's remaining-seconds count on
+    // the buff/debuff strip (e.g. "5s"). The auras core (auras_view.ts) renders it via the
+    // injected durationUnitSuffix() dep so an in-game language switch lands next tick. A single
+    // char (non-wordy: no four-plus consecutive-lowercase run), so an English-filled non-Latin
+    // overlay does not trip the M16 untranslated-leak guard; the maintainer localizes at release.
+    durationUnitSeconds: 's',
   },
   // Character sheet (#char-window) accessible names. modelPreview names the role=img 3D
   // turntable HOST distinctly from the title's level/class subtitle (the canvas pixels

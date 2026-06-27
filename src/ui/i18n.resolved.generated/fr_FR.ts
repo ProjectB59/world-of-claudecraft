@@ -227,7 +227,8 @@ export const fr_FR: EnTranslations = {
       "targetLabel": "Your Mark",
       "targetAnnounce": "Mark {name}",
       "partyLabel": "Your Band",
-      "partyGroup": "Group {n}"
+      "partyGroup": "Group {n}",
+      "durationUnitSeconds": "s"
     },
     "character": {
       "modelPreview": "Character Model Preview"

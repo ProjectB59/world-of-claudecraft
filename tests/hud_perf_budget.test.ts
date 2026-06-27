@@ -548,6 +548,7 @@ function aurasDeps(): AurasDeps {
     iconId: (a) => a.id,
     auraName: (a) => a.name,
     formatStacks: (n) => String(n),
+    durationUnitSuffix: () => 's',
   };
 }
 

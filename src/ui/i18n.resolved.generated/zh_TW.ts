@@ -227,7 +227,8 @@ export const zh_TW: EnTranslations = {
       "targetLabel": "Your Mark",
       "targetAnnounce": "Mark {name}",
       "partyLabel": "Your Band",
-      "partyGroup": "小隊 {n}"
+      "partyGroup": "小隊 {n}",
+      "durationUnitSeconds": "s"
     },
     "character": {
       "modelPreview": "角色模型預覽"

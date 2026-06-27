@@ -149,8 +149,16 @@ import { DelveMapPainter } from './delve_map_painter';
 import { markDialogRoot } from './dialog_root';
 import { dropdownKeyNav } from './dropdown_nav';
 import { emoteIconUrl } from './emote_icons';
-import { itemDisplayName, tEntity } from './entity_i18n';
+import {
+  classDisplayName,
+  dungeonDisplayName,
+  itemDisplayName,
+  tEntity,
+  zoneDisplayName,
+  zonePoiLabel,
+} from './entity_i18n';
 import { esc } from './esc';
+import { fctSpawnShape } from './fct_event';
 import { FctPainter } from './fct_painter';
 import { FocusManager, type FocusTrapHandle } from './focus_manager';
 import {
@@ -2473,6 +2481,7 @@ export class Hud {
     auraName: (a) =>
       ABILITIES[a.id] ? abilityDisplayName(ABILITIES[a.id]) : auraDisplayNameFromSource(a.name),
     formatStacks: (n) => formatNumber(n, { maximumFractionDigits: 0 }),
+    durationUnitSuffix: () => t('hudChrome.unitFrame.durationUnitSeconds'),
   };
   private readonly aurasPainterDeps: AurasPainterDeps = {
     resolveIconUrl: (iconKey) => `url(${iconDataUrl('aura', iconKey)})`,
@@ -4488,8 +4497,10 @@ export class Hud {
       music.update(zone, musicCombat);
       music.setBossCombat(bossEngaged);
 
-      // classic combat indicator: crossed swords + red ring on the player portrait
-      $('#player-frame').classList.toggle('combat', inCombat);
+      // classic combat indicator: crossed swords + red ring on the player portrait.
+      // Routed through the cached ref + the elided toggleClass writer (P18e): a counted,
+      // change-only write replacing a per-frame raw re-querying classList.toggle.
+      this.toggleClass(this.playerFrameEl, 'combat', inCombat);
       // classic "resting" zZz on the player portrait while seated / recovering.
       // Reads the seated booleans IWorld exposes; works offline + online alike.
       const rest = restView({ sitting: !!p.sitting, eating: !!p.eating, drinking: !!p.drinking });
@@ -4527,10 +4538,12 @@ export class Hud {
       }
     }
 
-    // when a bout begins, get the queue panel out of the way for the fight
+    // when a bout begins, get the queue panel out of the way for the fight. Route through
+    // arenaWindow.close() (not a raw hide) so it returns focus to the opener (WCAG 2.4.3,
+    // P18e): close() guards a not-displayed window and tolerates a stale opener.
     const inArenaMatch = !!this.sim.arenaInfo?.match;
     if (inArenaMatch && !this.arenaMatchSeen && $('#arena-window').style.display === 'block') {
-      $('#arena-window').style.display = 'none';
+      this.arenaWindow.close();
     }
     this.arenaMatchSeen = inArenaMatch;
     if (fastHud) {
@@ -5756,18 +5769,28 @@ export class Hud {
           const isPlayerTarget = ev.targetId === sim.playerId;
           if (isPlayerSource || isPlayerTarget) this.lastCombatEventAt = performance.now();
           if (ev.kind === 'miss' || ev.kind === 'dodge') {
-            this.fctPainter.spawn(
-              {
-                kind: ev.kind === 'miss' ? 'miss' : 'dodge',
-                text:
-                  ev.kind === 'miss' ? t('hud.combat.floatingMiss') : t('hud.combat.floatingDodge'),
-                target: tgt,
-                crit: false,
-                // self vs other drives the miss/dodge colour token (#bbb vs #fff).
-                isSelf: isPlayerTarget,
-              },
-              now,
-            );
+            // self vs other (carried on the shape's isSelf) drives the miss/dodge colour
+            // token (#bbb vs #fff); the localized word stays at the call site.
+            const shape = fctSpawnShape({
+              type: 'damage',
+              damageKind: ev.kind,
+              ability: false,
+              crit: false,
+              isPlayerSource,
+              isPlayerTarget,
+            });
+            if (shape)
+              this.fctPainter.spawn(
+                {
+                  ...shape,
+                  text:
+                    ev.kind === 'miss'
+                      ? t('hud.combat.floatingMiss')
+                      : t('hud.combat.floatingDodge'),
+                  target: tgt,
+                },
+                now,
+              );
             // Fiesta: a dodge is a moment — pop a big exaggerated word for it.
             if (ev.kind === 'dodge' && (isPlayerSource || isPlayerTarget) && this.inFiesta()) {
               this.fiestaWordPop(t('fiesta.word.dodge'), '#7fd4ff', 1);
@@ -5784,15 +5807,23 @@ export class Hud {
             }
             break;
           }
-          if (isPlayerSource && !isPlayerTarget) {
+          // A landed hit: the mapper resolves damage-done (player dealt to other) vs
+          // damage-taken (player took) vs null (a hit between two non-player entities, which
+          // floats nothing). The amount text + target entity stay at the call site.
+          const hitShape = fctSpawnShape({
+            type: 'damage',
+            damageKind: 'hit',
+            ability: !!ev.ability,
+            crit: ev.crit,
+            isPlayerSource,
+            isPlayerTarget,
+          });
+          if (
+            hitShape &&
+            (hitShape.kind === 'damage-done-ability' || hitShape.kind === 'damage-done-auto')
+          ) {
             this.fctPainter.spawn(
-              {
-                kind: ev.ability ? 'damage-done-ability' : 'damage-done-auto',
-                text: `${ev.amount}${ev.crit ? '!' : ''}`,
-                target: tgt,
-                crit: ev.crit,
-                isSelf: false,
-              },
+              { ...hitShape, text: `${ev.amount}${ev.crit ? '!' : ''}`, target: tgt },
               now,
             );
             this.combatLog(
@@ -5803,15 +5834,12 @@ export class Hud {
               }),
               ev.ability ? '#ffe97a' : '#eee',
             );
-            // combat SFX (swing + material/school impact + crit) is spatial now —
+            // combat SFX (swing + material/school impact + crit) is spatial now;
             // see playEventSfx, which runs for every damage event above.
             // Fiesta: every blow you land kicks the camera (bigger on a crit).
             if (this.inFiesta()) this.renderer.addShake(ev.crit ? 0.3 : 0.12);
-          } else if (isPlayerTarget) {
-            this.fctPainter.spawn(
-              { kind: 'damage-taken', text: `-${ev.amount}`, target: tgt, crit: ev.crit, isSelf: true },
-              now,
-            );
+          } else if (hitShape && hitShape.kind === 'damage-taken') {
+            this.fctPainter.spawn({ ...hitShape, text: `-${ev.amount}`, target: tgt }, now);
             this.combatLog(
               t(ev.crit ? 'hud.combat.damageTakenCrit' : 'hud.combat.damageTaken', {
                 source: src ? entityDisplayName(src) : '?',
@@ -5828,17 +5856,13 @@ export class Hud {
           if (ev.amount > 0) {
             const healed =
               ev.targetId === sim.playerId ? sim.player : sim.entities.get(ev.targetId);
-            if (healed)
-              this.fctPainter.spawn(
-                {
-                  kind: 'heal',
-                  text: `+${ev.amount}`,
-                  target: healed,
-                  crit: false,
-                  isSelf: ev.targetId === sim.playerId,
-                },
-                now,
-              );
+            const shape = fctSpawnShape({
+              type: 'heal',
+              crit: false,
+              isPlayerTarget: ev.targetId === sim.playerId,
+            });
+            if (healed && shape)
+              this.fctPainter.spawn({ ...shape, text: `+${ev.amount}`, target: healed }, now);
           }
           break;
         }
@@ -5849,27 +5873,23 @@ export class Hud {
           break;
         }
         case 'xp': {
-          this.fctPainter.spawn(
-            {
-              kind: 'xp',
-              text: t('hud.core.xpFloat', { amount: ev.amount }),
-              target: sim.player,
-              crit: false,
-              isSelf: true,
-            },
-            now,
-          );
-          if (ev.rested && ev.rested > 0) {
+          const xpShape = fctSpawnShape({ type: 'xp' });
+          if (xpShape)
             this.fctPainter.spawn(
-              {
-                kind: 'rested-xp',
-                text: t('hud.core.xpFloatRested', { amount: ev.rested }),
-                target: sim.player,
-                crit: false,
-                isSelf: true,
-              },
+              { ...xpShape, text: t('hud.core.xpFloat', { amount: ev.amount }), target: sim.player },
               now,
             );
+          if (ev.rested && ev.rested > 0) {
+            const restedShape = fctSpawnShape({ type: 'rested-xp' });
+            if (restedShape)
+              this.fctPainter.spawn(
+                {
+                  ...restedShape,
+                  text: t('hud.core.xpFloatRested', { amount: ev.rested }),
+                  target: sim.player,
+                },
+                now,
+              );
             this.log(
               t('hud.core.xpGainRested', { amount: ev.amount, rested: ev.rested }),
               '#a980d8',
@@ -6118,16 +6138,16 @@ export class Hud {
         case 'heal2': {
           const tgt = sim.entities.get(ev.targetId);
           if (tgt && ev.amount > 0) {
-            this.fctPainter.spawn(
-              {
-                kind: 'heal',
-                text: `+${ev.amount}${ev.crit ? '!' : ''}`,
-                target: tgt,
-                crit: ev.crit,
-                isSelf: ev.targetId === sim.playerId,
-              },
-              now,
-            );
+            const shape = fctSpawnShape({
+              type: 'heal',
+              crit: ev.crit,
+              isPlayerTarget: ev.targetId === sim.playerId,
+            });
+            if (shape)
+              this.fctPainter.spawn(
+                { ...shape, text: `+${ev.amount}${ev.crit ? '!' : ''}`, target: tgt },
+                now,
+              );
             if (ev.sourceId === sim.playerId) {
               const selfTarget = ev.targetId === sim.playerId;
               this.combatLog(
@@ -6983,10 +7003,9 @@ export class Hud {
   // as the combat floaters via the self-note kind (the #ff8c66 colour token). Throttling
   // is the caller's job (main.ts gates it behind IMMOBILE_NOTE_THROTTLE_MS).
   showSelfNote(text: string): void {
-    this.fctPainter.spawn(
-      { kind: 'self-note', text, target: this.sim.player, crit: false, isSelf: true },
-      performance.now(),
-    );
+    const shape = fctSpawnShape({ type: 'self-note' });
+    if (shape)
+      this.fctPainter.spawn({ ...shape, text, target: this.sim.player }, performance.now());
     // Also route the self-note into the polite #combat-live region (P18d item 2): the
     // self-note is the one FCT-only event with NO combat-log line, so without this it would
     // never be announced. The text is already t()-localized (e.g. "Can't move!") so nothing
@@ -10154,10 +10173,6 @@ function abilityDisplayDescription(def: AbilityDef, damageText: string): string 
   });
 }
 
-function classDisplayName(cls: PlayerClass): string {
-  return tEntity({ kind: 'class', id: cls, field: 'name' });
-}
-
 function itemDisplayNameFromSource(name: string): string {
   const item = Object.values(ITEMS).find((candidate) => candidate.name === name);
   return item ? itemDisplayName(item) : name;
@@ -10209,20 +10224,8 @@ function questTitleFromSource(name: string): string {
   return quest ? questTitle(quest.id) : name;
 }
 
-function zoneDisplayName(zoneId: string): string {
-  return tEntity({ kind: 'zone', id: zoneId, field: 'name' });
-}
-
 function zoneWelcome(zoneId: string): string {
   return tEntity({ kind: 'zone', id: zoneId, field: 'welcome' });
-}
-
-function zonePoiLabel(zoneId: string, poiIndex: number): string {
-  return tEntity({ kind: 'zonePoi', zoneId, poiIndex, field: 'label' });
-}
-
-function dungeonDisplayName(dungeonId: string): string {
-  return tEntity({ kind: 'dungeon', id: dungeonId, field: 'name' });
 }
 
 function dungeonText(dungeonId: string, field: 'enterText' | 'leaveText'): string {

@@ -63,10 +63,6 @@ export const DEBUFF_AURA_KINDS: ReadonlySet<AuraKind> = new Set<AuraKind>([
 // reads as effectively permanent and the label is blank (byte-faithful to the old
 // `a.remaining < 99 ? ... : ''`).
 const DURATION_HIDE_THRESHOLD = 99;
-// The duration unit suffix. NOT a t() key: the old inline site hardcoded `${n}s` with
-// no localization, and this is a byte-faithful extraction, not a new string (a real
-// localization of aura durations would be a separate, deliberate i18n change).
-const DURATION_UNIT_SUFFIX = 's';
 
 /** Which aura strip a view drives: every aura (the player buff bar) or debuffs only
  *  (the target frame). */
@@ -100,6 +96,10 @@ export interface AurasDeps {
   auraName(aura: AuraInput): string;
   /** The formatted stack count (host: `formatNumber(stacks, {maximumFractionDigits:0})`). */
   formatStacks(stacks: number): string;
+  /** The localized duration unit suffix appended to the remaining-seconds count (host:
+   *  `t('hudChrome.unitFrame.durationUnitSeconds')`, English 's'). Fired every frame like the
+   *  deps above so an in-game language switch lands on the next tick. */
+  durationUnitSuffix(): string;
 }
 
 /** One aura's derived state. All fields are mutated IN PLACE each tick; the object
@@ -195,7 +195,7 @@ export function createAurasView(mode: AuraMode, deps: AurasDeps): AurasView {
         slot.isDebuff = debuff;
         slot.durationText =
           a.remaining < DURATION_HIDE_THRESHOLD
-            ? `${Math.ceil(a.remaining)}${DURATION_UNIT_SUFFIX}`
+            ? `${Math.ceil(a.remaining)}${deps.durationUnitSuffix()}`
             : '';
         slot.stacksText = a.stacks && a.stacks > 1 ? deps.formatStacks(a.stacks) : '';
         slot.name = deps.auraName(a);

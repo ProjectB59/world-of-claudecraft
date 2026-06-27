@@ -227,7 +227,8 @@ export const ru_RU: EnTranslations = {
       "targetLabel": "Your Mark",
       "targetAnnounce": "Mark {name}",
       "partyLabel": "Your Band",
-      "partyGroup": "Группа {n}"
+      "partyGroup": "Группа {n}",
+      "durationUnitSeconds": "s"
     },
     "character": {
       "modelPreview": "Предпросмотр модели персонажа"

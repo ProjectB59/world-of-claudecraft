@@ -227,7 +227,8 @@ export const ko_KR: EnTranslations = {
       "targetLabel": "Your Mark",
       "targetAnnounce": "Mark {name}",
       "partyLabel": "Your Band",
-      "partyGroup": "{n}번 그룹"
+      "partyGroup": "{n}번 그룹",
+      "durationUnitSeconds": "s"
     },
     "character": {
       "modelPreview": "캐릭터 모델 미리보기"

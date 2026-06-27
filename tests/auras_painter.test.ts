@@ -486,6 +486,7 @@ describe('AurasPainter: a wire-faithful buff_* stat-sap survives the low cap (vi
       iconId: (a) => a.id,
       auraName: (a) => a.name,
       formatStacks: (n) => String(n),
+      durationUnitSuffix: () => 's',
     };
     const view = createAurasView('all', viewDeps);
     // cap+2 leading raid buffs (the worst case), then the negative-value sap last.
