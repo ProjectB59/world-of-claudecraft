@@ -50,7 +50,10 @@ i18n catalog/matchers/gates (`localization_fixes`, `localization_coverage`, `i18
 `architecture.test.ts` is the `src/sim` purity backstop: it scans every sim file and
 fails on a render/ui/game/net/three import, a DOM global, or a `Math.random`/`Date.now`/
 `performance.now`, so the host-agnostic and determinism invariants are enforced, not just
-documented. Run it after any `src/sim/` change.
+documented. Run it after any `src/sim/` change. It ALSO completeness-checks the UI/render
+pure cores: every on-disk `src/ui`/`src/render` `*_view`/`*_core` must be registered in
+`UI_PURE_CORES`/`RENDER_PURE_CORES`, so a NEW pure core MUST follow the `*_view`/`*_core`
+naming (a bare name escapes the reverse sweep) and be registered, or the guard fails.
 `malware_scan.test.ts` is the release-gate backstop: it imports the signature catalog from
 `scripts/malware_scan.mjs` and asserts each rule still fires on a planted sample, stays quiet
 on the repo's real wallet/auth/RNG-seed code, and that the working tree has zero high-severity

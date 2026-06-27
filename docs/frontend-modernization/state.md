@@ -6,8 +6,12 @@ end of every phase (Step 6).
 
 Branch: `feature/frontend-modernization-v016` (worktree `/Users/fernando/Documents/wocc-v0.16.0`),
 branched off `origin/release/v0.16.0` (`e31eb05d`).
-Current phase: P17a (harness floor, test-only) DONE 2026-06-26; the standing test floor + the first
-all-together perf run landed with no per-frame regression. NEXT: phase-17b-bundle-lazy-cross-engine-close.md
+Current phase: P17a (harness floor, test-only) DONE + RE-VERIFIED 2026-06-26; the standing test floor +
+the first all-together perf run landed with no per-frame regression. The re-verification (ultracode
+adversarial Workflow + an independent perf_tour re-run) switched ARM 3 to gate the run-length-independent
+elision-bypass COUNT (`hudHotDomWrites <= 152`, every viewport) after a clean re-run proved the skip
+RATIO is frame-count-noisy (desktop 0.959 vs 0.962, hotWrites still 152); plus ARM 1 forced-reflow scan,
+ARM 2 establishing-write + `.slots` probe, and matcher-teeth self-tests. NEXT: phase-17b-bundle-lazy-cross-engine-close.md
 (the one behavior-affecting source change + the CI gates + packet close). The packet-authoring history
 is kept below for provenance.
 

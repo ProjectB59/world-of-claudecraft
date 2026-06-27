@@ -115,16 +115,22 @@ P10-P14 phases:
   `tests/painter_host.test.ts` guard above). Each green-gate commit is TAGGED so a later
   cumulative regression bisects to a phase. The STANDING vitest perf budget is
   `tests/hud_perf_budget.test.ts` (P17a), split by host so each assertion runs where it is
-  measurable: ARM 1 (Node, every `npm test`) scans every hot painter for raw writes; ARM 2
-  (Node fake-DOM, every `npm test`) drives the non-pooled per-frame painters through a steady
-  loop over a real `makeWriterFacet` and asserts per-painter elision + the aggregate skip-rate
-  stays >= the floor READ from `docs/frontend-modernization/perf-baseline-v016.md` (it throws
-  if absent, never defaults to 0), for BOTH a Sim- and a ClientWorld-shaped input (decision
-  15), plus the `alloc_probe` reference-stability proxy; ARM 3 (gated behind
-  `HUD_PERF_BUDGET_TOUR=1`, the perf row, skipped in bare `npm test`) reads a `perf_tour`
-  artifact + the same baseline and asserts `frameP95 <= reference`, skip-rate >= floor, and
-  the FCT pool stays cap-bounded. perf_tour's mobile profile now boots (landscape 844x390 +
-  `#mobile-preflight` dismissal). The first all-together run held with no per-frame regression.
+  measurable: ARM 1 (Node, every `npm test`) scans every hot painter for raw writes AND
+  per-frame forced-reflow layout reads (offsetWidth/getBoundingClientRect/..., the layout-
+  thrash killer); ARM 2 (Node fake-DOM, every `npm test`) drives the non-pooled per-frame
+  painters through a steady loop over a real `makeWriterFacet` and asserts per-painter
+  establishing-write + elision + a derived skip-rate sanity bound (its loop has a FIXED
+  denominator so the ratio is stable here), for BOTH a Sim- and a ClientWorld-shaped input
+  (decision 15), plus the `alloc_probe` reference-stability proxy (container AND `.slots`);
+  ARM 3 (gated behind `HUD_PERF_BUDGET_TOUR=1`, the perf row, skipped in bare `npm test`)
+  reads a `perf_tour` artifact + the baseline and asserts `frameP95 <= reference` and, on
+  EVERY viewport, the run-length-INDEPENDENT elision-bypass COUNT `hudHotDomWrites <= 152`
+  (NOT the skip RATIO, whose denominator is the frame count and jitters run-to-run: a clean
+  re-run measured desktop 0.959 vs 0.962 with hotWrites still 152), plus the FCT pool stays
+  at/under `FCT_POOL_CAP`. The committed baseline (`perf-baseline-v016.md`) is READ for both
+  the 0.962 ARM-2 floor and the 152 bypass anchor (it throws if absent, never defaults).
+  perf_tour's mobile profile boots (landscape 844x390 + `#mobile-preflight` dismissal). The
+  first all-together run held with no per-frame regression.
 - **Two controllers stay separate.** HUD tier knobs read the STATIC graphics preset via
   `src/game/ui_effects_profile.ts` (the `data-fx-level` stamp), NEVER `governor.state()`;
   `Hud.fxTier()` resolves the static stamp through `coerceFxTier`. This is the perf half of
@@ -213,8 +219,11 @@ migrated this way) and the `unit_frame` family for a per-frame component.** Orde
 (a) **Pure view-core** `src/ui/<name>_view.ts`: map `IWorld` (+ raw inputs) to a render
    model (which rows, prices, flags, geometry); DOM/Three/i18n-free; INSTANCE-PARAMETERIZED
    (take a descriptor/id, no hardcoded element id, no single-instance assumption);
-   allocation-light if per-frame (reuse one container). Register it in the `UI_PURE_CORES`
-   allowlist in `tests/architecture.test.ts`.
+   allocation-light if per-frame (reuse one container). NAME it `<name>_view.ts` or
+   `<name>_core.ts` (NOT a bare name): the `architecture.test.ts` COMPLETENESS sweep asserts
+   every on-disk `*_view`/`*_core` is registered, so the convention name is what makes a
+   forgotten registration FAIL the guard instead of silently escaping the purity scan.
+   Register it in the `UI_PURE_CORES` allowlist in `tests/architecture.test.ts`.
 (b) **Core test** `tests/<name>_view.test.ts`: same-input-same-output (`expect(build()).toEqual(build())`
    for sim-derived data, see `tests/vendor_view.test.ts`); no `Math.random`/`Date.now`/
    `performance.now`; no DOM import. Feed BOTH a Sim-shaped and a `ClientWorld`-mirror stub
