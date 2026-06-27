@@ -43,6 +43,8 @@ Cross-cutting docs (decision + design lineage):
   LOADED FIRST by every phase.
 - `progress.md` - status table + per-phase deliverable checklists.
 - `qa-checklist.md` - whole-feature integration QA matrix + the per-phase QA starter.
+- `phase-18-cleanup-overview.md` - the P18 cleanup wave: the leftover nice-to-have / should-have / nit
+  items from P0 to P17b, triaged (225 candidates to 56 open to 48 scheduled) and split into P18a to P18f.
 
 Phases (implement, then QA; 30 phases after the 2026-06-24 restructure):
 - P0 `phase-00-foundation-gates.md`
@@ -75,6 +77,14 @@ Phases (implement, then QA; 30 phases after the 2026-06-24 restructure):
 - P16 `phase-16-standards-codification.md` (codify the contracts into the CLAUDE.md files)
 - P17a `phase-17a-harness-floor.md` (client_shell re-author + standing perf budget + purity sweep + first all-together perf run)
 - P17b `phase-17b-bundle-lazy-cross-engine-close.md` (bundle-budget + selective lazy-load + cross-engine E2E + packet close)
+
+Cleanup wave (P18; the leftover nice-to-have / should-have / nit items, see `phase-18-cleanup-overview.md`):
+- P18a `phase-18a-a11y-keyboard-dialog-primitives.md` (shared roving_index core + dialog_root helper + market-filter keyboard nav + purity-guard widening)
+- P18b `phase-18b-per-window-aria-polish.md` (social tablist + bags/char/party interactive ARIA + axe coverage)
+- P18c `phase-18c-visual-a11y-tokens.md` (forced-colors cues + residual-hex tokenize + target-size + focus-indicator check)
+- P18d `phase-18d-live-regions-focus.md` (target-name + combat + chat live regions + wallet-picker into the one FocusManager)
+- P18e `phase-18e-render-tier-i18n-perf-dedup.md` (nameplate cost-ceiling + aura i18n + arena perf + entity-helper dedup + FCT internals)
+- P18f `phase-18f-tooling-test-docs-hygiene.md` (mobile E2E + biome INFOs + windowFocus seam + completeness gate + docs hygiene + optional cross-engine CI)
 
 ## Non-negotiables (full detail in state.md)
 
