@@ -51,10 +51,15 @@ scripts/generate_treasure_chest.mjs
 Thumbs.db
 *.log
 .idea/
-# .claude/: keep personal/local config out of git, but track the shared skills & agents
+# .claude/: keep personal/local config out of git, but track the shared team tooling
+# (agents, skills, commands, hooks, and the project hooks config). settings.local.json,
+# which is personal/local, stays ignored by the .claude/* rule above.
 .claude/*
 !.claude/skills/
 !.claude/agents/
+!.claude/commands/
+!.claude/hooks/
+!.claude/settings.json
 .cursor/
 
 # local SDK/tooling dump (extracted command-line tools, not project source)

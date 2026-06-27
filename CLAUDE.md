@@ -172,6 +172,12 @@ that turns it green. Detailed heuristics and the bug-fix workflow live in the
 - E2E/visual: `scripts/*.mjs` drive real browsers via `puppeteer-core` and need
   `npm run dev` (often `npm run server` too) running. Bot raids / E2E that teleport
   or level need `ALLOW_DEV_COMMANDS=1` (dev only).
+- **QA gate before a change is done.** Run `/qa` (or invoke the `qa-checklist` agent) over your
+  diff: it checks every invariant in play, names the domain reviewers to dispatch, and ends with
+  an adversarial "what is missing" pass. Two checked-in hooks enforce the cheap floor so it is
+  never skipped: a `Stop` hook (`.claude/hooks/qa-stop.sh`) blocks instantly on an em/en dash,
+  emoji, stray `.only(`, or `debugger`; the `.githooks/pre-push` floor runs `tsc`, the guard
+  tests, biome, and the copy scan at push time. See `docs/qa-gate.md` and `.claude/hooks/README.md`.
 
 ## Working style and effort by model
 This whole file is the baseline for **any** model: obey all of it. Your active model is
@@ -195,10 +201,11 @@ correct.
   items; do not spawn for work doable in one response. Before declaring done, have a fresh
   subagent review your own diff: its job is COVERAGE (report every correctness or
   requirement gap with confidence and severity), not filtering, which happens in a later
-  pass. The repo ships purpose-built reviewers in `.claude/agents/` (`cross-platform-sync`,
-  `migration-safety`, `privacy-security-review`, `qa-checklist`, and the `release-malware-audit`
-  release gate), a `feature-plan` skill, and an `extract-and-test` skill; prefer those over
-  ad-hoc subagents.
+  pass. The repo ships purpose-built reviewers in `.claude/agents/`: `qa-checklist` (the
+  evergreen end-of-contribution gate, also reachable as `/qa`), `architecture-reviewer`
+  (determinism + the `SimContext` seam for `src/sim/` changes), `cross-platform-sync`,
+  `migration-safety`, `privacy-security-review`, and the `release-malware-audit` release gate;
+  plus a `feature-plan` skill and an `extract-and-test` skill. Prefer those over ad-hoc subagents.
 - **State rule scope literally.** 4.8 follows instructions literally and will not
   generalize a rule across cases unless told. When an invariant covers every case (every
   player string is a `t()` key; all sim randomness goes through `Rng`), say "every" or
