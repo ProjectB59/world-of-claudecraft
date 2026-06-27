@@ -102,14 +102,21 @@ export const hudChromeStrings = {
     // companions, parallel to playerLabel / targetLabel.
     partyLabel: 'Your Band',
     // partyGroup is the visually-hidden raid-group cue appended to a raid party row's
-    // accessible name (e.g. "Group 1"), so a screen reader conveys which of the two
-    // raid groups a member sits in. {n} is the group number (formatNumber). Title Case
-    // + a single word before the placeholder keeps it non-wordy for the M16 leak guard.
+    // accessible name (e.g. "Group 1"), so a screen reader conveys which raid group a
+    // member sits in. {n} is the group number (formatNumber). UNLIKE the labels above
+    // this one is WORDY by the M16 rule (a four-plus consecutive-lowercase run survives
+    // stripping {n}: "Group" to "roup"), so an English-filled non-Latin locale WOULD trip
+    // the untranslated-leak guard: the five non-Latin overlays (zh_CN/zh_TW/ja_JP/ko_KR/
+    // ru_RU) carry real fills, the Latin overlays stay pending. Title Case does not help
+    // (M16 is per-word consecutive-lowercase, not word count).
     partyGroup: 'Group {n}',
   },
   // Character sheet (#char-window) accessible names. modelPreview names the role=img 3D
   // turntable HOST distinctly from the title's level/class subtitle (the canvas pixels
-  // stay OUT of a11y scope, decision 10). Title Case keeps it non-wordy for M16.
+  // stay OUT of a11y scope, decision 10). Like partyGroup this label is WORDY by M16
+  // ("Character"/"Model"/"Preview" each carry a four-plus consecutive-lowercase run), so
+  // the same five non-Latin overlays carry real fills and the Latin overlays stay
+  // pending; Title Case does not make it non-wordy.
   character: {
     modelPreview: 'Character Model Preview',
   },

@@ -2627,8 +2627,10 @@
     box-shadow: inset 2px 0 0 var(--gold);
   }
   /* The option subtitle (level/class) needs to clear 4.5:1 on the highlighted-row
-     background (#2f2740), where the plain muted token sits at 4.29:1 (WCAG 1.4.3). This
-     slightly lighter muted gold reads ~4.9:1 there and higher on the dark resting row. */
+     background (#2f2740), where the base .soc-meta color (#998d6a) sits at 4.29:1 (WCAG
+     1.4.3). This slightly lighter muted gold reads ~4.9:1 there and higher on the dark
+     resting row. Raw hex matches the surrounding .soc-* palette; tokenizing that palette
+     is P18c. */
   .soc-sugg-item .soc-meta {
     color: #a59873;
   }

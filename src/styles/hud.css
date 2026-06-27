@@ -3195,9 +3195,11 @@
   .party-frame.oor { opacity: 0.45; }
   .party-frame:hover { outline: 1px solid var(--gold-dim); opacity: 1; }
   /* Reset opacity on a keyboard-focused dimmed (dead 0.7 / out-of-range 0.45) row so the
-     global [tabindex="0"]:focus-visible ring (shell.css) is drawn at full opacity, not
-     dimmed. Mirrors the :hover reset; only opacity, the ring itself is never animated. */
-  .party-frame:focus-visible { opacity: 1; }
+     global [tabindex="0"]:focus-visible outline (shell.css) is drawn at full strength, not
+     dimmed. The reset is made instant (transition: none) because .party-frame transitions
+     opacity 0.2s and opacity applies to the outline too, so without this the ring would
+     fade in over 200ms; decision 10 requires a focus ring that is never animated. */
+  .party-frame:focus-visible { opacity: 1; transition: none; }
   @keyframes pf-combat-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   #party-leave { font-size: 10px; padding: 2px 8px; margin: 0; }
 
