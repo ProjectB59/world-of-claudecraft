@@ -12,16 +12,27 @@ const browser = await puppeteer.launch({
   executablePath: BROWSER_PATH,
   headless: 'new',
   args: [
-    '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
-    '--no-sandbox', '--disable-dev-shm-usage',
+    '--use-gl=angle',
+    '--use-angle=swiftshader',
+    '--enable-unsafe-swiftshader',
+    '--no-sandbox',
+    '--disable-dev-shm-usage',
   ],
 });
 
 try {
   const page = await browser.newPage();
-  await page.setViewport({ width: 844, height: 390, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  await page.setViewport({
+    width: 844,
+    height: 390,
+    isMobile: true,
+    hasTouch: true,
+    deviceScaleFactor: 2,
+  });
   const client = await page.target().createCDPSession();
-  await client.send('Emulation.setEmulatedMedia', { features: [{ name: 'pointer', value: 'coarse' }] });
+  await client.send('Emulation.setEmulatedMedia', {
+    features: [{ name: 'pointer', value: 'coarse' }],
+  });
 
   await page.goto(URL, { waitUntil: 'networkidle2' });
 
@@ -43,7 +54,12 @@ try {
     const pad = 16;
     await page.screenshot({
       path: process.env.CLIP_OUT,
-      clip: { x: Math.max(0, box.x - pad), y: Math.max(0, box.y - pad), width: box.w + pad * 2, height: box.h + pad * 2 },
+      clip: {
+        x: Math.max(0, box.x - pad),
+        y: Math.max(0, box.y - pad),
+        width: box.w + pad * 2,
+        height: box.h + pad * 2,
+      },
     });
     console.log('wrote', process.env.CLIP_OUT);
   }

@@ -14,7 +14,6 @@
 import { ABILITIES, DELVES, ITEMS, MOBS } from '../sim/data';
 import { DELVE_MODULE_NAMES } from '../sim/sim';
 import { tEntity } from './entity_i18n';
-import { BASE_NEW, PET_NEW, ARENA_NEW, QUEST_NEW, ITEM_NEW, RAID_NEW } from './sim_i18n.newlocales';
 import {
   formatNumber,
   getLanguage,
@@ -24,6 +23,7 @@ import {
   type TranslationKey,
   t,
 } from './i18n';
+import { ARENA_NEW, BASE_NEW, ITEM_NEW, PET_NEW, QUEST_NEW, RAID_NEW } from './sim_i18n.newlocales';
 
 const baseEnTable = {
   'error.lineOfSight': 'Line of sight.',

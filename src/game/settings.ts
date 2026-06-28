@@ -202,9 +202,15 @@ export const BOOL_SETTINGS = {
 
 export type NumericSettingKey = keyof typeof SETTING_RANGES;
 export type BoolSettingKey = keyof typeof BOOL_SETTINGS;
-export type GameSettings = { [K in NumericSettingKey]: number } & { [K in BoolSettingKey]: boolean };
+export type GameSettings = { [K in NumericSettingKey]: number } & {
+  [K in BoolSettingKey]: boolean;
+};
 
-interface Range { min: number; max: number; def: number }
+interface Range {
+  min: number;
+  max: number;
+  def: number;
+}
 
 const STORE_KEY = 'woc_settings';
 const NUMERIC_KEYS = Object.keys(SETTING_RANGES) as NumericSettingKey[];
@@ -235,8 +241,12 @@ export class Settings {
 
   private load(): GameSettings {
     let stored: unknown = null;
-    try { stored = JSON.parse(localStorage.getItem(STORE_KEY) ?? 'null'); } catch { /* corrupt */ }
-    const raw = stored && typeof stored === 'object' ? stored as Record<string, unknown> : {};
+    try {
+      stored = JSON.parse(localStorage.getItem(STORE_KEY) ?? 'null');
+    } catch {
+      /* corrupt */
+    }
+    const raw = stored && typeof stored === 'object' ? (stored as Record<string, unknown>) : {};
     const out = {} as GameSettings;
     for (const key of NUMERIC_KEYS) {
       const v = raw[key];
@@ -250,7 +260,11 @@ export class Settings {
   }
 
   private save(): void {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(this.values)); } catch { /* storage unavailable */ }
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(this.values));
+    } catch {
+      /* storage unavailable */
+    }
   }
 
   get<K extends keyof GameSettings>(key: K): GameSettings[K] {

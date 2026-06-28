@@ -4,8 +4,9 @@
 //
 // Prereq: `npm run dev` running on :5173.
 //   node scripts/mobile_tooltip_peek_shot.mjs
-import puppeteer from 'puppeteer-core';
+
 import { mkdirSync } from 'node:fs';
+import puppeteer from 'puppeteer-core';
 import { BROWSER_PATH } from './browser_path.mjs';
 import { enterOfflineGame } from './enter_offline_game.mjs';
 
@@ -19,17 +20,28 @@ const browser = await puppeteer.launch({
   executablePath: BROWSER_PATH,
   headless: 'new',
   args: [
-    '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
-    '--no-sandbox', '--hide-scrollbars',
+    '--use-gl=angle',
+    '--use-angle=swiftshader',
+    '--enable-unsafe-swiftshader',
+    '--no-sandbox',
+    '--hide-scrollbars',
   ],
 });
 
 try {
   const page = await browser.newPage();
-  await page.setViewport({ width: 844, height: 390, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  await page.setViewport({
+    width: 844,
+    height: 390,
+    isMobile: true,
+    hasTouch: true,
+    deviceScaleFactor: 2,
+  });
   const client = await page.target().createCDPSession();
   // Satisfy PHONE_TOUCH_QUERY = '(pointer: coarse) and (max-width: 940px)'.
-  await client.send('Emulation.setEmulatedMedia', { features: [{ name: 'pointer', value: 'coarse' }] });
+  await client.send('Emulation.setEmulatedMedia', {
+    features: [{ name: 'pointer', value: 'coarse' }],
+  });
 
   await page.goto(URL, { waitUntil: 'domcontentloaded' });
 
@@ -50,7 +62,8 @@ try {
 
   // Real CDP touch hold > TOOLTIP_PEEK_MS (950ms) so the tooltip appears.
   await client.send('Input.dispatchTouchEvent', {
-    type: 'touchStart', touchPoints: [{ x: rect.x, y: rect.y }],
+    type: 'touchStart',
+    touchPoints: [{ x: rect.x, y: rect.y }],
   });
   await sleep(1200);
   await page.screenshot({ path: `${OUT}/mobile-tooltip-peek.png` });

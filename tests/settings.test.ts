@@ -1,12 +1,21 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clickMoveButtonLabel, normalizeClickMoveButton, Settings, SETTING_RANGES } from '../src/game/settings';
+import {
+  clickMoveButtonLabel,
+  normalizeClickMoveButton,
+  SETTING_RANGES,
+  Settings,
+} from '../src/game/settings';
 
 function installStorage(): void {
   const map = new Map<string, string>();
   (globalThis as any).localStorage = {
     getItem: (k: string) => (map.has(k) ? map.get(k)! : null),
-    setItem: (k: string, v: string) => { map.set(k, v); },
-    removeItem: (k: string) => { map.delete(k); },
+    setItem: (k: string, v: string) => {
+      map.set(k, v);
+    },
+    removeItem: (k: string) => {
+      map.delete(k);
+    },
     clear: () => map.clear(),
   };
 }

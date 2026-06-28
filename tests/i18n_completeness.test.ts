@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  da_DK,
   de_DE,
   en,
   en_CA,
@@ -9,7 +10,6 @@ import {
   formatMoney,
   fr_CA,
   fr_FR,
-  da_DK,
   hasTranslation,
   id_ID,
   it_IT,

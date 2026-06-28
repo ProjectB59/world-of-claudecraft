@@ -59,13 +59,18 @@ function loadHtml(relPath: string): string {
 function cssRules(source: string): { selector: string; body: string }[] {
   const rules: { selector: string; body: string }[] = [];
   const re = /([^{}]+)\{([^{}]*)\}/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(source))) rules.push({ selector: m[1].trim(), body: m[2] });
+  let m = re.exec(source);
+  while (m !== null) {
+    rules.push({ selector: m[1].trim(), body: m[2] });
+    m = re.exec(source);
+  }
   return rules;
 }
 
 function value(body: string, prop: string): string | null {
-  const m = body.match(new RegExp(`(?:^|;|\\{)\\s*${prop}\\s*:\\s*([^;]+?)\\s*(?:!important)?\\s*;`, 'm'));
+  const m = body.match(
+    new RegExp(`(?:^|;|\\{)\\s*${prop}\\s*:\\s*([^;]+?)\\s*(?:!important)?\\s*;`, 'm'),
+  );
   return m ? m[1].trim() : null;
 }
 
@@ -90,11 +95,14 @@ function baseMobileWindowIds(selector: string, windowIds: string[]): string[] {
 // Per-entry analysis: scrape the `.window` ids from the markup, then merge the
 // base-mobile-state positioning declarations per id.
 function analyze(html: string) {
-  const windowIds = [
-    ...html.matchAll(/id="([a-z0-9-]+)"\s+class="[^"]*\bwindow\b[^"]*"/g),
-  ].map((m) => m[1]);
+  const windowIds = [...html.matchAll(/id="([a-z0-9-]+)"\s+class="[^"]*\bwindow\b[^"]*"/g)].map(
+    (m) => m[1],
+  );
   const rules = cssRules(html);
-  const merged = new Map<string, { left: string | null; right: string | null; transform: string | null }>();
+  const merged = new Map<
+    string,
+    { left: string | null; right: string | null; transform: string | null }
+  >();
   for (const id of windowIds) merged.set(id, { left: null, right: null, transform: null });
   for (const rule of rules) {
     for (const id of baseMobileWindowIds(rule.selector, windowIds)) {
@@ -121,7 +129,8 @@ describe.each(HTML_ENTRIES)('mobile window positioning (%s)', (entry) => {
     for (const [id, m] of merged) {
       const leftPinned = m.left !== null && m.left !== '50%' && m.left !== 'auto';
       const rightOpen = m.right === null || m.right === 'auto';
-      if (leftPinned && rightOpen && m.transform === null) offenders.push(`#${id} (left: ${m.left})`);
+      if (leftPinned && rightOpen && m.transform === null)
+        offenders.push(`#${id} (left: ${m.left})`);
     }
     expect(
       offenders,

@@ -21,9 +21,9 @@ import {
   upsertPlayerCard,
 } from './db';
 import { isUniqueViolation, json, parsePngInfo, readBinaryBody } from './http_util';
+import { PLAYERCARD_NEW } from './player_card.newlocales';
 import { recordUsageMetric } from './provider_usage';
 import { REALM_PUBLIC_ORIGIN } from './realm';
-import { PLAYERCARD_NEW } from './player_card.newlocales';
 
 // A composited card is ~1200×630 @2× PNG - comfortably under this bound, which
 // is generous enough to never reject a legitimate upload yet caps memory.

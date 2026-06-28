@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { ItemDef, InvSlot } from '../src/sim/types';
+import type { InvSlot, ItemDef } from '../src/sim/types';
 import { DEFAULT_BAG_FILTER, type ItemLookup } from '../src/ui/bag_filter';
 import {
+  type BagMode,
   bagItemAction,
   bagQualityKey,
   bagTooltipHintKey,
   buildBagGrid,
-  type BagMode,
 } from '../src/ui/bags_view';
 
 // The bags core decides the mode-dependent click + tooltip (the 6-way branch) and
@@ -31,8 +31,12 @@ describe('bagItemAction priority order', () => {
   it('honors trade > market-sell > vendor > pet-feed > quest > use', () => {
     expect(bagItemAction(ITEMS.sword, { ...NO_MODE, tradeOpen: true })).toBe('trade');
     expect(bagItemAction(ITEMS.sword, { ...NO_MODE, marketSell: true })).toBe('marketSell');
-    expect(bagItemAction(ITEMS.questItem, { ...NO_MODE, marketSell: true })).toBe('marketSellBlockedQuest');
-    expect(bagItemAction(ITEMS.bound, { ...NO_MODE, marketSell: true })).toBe('marketSellBlockedNoMarket');
+    expect(bagItemAction(ITEMS.questItem, { ...NO_MODE, marketSell: true })).toBe(
+      'marketSellBlockedQuest',
+    );
+    expect(bagItemAction(ITEMS.bound, { ...NO_MODE, marketSell: true })).toBe(
+      'marketSellBlockedNoMarket',
+    );
     expect(bagItemAction(ITEMS.sword, { ...NO_MODE, vendorOpen: true })).toBe('vendorSell');
     expect(bagItemAction(ITEMS.bread, { ...NO_MODE, petFeed: true })).toBe('petFeed');
     expect(bagItemAction(ITEMS.sword, { ...NO_MODE, petFeed: true })).toBe('petFeedBlocked');
@@ -43,11 +47,21 @@ describe('bagItemAction priority order', () => {
 
 describe('bagTooltipHintKey', () => {
   it('matches the mode-then-kind branch', () => {
-    expect(bagTooltipHintKey(ITEMS.sword, { ...NO_MODE, tradeOpen: true })).toBe('itemUi.tooltip.clickTradeOffer');
-    expect(bagTooltipHintKey(ITEMS.questItem, { ...NO_MODE, marketSell: true })).toBe('itemUi.tooltip.cannotMarket');
-    expect(bagTooltipHintKey(ITEMS.sword, { ...NO_MODE, marketSell: true })).toBe('itemUi.tooltip.clickMarketList');
-    expect(bagTooltipHintKey(ITEMS.questItem, { ...NO_MODE, vendorOpen: true })).toBe('itemUi.tooltip.cannotVendor');
-    expect(bagTooltipHintKey(ITEMS.sword, { ...NO_MODE, vendorOpen: true })).toBe('itemUi.tooltip.clickSell');
+    expect(bagTooltipHintKey(ITEMS.sword, { ...NO_MODE, tradeOpen: true })).toBe(
+      'itemUi.tooltip.clickTradeOffer',
+    );
+    expect(bagTooltipHintKey(ITEMS.questItem, { ...NO_MODE, marketSell: true })).toBe(
+      'itemUi.tooltip.cannotMarket',
+    );
+    expect(bagTooltipHintKey(ITEMS.sword, { ...NO_MODE, marketSell: true })).toBe(
+      'itemUi.tooltip.clickMarketList',
+    );
+    expect(bagTooltipHintKey(ITEMS.questItem, { ...NO_MODE, vendorOpen: true })).toBe(
+      'itemUi.tooltip.cannotVendor',
+    );
+    expect(bagTooltipHintKey(ITEMS.sword, { ...NO_MODE, vendorOpen: true })).toBe(
+      'itemUi.tooltip.clickSell',
+    );
     expect(bagTooltipHintKey(ITEMS.questItem, NO_MODE)).toBe('itemUi.tooltip.clickDestroy');
     expect(bagTooltipHintKey(ITEMS.sword, NO_MODE)).toBe('itemUi.tooltip.clickEquip');
     expect(bagTooltipHintKey(ITEMS.bread, NO_MODE)).toBe('itemUi.tooltip.clickConsume');

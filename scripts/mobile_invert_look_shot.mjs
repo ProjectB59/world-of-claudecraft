@@ -7,8 +7,8 @@
 //
 // Writes tmp/mobile-invert-look-graphics.png + tmp/mobile-invert-look-game.png.
 import fs from 'node:fs';
-import path from 'node:path';
 import { createRequire } from 'node:module';
+import path from 'node:path';
 import { BROWSER_PATH } from './browser_path.mjs';
 import { enterOfflineGame } from './enter_offline_game.mjs';
 
@@ -23,7 +23,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const browser = await puppeteer.launch({
   executablePath: BROWSER_PATH,
   headless: 'new',
-  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'],
+  args: [
+    '--use-gl=angle',
+    '--use-angle=swiftshader',
+    '--enable-unsafe-swiftshader',
+    '--no-sandbox',
+  ],
 });
 
 try {
@@ -35,9 +40,19 @@ try {
   // app code runs — this activates the whole mobile path natively.
   await page.evaluateOnNewDocument(() => {
     const real = window.matchMedia.bind(window);
-    window.matchMedia = (q) => (/coarse/.test(q)
-      ? { matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, onchange: null, dispatchEvent: () => false }
-      : real(q));
+    window.matchMedia = (q) =>
+      /coarse/.test(q)
+        ? {
+            matches: true,
+            media: q,
+            addEventListener() {},
+            removeEventListener() {},
+            addListener() {},
+            removeListener() {},
+            onchange: null,
+            dispatchEvent: () => false,
+          }
+        : real(q);
   });
 
   await page.goto(GAME_URL, { waitUntil: 'domcontentloaded' });
@@ -60,15 +75,19 @@ try {
   await sleep(600);
 
   const hasToggle = await page.evaluate(() =>
-    [...document.querySelectorAll('#options-menu .set-row .set-name')].some((n) => /invert look/i.test(n.textContent || '')));
+    [...document.querySelectorAll('#options-menu .set-row .set-name')].some((n) =>
+      /invert look/i.test(n.textContent || ''),
+    ),
+  );
   console.log('Invert Look toggle present:', hasToggle);
 
   await page.screenshot({ path: path.join(OUT, 'mobile-invert-look-graphics.png') });
 
   // Toggle it On and capture the active state.
   await page.evaluate(() => {
-    const row = [...document.querySelectorAll('#options-menu .set-row')]
-      .find((r) => /invert look/i.test(r.querySelector('.set-name')?.textContent || ''));
+    const row = [...document.querySelectorAll('#options-menu .set-row')].find((r) =>
+      /invert look/i.test(r.querySelector('.set-name')?.textContent || ''),
+    );
     row?.querySelector('.set-toggle')?.click();
   });
   await sleep(400);

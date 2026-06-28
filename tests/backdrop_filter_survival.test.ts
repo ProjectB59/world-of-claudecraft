@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
 // @ts-expect-error - untyped zero-dep build helper (same convention as other scripts/*.mjs)
 import { scanBackdropSurvival } from '../scripts/check_backdrop_survival.mjs';
 
@@ -13,8 +13,12 @@ import { scanBackdropSurvival } from '../scripts/check_backdrop_survival.mjs';
 
 describe('scanBackdropSurvival', () => {
   it('passes a rule that keeps both twins (either authoring order)', () => {
-    expect(scanBackdropSurvival('.a{-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}')).toEqual([]);
-    expect(scanBackdropSurvival('.a{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}')).toEqual([]);
+    expect(
+      scanBackdropSurvival('.a{-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}'),
+    ).toEqual([]);
+    expect(
+      scanBackdropSurvival('.a{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}'),
+    ).toEqual([]);
   });
 
   it('flags a rule that lost the standard backdrop-filter (the real #21954 bug)', () => {
@@ -29,11 +33,15 @@ describe('scanBackdropSurvival', () => {
   });
 
   it('flags a rule whose twins disagree on value', () => {
-    expect(scanBackdropSurvival('.a{-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(9px)}')).toHaveLength(1);
+    expect(
+      scanBackdropSurvival('.a{-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(9px)}'),
+    ).toHaveLength(1);
   });
 
   it('flags a dropped twin even inside an @media wrapper', () => {
-    expect(scanBackdropSurvival('@media (max-width:860px){.a{-webkit-backdrop-filter:blur(2px)}}')).toHaveLength(1);
+    expect(
+      scanBackdropSurvival('@media (max-width:860px){.a{-webkit-backdrop-filter:blur(2px)}}'),
+    ).toHaveLength(1);
   });
 
   it('does not false-positive on an @supports backdrop-filter feature query', () => {
@@ -44,7 +52,9 @@ describe('scanBackdropSurvival', () => {
   });
 
   it('passes a none twin pair', () => {
-    expect(scanBackdropSurvival('.a{-webkit-backdrop-filter:none;backdrop-filter:none}')).toEqual([]);
+    expect(scanBackdropSurvival('.a{-webkit-backdrop-filter:none;backdrop-filter:none}')).toEqual(
+      [],
+    );
   });
 
   it('ignores rules with no backdrop-filter at all', () => {
@@ -61,7 +71,9 @@ describe('scanBackdropSurvival', () => {
   });
 
   it('compares twin values whitespace-insensitively', () => {
-    expect(scanBackdropSurvival('.a{-webkit-backdrop-filter:blur( 2px );backdrop-filter:blur(2px)}')).toEqual([]);
+    expect(
+      scanBackdropSurvival('.a{-webkit-backdrop-filter:blur( 2px );backdrop-filter:blur(2px)}'),
+    ).toEqual([]);
   });
 
   // Integration: when a production build is present, every emitted dist CSS file
@@ -81,7 +93,9 @@ describe('scanBackdropSurvival', () => {
       }
     };
     walk(distDir);
-    const violations = files.flatMap((f) => scanBackdropSurvival(readFileSync(f, 'utf8'), path.basename(f)));
+    const violations = files.flatMap((f) =>
+      scanBackdropSurvival(readFileSync(f, 'utf8'), path.basename(f)),
+    );
     expect(violations).toEqual([]);
   });
 });

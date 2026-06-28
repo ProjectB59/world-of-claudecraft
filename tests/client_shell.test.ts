@@ -1068,10 +1068,14 @@ describe('client HTML shell', () => {
     expect(shellCss).not.toContain('.bg-home {\n    opacity: 0.85;');
     // The poster is revealed ONLY by JS: trailer-ready (the video is playing, or a
     // play/decode failure fallback)...
-    expect(shellCss).toContain('#start-screen-backdrop.trailer-ready .bg-trailer {\n    opacity: 0.85;');
+    expect(shellCss).toContain(
+      '#start-screen-backdrop.trailer-ready .bg-trailer {\n    opacity: 0.85;',
+    );
     // ...or backdrop-static (the static-poster path for phone / Save-Data /
     // reduced-motion / high-contrast), which still shows the poster, dimmed.
-    expect(shellCss).toContain('#start-screen-backdrop.backdrop-static .bg-home {\n    opacity: 0.4;');
+    expect(shellCss).toContain(
+      '#start-screen-backdrop.backdrop-static .bg-home {\n    opacity: 0.4;',
+    );
     // main.ts reveals the static poster as a fallback when the trailer cannot play,
     // so a failed/blocked video never leaves a black backdrop.
     expect(mainTs).toContain("video.addEventListener('error'");

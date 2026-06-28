@@ -5855,8 +5855,13 @@ export class Hud {
         }
         case 'virtualLevelUp': {
           // cosmetic post-cap "level up" — reuses the levelup banner + sound
-          this.showBanner(`${t('game.progression.virtualLevelUp')} ${formatNumber(ev.level, { maximumFractionDigits: 0 })}!`);
-          this.log(`${t('game.progression.virtualLevelUp')} ${formatNumber(ev.level, { maximumFractionDigits: 0 })}!`, '#ffd100');
+          this.showBanner(
+            `${t('game.progression.virtualLevelUp')} ${formatNumber(ev.level, { maximumFractionDigits: 0 })}!`,
+          );
+          this.log(
+            `${t('game.progression.virtualLevelUp')} ${formatNumber(ev.level, { maximumFractionDigits: 0 })}!`,
+            '#ffd100',
+          );
           audio.levelUp();
           break;
         }

@@ -79,7 +79,7 @@ export function injectLocaleChunkMap(html, map, placeholder = PLACEHOLDER) {
   // Escape '<' so the JSON literal embedded in the inline <script> can never break out
   // via a '</script>' or '<!--' sequence (the values are build-fixed same-origin hashed
   // paths today, so this is defense-in-depth).
-  const json = JSON.stringify(map).replace(/</g, "\\u003c");
+  const json = JSON.stringify(map).replace(/</g, '\\u003c');
   return html.split(placeholder).join(json);
 }
 

@@ -1,11 +1,13 @@
 // Mobile screenshots for the touch "More" tray Bags + Character buttons.
 // Runs the offline flow (no server/Postgres) on a landscape-phone viewport.
 // Needs `npm run dev` running. Writes PNGs to tmp/.
-import puppeteer from 'puppeteer-core';
+
 import fs from 'node:fs';
+import puppeteer from 'puppeteer-core';
 
 import { BROWSER_PATH as EDGE } from './browser_path.mjs';
 import { enterOfflineGame } from './enter_offline_game.mjs';
+
 const URL = process.env.GAME_URL ?? 'http://localhost:5173';
 const CLASS = process.env.GAME_CLASS ?? 'warrior';
 fs.mkdirSync('tmp', { recursive: true });
@@ -23,7 +25,9 @@ await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'pointer', val
 
 const errors = [];
 page.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message));
-page.on('console', (m) => { if (m.type() === 'error') errors.push('CONSOLE: ' + m.text()); });
+page.on('console', (m) => {
+  if (m.type() === 'error') errors.push('CONSOLE: ' + m.text());
+});
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -34,7 +38,11 @@ const tap = (sel) => page.evaluate((s) => document.querySelector(s)?.click(), se
 await enterOfflineGame(page, { charClass: CLASS, charName: 'Thorgar', settleMs: 3000 });
 
 // Don't get eaten while posing for the camera.
-await page.evaluate(() => { const p = window.__game.sim.player; p.maxHp = 99999; p.hp = 99999; });
+await page.evaluate(() => {
+  const p = window.__game.sim.player;
+  p.maxHp = 99999;
+  p.hp = 99999;
+});
 
 // 1) Open the "More" tray — shows the new Character + Bags buttons.
 await tap('#mobile-more');

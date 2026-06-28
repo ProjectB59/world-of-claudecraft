@@ -174,9 +174,14 @@ export class SpellbookWindow {
           if (def)
             btn.setAttribute(
               'aria-label',
-              t(onBar ? 'hudChrome.spellbook.removeFromBarAria' : 'hudChrome.spellbook.addToBarAria', {
-                name: this.abilityName(def),
-              }),
+              t(
+                onBar
+                  ? 'hudChrome.spellbook.removeFromBarAria'
+                  : 'hudChrome.spellbook.addToBarAria',
+                {
+                  name: this.abilityName(def),
+                },
+              ),
             );
         }
         btn.disabled = !onBar && !hasFree;
@@ -215,9 +220,12 @@ export class SpellbookWindow {
       toggle.textContent = row.onBar ? '-' : '+';
       toggle.setAttribute(
         'aria-label',
-        t(row.onBar ? 'hudChrome.spellbook.removeFromBarAria' : 'hudChrome.spellbook.addToBarAria', {
-          name,
-        }),
+        t(
+          row.onBar ? 'hudChrome.spellbook.removeFromBarAria' : 'hudChrome.spellbook.addToBarAria',
+          {
+            name,
+          },
+        ),
       );
       toggle.setAttribute('aria-pressed', row.onBar ? 'true' : 'false');
       toggle.disabled = row.toggleDisabled;

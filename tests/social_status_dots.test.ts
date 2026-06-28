@@ -5,8 +5,8 @@
 // guards the JS<->CSS contract: every status the client can render must have a
 // matching `.soc-dot.<status>` rule.
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');

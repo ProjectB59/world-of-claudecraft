@@ -19,7 +19,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const browser = await puppeteer.launch({
   executablePath: BROWSER_PATH,
   headless: 'new',
-  args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+  args: [
+    '--no-sandbox',
+    '--use-gl=angle',
+    '--use-angle=swiftshader',
+    '--enable-unsafe-swiftshader',
+  ],
 });
 
 try {
@@ -27,7 +32,9 @@ try {
   await page.setViewport({ width: 844, height: 390, isMobile: true, hasTouch: true });
   const client = await page.target().createCDPSession();
   // Satisfy PHONE_TOUCH_QUERY (coarse pointer) so body.mobile-touch turns on.
-  await client.send('Emulation.setEmulatedMedia', { features: [{ name: 'pointer', value: 'coarse' }] });
+  await client.send('Emulation.setEmulatedMedia', {
+    features: [{ name: 'pointer', value: 'coarse' }],
+  });
 
   await page.goto(URL, { waitUntil: 'networkidle2' });
 
@@ -40,13 +47,17 @@ try {
   // A two-finger pinch is a series of touchStart → touchMove(s) → touchEnd with
   // two touch points. Spreading them apart zooms IN; bringing them together
   // zooms OUT. Centre the gesture on the game view.
-  const cx = 422, cy = 195;
+  const cx = 422,
+    cy = 195;
   const pinch = async (fromGap, toGap, steps = 12) => {
     const pts = (gap) => [
       { x: cx - gap / 2, y: cy },
       { x: cx + gap / 2, y: cy },
     ];
-    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts(fromGap) });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: pts(fromGap),
+    });
     for (let i = 1; i <= steps; i++) {
       const gap = fromGap + (toGap - fromGap) * (i / steps);
       await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: pts(gap) });

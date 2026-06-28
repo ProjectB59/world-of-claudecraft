@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { PlayerClass } from '../src/sim/types';
+import {
+  friendRows,
+  guildView,
+  ignoreRows,
+  raidView,
+  type SocialTab,
+  socialDot,
+  socialStructSig,
+} from '../src/ui/social_view';
 import type {
   FriendInfo,
   GuildInfo,
@@ -8,15 +17,6 @@ import type {
   PartyMemberInfo,
   SocialInfo,
 } from '../src/world_api';
-import {
-  friendRows,
-  guildView,
-  ignoreRows,
-  raidView,
-  socialDot,
-  socialStructSig,
-  type SocialTab,
-} from '../src/ui/social_view';
 
 // The social core derives the panel's structural signature (the full-rebuild vs
 // refresh-in-place gate) and the per-tab row view models from socialInfo +
@@ -40,7 +40,9 @@ function guildMember(over: Partial<GuildMemberInfo> & { name: string }): GuildMe
   return { ...friend(over), rank: over.rank ?? 'member' };
 }
 
-function partyMember(over: Partial<PartyMemberInfo> & { pid: number; group: 1 | 2 }): PartyMemberInfo {
+function partyMember(
+  over: Partial<PartyMemberInfo> & { pid: number; group: 1 | 2 },
+): PartyMemberInfo {
   return {
     name: `p${over.pid}`,
     cls: 'warrior' as PlayerClass,
@@ -105,7 +107,10 @@ describe('socialStructSig', () => {
       raid: true,
       members: [partyMember({ pid: 1, group: 1 }), partyMember({ pid: 2, group: 1 })],
     };
-    const b: PartyInfo = { ...a, members: [partyMember({ pid: 1, group: 1 }), partyMember({ pid: 2, group: 2 })] };
+    const b: PartyInfo = {
+      ...a,
+      members: [partyMember({ pid: 1, group: 1 }), partyMember({ pid: 2, group: 2 })],
+    };
     expect(socialStructSig('raid', null, b)).not.toBe(socialStructSig('raid', null, a));
   });
 });
