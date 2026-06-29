@@ -36,6 +36,7 @@ import {
   openPlaySession,
   pool,
   revokeAccountMechChroma,
+  saveCharacterAndMarketState,
   saveCharacterState,
   saveMarketState,
   walletForAccount,
@@ -44,6 +45,7 @@ import { IpBlockList } from './ip_block';
 import { loadActiveBlockedIps } from './ip_block_db';
 import { type LiveSharedIp, sharedIpsFromLiveSessions } from './live_shared_ips';
 import { REALM } from './realm';
+import { createSerialWriter } from './serial_writer';
 import type { Presence, PresenceStatus, SocialActor, SocialTransport } from './social';
 import { SocialService } from './social';
 import { PgSocialDb } from './social_db';
@@ -538,6 +540,12 @@ export class GameServer {
   private socialPosTimer = 0;
   private saveAllInFlight: Promise<void> | null = null;
   private readonly characterSaveQueues = new Map<number, Promise<void>>();
+  // Serializes every write of the single global Market blob (the 30s autosave
+  // and the leave-path combined save). Both serialize the whole market; without
+  // a queue their transactions could commit out of capture order and persist an
+  // older snapshot over a newer one. Snapshots are captured inside the queued
+  // thunk, so commit order equals capture order equals freshness order.
+  private readonly enqueueMarketWrite = createSerialWriter();
   private restartCountdownStartedAt: number | null = null;
   private readonly restartCountdownTimers: NodeJS.Timeout[] = [];
   private readonly startedAt = Date.now();
@@ -1087,7 +1095,12 @@ export class GameServer {
   private async saveCharacterOnLeave(session: ClientSession): Promise<void> {
     for (let attempt = 1; attempt <= LEAVE_SAVE_MAX_ATTEMPTS; attempt++) {
       try {
-        await this.saveCharacter(session);
+        // Flush the character AND the World Market together: a Market escrow
+        // straddles both (item out of bags, into a listing), and the autosave
+        // timer only persists the market every 30s. Without this, a crash right
+        // after the leave-flush of bags would tear the escrow in half (item lost
+        // or duplicated). saveCharacter(withMarket) writes both in one transaction.
+        await this.saveCharacter(session, { withMarket: true });
         return;
       } catch (err) {
         if (attempt === LEAVE_SAVE_MAX_ATTEMPTS) {
@@ -1104,7 +1117,7 @@ export class GameServer {
     }
   }
 
-  async saveCharacter(session: ClientSession): Promise<void> {
+  async saveCharacter(session: ClientSession, opts: { withMarket?: boolean } = {}): Promise<void> {
     const previous = this.characterSaveQueues.get(session.characterId);
     const run = (previous ? previous.catch(() => {}) : Promise.resolve()).then(async () => {
       const state = this.sim.serializeCharacter(session.pid);
@@ -1113,7 +1126,22 @@ export class GameServer {
         // Use the SERIALIZED level (not e.level): during a 2v2 Fiesta bout e.level
         // is temporarily 20, but serializeCharacter reports the real level — so the
         // character-list/leaderboard `level` column never reflects the temp state.
-        await saveCharacterState(session.characterId, state.level, state);
+        if (opts.withMarket) {
+          // Atomic on the leave path so a logout bag-flush can never tear away
+          // from the global Market escrow (see saveCharacterAndMarketState). Run
+          // through the market queue and capture the market snapshot at write
+          // time so this commit can't clobber a newer one.
+          await this.enqueueMarketWrite(() =>
+            saveCharacterAndMarketState(
+              session.characterId,
+              state.level,
+              state,
+              this.sim.serializeMarket(),
+            ),
+          );
+        } else {
+          await saveCharacterState(session.characterId, state.level, state);
+        }
         session.lastSave = Date.now();
       }
     });
@@ -1168,7 +1196,7 @@ export class GameServer {
 
   async saveMarket(): Promise<void> {
     try {
-      await saveMarketState(this.sim.serializeMarket());
+      await this.enqueueMarketWrite(() => saveMarketState(this.sim.serializeMarket()));
     } catch (err) {
       console.error('failed to save world market:', err);
     }

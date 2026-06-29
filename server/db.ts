@@ -1685,6 +1685,41 @@ export async function saveCharacterState(
   );
 }
 
+// Persist a character row AND the global World Market blob in ONE transaction.
+// The two live in different tables (characters / world_state), but a Market
+// listing is an escrow: the item leaves the seller's bags (character state) and
+// becomes a listing (market state) in the same Sim action. Saving them as two
+// independent writes lets an unclean crash persist one half and not the other,
+// vaporising the item or duplicating it across bags and market. The leave path
+// uses this so a logout flush of bags can never tear away from the market.
+export async function saveCharacterAndMarketState(
+  characterId: number,
+  level: number,
+  state: CharacterState,
+  market: MarketSave,
+): Promise<void> {
+  const cleanState = sanitizeRemovedZone1Content(state).state;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      'UPDATE characters SET level = $2, state = $3, updated_at = now() WHERE id = $1',
+      [characterId, level, JSON.stringify(cleanState)],
+    );
+    await client.query(
+      `INSERT INTO world_state (key, data, updated_at) VALUES ($1, $2, now())
+       ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+      ['market', JSON.stringify(market)],
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export async function isAdminAccount(accountId: number): Promise<boolean> {
   const res = await pool.query('SELECT is_admin FROM accounts WHERE id = $1', [accountId]);
   return res.rows[0]?.is_admin === true;
