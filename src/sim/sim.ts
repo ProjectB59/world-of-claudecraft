@@ -611,6 +611,11 @@ export interface PlayerMeta {
   pendingSkinCatalog: SkinCatalog | null;
   pendingSkinItemId: string | null;
   moveInput: MoveInput;
+  // Monotonic counter bumped when a bulky, rarely-changing wire field (the
+  // inventory, and the collection-quest progress derived from it) mutates, so a
+  // host can cheaply tell whether that state needs re-sending without diffing
+  // it every frame. Runtime-only signal, never serialized/persisted.
+  wireRev: number;
   inventory: InvSlot[];
   vendorBuyback: InvSlot[];
   copper: number;
@@ -1131,6 +1136,7 @@ export class Sim {
       pendingSkinCatalog: savedState?.pendingSkinCatalog ?? null,
       pendingSkinItemId: savedState?.pendingSkinItemId ?? null,
       moveInput: emptyMoveInput(),
+      wireRev: 0,
       inventory: [],
       vendorBuyback: [],
       copper: 0,
@@ -3010,6 +3016,7 @@ export class Sim {
       target.auras.splice(existing, 1);
     }
     target.auras.push(aura);
+    if (aura.kind === 'stealth') target.stealthed = true; // keep the cache live without waiting for updateAuras
     this.applyNonPlayerStatAura(target, aura, 1);
     this.emit({ type: 'aura', targetId: target.id, name: aura.name, gained: true });
     const source = this.entities.get(aura.sourceId);
@@ -3133,6 +3140,7 @@ export class Sim {
     if (idx < 0) return;
     const name = e.auras[idx].name;
     e.auras.splice(idx, 1);
+    e.stealthed = false; // keep the cache live without waiting for updateAuras
     this.emit({ type: 'aura', targetId: e.id, name, gained: false });
   }
 
