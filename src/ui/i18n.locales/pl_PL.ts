@@ -2309,6 +2309,11 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.controls.abilities': 'Używaj zdolności',
   'guide.controls.actionHeader': 'Akcja',
   'guide.controls.arena': 'Arena',
+  'guide.controls.controllerBody':
+    'Pady również działają, a obsługa kontrolera jest domyślnie włączona. Lewa gałka odpowiada za ruch, prawa steruje kamerą, a przyciski akcji i bumpery obsługują twoje umiejętności, skakanie i interakcję. Otwórz dowolne okno, aby przywołać ekranowy wskaźnik do menu. W ustawieniach kontrolera w opcjach możesz zmienić przypisania przycisków oraz dostosować martwą strefę gałek, szybkość kamery, wibracje i odwrócone patrzenie.',
+  'guide.controls.controllerHeading': 'Na kontrolerze',
+  'guide.controls.cycleFriendly': 'Przełączaj przyjazny cel',
+  'guide.controls.gameMenu': 'Otwórz menu gry i opcje',
   'guide.controls.groupCamera': 'Kamera',
   'guide.controls.groupCombat': 'Namierzanie i walka',
   'guide.controls.groupInterface': 'Okna',
@@ -2321,6 +2326,40 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
     'Sterowanie dotykowe pojawia się automatycznie na telefonach i tabletach: gałka ruchu po lewej, przeciągnij gdziekolwiek po prawej, aby się rozglądać, oraz przyciski ekranowe dla twoich umiejętności i menu.',
   'guide.controls.mobileHeading': 'Na urządzeniu mobilnym',
   'guide.controls.talents': 'Talenty',
+  'guide.controls.targetFriendly': 'Namierz najbliższy przyjazny cel',
+  'guide.delvesPage.affixesBody':
+    'Trudniejsze wyprawy losują modyfikator, który zmienia przebieg zejścia, od niespokojnych umarłych przez cuchnące powietrze po obsuwający się strop. Podnoszą jednocześnie zagrożenie i nagrodę. Wyprawa o motywie krypty może wylosować dowolny z nich:',
+  'guide.delvesPage.affixesHeading': 'Modyfikatory wyprawy',
+  'guide.delvesPage.affixesLabel': 'Możliwe modyfikatory',
+  'guide.delvesPage.companionBody':
+    'Wyprawa wysyła z tobą towarzyszkę, więc samotne zejście nigdy nie jest beznadziejne. Walczy u twego boku, a gdy inwestujesz w nią między wyprawami, stale staje się silniejsza, aż w końcu raz na zejście potrafi wyrwać sojusznika z krawędzi śmierci. Należy do ciebie na czas wyprawy i czeka przy tablicy między zejściami.',
+  'guide.delvesPage.companionHeading': 'Twoja towarzyszka',
+  'guide.delvesPage.companionLabel': 'Towarzyszka',
+  'guide.delvesPage.fromLevel': 'Od poziomu {n}',
+  'guide.delvesPage.heading': 'Wyprawy',
+  'guide.delvesPage.howBody':
+    'Porozmawiaj z opiekunem, aby otworzyć tablicę, wybierz poziom trudności i zejdź w dół. Każda wyprawa łączy kilka krótkich komnat i kończy się starciem ze strażnikiem; pokonaj go, aby odebrać nagrodę i wrócić na powierzchnię. Zabierz przyjaciela, jeśli go masz, albo zdaj się na towarzyszkę, jeśli go nie masz.',
+  'guide.delvesPage.howHeading': 'Jak wygląda wyprawa',
+  'guide.delvesPage.intro':
+    'Wyprawy to krótkie, powtarzalne zejścia dla jednego lub dwóch graczy, z wierną towarzyszką u twego boku, ilekroć schodzisz samotnie. Znajdź tablicę, wybierz wyprawę i wespnij się z powrotem z łupami.',
+  'guide.delvesPage.keeperLabel': 'Opiekun',
+  'guide.delvesPage.lockpickBody':
+    'Niektóre drzwi i skrytki są zaryglowane, a ich otwarcie to mała próba nerwów, a nie sprawdzian statystyk: rozwiąż zamek czysto i spokojnie, a zdobędziesz lepszą nagrodę niż za pośpieszną, sfuszerowaną próbę. To opcjonalne, ale ostrożny śmiałek wychodzi z niej bogatszy.',
+  'guide.delvesPage.lockpickHeading': 'Zamki i to, co kryją',
+  'guide.delvesPage.marksBody':
+    'Ukończenie wypraw przynosi Znaki Wypraw, walutę trzymaną z dala od twoich monet. Wydawaj je u opiekuna, aby wzmocnić swoją towarzyszkę i zdobyć ekwipunek, którego nie znajdziesz nigdzie indziej.',
+  'guide.delvesPage.marksHeading': 'Znaki Wypraw',
+  'guide.delvesPage.partyLabel': 'Dla jednego lub dwóch',
+  'guide.delvesPage.tiersBody':
+    'Wyprawa oferuje więcej niż jeden poziom trudności. Wyższy czyni wrogów silniejszymi i dorzuca modyfikator wyprawy, a w zamian wypłaca więcej. Wymaga też, byś miał za sobą kilka poziomów, nim cię wpuści.',
+  'guide.delvesPage.tiersHeading': 'Poziom trudności',
+  'guide.delvesPage.tiersLabel': 'Poziomy trudności',
+  'guide.delvesPage.whatBody':
+    'Wyprawa to mały instancjowany loch stworzony tylko dla ciebie i najwyżej jednego sojusznika, prywatna kopia, w której nikt ci nie przeszkodzi. Rozpoczynasz ją przy tablicy, której pilnuje opiekun wypraw gdzieś w świecie, wskakujesz do środka, przebijasz się przez garść pomieszczeń i kończysz na jednym strażniku. Wyprawy są szybkie i pomyślane do powtarzania, więc stanowią pewny kawałek postępu, ilekroć otwarty świat się wyczerpie.',
+  'guide.delvesPage.whatHeading': 'Czym jest wyprawa',
+  'guide.delvesPage.whereBody':
+    'Pierwsza wyprawa, Zawalony Relikwiarz, otwiera się na Relikwiarzowym Wzgórzu w początkowej dolinie, czyli Dolinie Wschodniego Strumienia. Tablicy pilnuje tam Brat Halven, który pośle cię w dół, gdy będziesz gotów.',
+  'guide.delvesPage.whereHeading': 'Gdzie ją znaleźć',
   'guide.docTitle': '{page} - {brand}',
   'guide.dungeonsPage.bastionBody':
     'Zalana forteca utracona na rzecz bagien, dzierżona przez utopionych obrońców i sam przybierający przypływ.',
@@ -2377,6 +2416,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.economy.marketPricing':
     'Ustalanie ceny zależy od ciebie. Wystawienie nieco poniżej tego, co inni żądają, zwykle sprzedaje się szybciej, podczas gdy wygórowana cena może leżeć nietknięta. Najpierw przejrzyj ofertę, aby zobaczyć, jak wygląda obowiązująca stawka, zanim wystawisz.',
   'guide.economy.marketTitle': 'Targ Świata',
+  'guide.economy.marksBody':
+    'Monety to nie jedyne, co odkładasz. Wyprawy wypłacają Znaki Wypraw, osobną walutę, którą wydajesz wyłącznie u opiekuna wypraw, na ulepszenia towarzyszki i ekwipunek, którego nie znajdziesz gdzie indziej. Nigdy nie mieszają się z twoimi monetami.',
+  'guide.economy.marksTitle': 'Druga waluta: Znaki Wypraw',
   'guide.economy.tradeBody':
     'Możesz handlować twarzą w twarz z każdym, kto stoi obok ciebie. Oboje wkładacie przedmioty i monety do wspólnego okna, a wymiana następuje dopiero, gdy oboje ją potwierdzicie, więc żadna ze stron nie może zostać oszukana. To prosty sposób, by przekazać przyjacielowi łup lub dobić targu.',
   'guide.economy.tradeTitle': 'Handel z innymi graczami',
@@ -2386,6 +2428,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.family.beast.desc':
     'Dzikie zwierzęta lasu i pola, od wilków i dzików po stworzenia, które na nie polują. Łowcy mogą wiele z nich oswoić.',
   'guide.family.beast.name': 'Bestie',
+  'guide.family.dragonkin.desc':
+    'Łuskowate, wężowate istoty ze starych głębin. Rzadkie, dumne i znacznie silniejsze, niż na to wyglądają.',
+  'guide.family.dragonkin.name': 'Smoczy ród',
   'guide.family.elemental.desc':
     'Żywa burza i kamień, związane z dzikimi miejscami, gdzie żywioły szaleją mocno.',
   'guide.family.elemental.name': 'Żywiołaki',
@@ -2460,6 +2505,8 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.gear.consumablesPotions':
     'Mikstury przywracają zdrowie lub manę w chwili użycia, nawet w środku walki, co czyni je ratunkiem w sytuacji, gdy zaczepka pójdzie nie tak. Dzielą krótki czas odnowienia, więc zaplanuj jeden dobry moment, by ich użyć.',
   'guide.gear.consumablesTitle': 'Materiały zużywalne',
+  'guide.gear.cosmeticsApply':
+    'Ustaw aktywny wygląd w wierszu wyglądu na ekranie postaci i swobodnie przełączaj się między wszystkim, co odblokowałeś.',
   'guide.gear.cosmeticsBody':
     'Niektóre nagrody zmieniają jedynie wygląd twojej postaci, nigdy jej siłę. Te kosmetyczne skórki pozwalają ci się wyróżnić bez wpływu na grę, więc noś, którą tylko zechcesz.',
   'guide.gear.cosmeticsCache':
@@ -2478,6 +2525,8 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.gear.fishingTitle': 'Wędkowanie',
   'guide.gear.intro':
     'Wyposażenie to ekwipunek, który nosi twoja postać, oraz przedmioty, które ze sobą dźwigasz. Lepsze wyposażenie to najpewniejszy sposób, by stać się silniejszym, a większość z niego zbierasz po prostu grając.',
+  'guide.gear.itemLevelBody':
+    'Jeśli chcesz szybkiego sposobu na porównanie dwóch elementów, włącz w opcjach Pokaż poziom przedmiotu. Każda broń i część pancerza pokaże wtedy poziom przedmiotu, jedną liczbę określającą z grubsza jego potęgę na podstawie tego, skąd pochodzi, dzięki czemu na pierwszy rzut oka poznasz, które ulepszenie waży więcej, nawet w różnych slotach.',
   'guide.gear.qualityBody':
     'Każdy przedmiot ma jakość, a jego nazwa jest pokolorowana tak, by do niej pasować, dzięki czemu odczytasz jego wartość na pierwszy rzut oka. Od najpospolitszej do najbardziej cenionej:',
   'guide.gear.qualityCommon': 'Pospolity',
@@ -2489,6 +2538,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.gear.qualityRare': 'Rzadki',
   'guide.gear.qualityTitle': 'Jakość na pierwszy rzut oka',
   'guide.gear.qualityUncommon': 'Niepospolity',
+  'guide.gear.setsBody':
+    'Najrzadszy pancerz występuje w pasujących do siebie rodzinach, gdzie kilka części skrojono tak, by wyglądały i walczyły jak jedna całość. Noś naraz dość elementów rodziny, a zestaw się przebudzi, dając bonusy ponad statystyki każdej części, a im więcej elementów nosisz, tym silniejszy się staje. Wypadają z najtrudniejszej zawartości grupowej blisko maksymalnego poziomu, więc kompletowanie pełnego zestawu to klasyczny cel końca gry.',
+  'guide.gear.setsTitle': 'Zestawy i bonusy zestawów',
   'guide.gear.slotChest': 'Tułów',
   'guide.gear.slotFeet': 'Stopy',
   'guide.gear.slotGloves': 'Dłonie',
@@ -2509,6 +2561,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.aggroDef':
     'Uwaga wroga. Gracz generujący najwięcej zagrożenia utrzymuje agro i jest atakowany.',
   'guide.glossary.aggroTerm': 'Agro',
+  'guide.glossary.augmentDef':
+    'Tymczasowe wzmocnienie, które dobierasz podczas meczu na arenie Fiesta dwóch na dwóch i które przekształca twój zestaw tylko na czas tego meczu.',
+  'guide.glossary.augmentTerm': 'Wzmocnienie',
   'guide.glossary.buffDef':
     'Korzystny efekt na tobie lub sojuszniku, jak błogosławieństwo, które na pewien czas podnosi statystykę.',
   'guide.glossary.buffTerm': 'Wzmocnienie',
@@ -2518,6 +2573,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.debuffDef':
     'Szkodliwy efekt na celu, jak spowolnienie, krwawienie lub osłabiony pancerz.',
   'guide.glossary.debuffTerm': 'Osłabienie',
+  'guide.glossary.delveDef':
+    'Krótkie, powtarzalne instancjowane zejście dla jednego lub dwóch graczy, rozpoczynane przy tablicy opiekuna, z towarzyszką u twego boku.',
+  'guide.glossary.delveTerm': 'Wyprawa',
   'guide.glossary.dotDef':
     'Obrażenia w czasie i leczenie w czasie: efekty, które tykają równymi pulsami zamiast naraz.',
   'guide.glossary.dotTerm': 'DoT i HoT',
@@ -2547,6 +2605,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.pullDef':
     'Wciągnięcie wroga lub grupy do walki, zwykle celowo i jedna partia naraz.',
   'guide.glossary.pullTerm': 'Ściągnięcie',
+  'guide.glossary.raidDef':
+    'Większa grupa, tutaj do dziesięciu graczy, tworzona na najtrudniejsze starcia końca gry; drużyna przekształca się w rajd, gdy się zapełni.',
+  'guide.glossary.raidTerm': 'Rajd',
   'guide.glossary.rareDef':
     'Niezwykły, nazwany wróg, który wędruje po strefie i upuszcza lepszy łup.',
   'guide.glossary.rareTerm': 'Rzadki',
@@ -2701,6 +2762,7 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.nav.closeMenu': 'Zamknij menu',
   'guide.nav.combat': 'Walka',
   'guide.nav.controls': 'Sterowanie',
+  'guide.nav.delves': 'Wyprawy',
   'guide.nav.dungeons': 'Lochy i rajdy',
   'guide.nav.economy': 'Ekonomia i handel',
   'guide.nav.faq': 'FAQ',
@@ -2787,6 +2849,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.questsPage.sideCryptBody':
     'Wysoko na szczytach kryje się cichsza tajemnica: stare groby naznaczone koroną, której nie pamięta żaden zapis. Odczytaj zmarłych, zbierz to, czego strzegli, i odpieczętuj grobowiec, który miał pozostać zamknięty. To detektywistyczny trop, który otwiera drogę do drugiej próby końca gry dla pełnego rajdu.',
   'guide.questsPage.sideCryptTitle': 'Zapomniany król',
+  'guide.questsPage.sideTempleBody':
+    'Brama z bladego światła nad wysokim górskim stawem otwiera się na zatopioną świątynię, gdzie utopiony kult wciąż śpiewa. Jej krótki łańcuch zadań stoi na uboczu głównej opowieści, samodzielna zagadka dla każdego, kto wespnie się na brzeg, odczyta ostrzeżenia wyryte w skałach i zejdzie w dół, by zobaczyć, czemu służyły.',
+  'guide.questsPage.sideTempleTitle': 'Zatopiona świątynia',
   'guide.questsPage.sideTitle': 'Nici poza główną drogą',
   'guide.questsPage.sideWardenBody':
     'Obok opowieści strażnicy Doliny i trzęsawiska rozdają stałą drabinę nagród. Wspinaj się po niej, wróg po wrogu, tak jak każdy strażnik przed tobą zapracował na swoje miejsce. To uczciwe zdobywanie poziomów i objazd najgorszych mącicieli każdej strefy.',
@@ -2829,6 +2894,7 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.search.placeholder': 'Przeszukaj przewodnik',
   'guide.search.typeClass': 'Klasa',
   'guide.search.typeCreature': 'Stwory',
+  'guide.search.typeDelve': 'Wyprawa',
   'guide.search.typeDungeon': 'Loch',
   'guide.search.typePage': 'Strona',
   'guide.search.typeTerm': 'Termin',
@@ -2888,6 +2954,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
     'Zwykłe znaleziska mogą trafić do zbierającego, podczas gdy lepsze są wystawiane do losowania, by każdy miał uczciwą szansę.',
   'guide.social.lootCommonTitle': 'Przedmioty.',
   'guide.social.lootHeading': 'Łup drużynowy',
+  'guide.social.lootMasterBody':
+    'Przywódca może zamiast tego sam zająć się lepszymi łupami, przekazując każdy z nich temu członkowi, który powinien go dostać. Dzięki temu cenny ekwipunek nie trafia do przypadkowego rzutu, tak jak prowadzi loch zorganizowana grupa.',
+  'guide.social.lootMasterTitle': 'Mistrz łupów.',
   'guide.social.lootRollBody':
     'Gdy przedmiot trafia do losowania, każdy uprawniony członek wybiera Potrzebuję, jeśli go chce, Zachłanność, jeśli wziąłby go tylko na zapas, lub Pasuję, by zrezygnować. Wygrywa najwyższy rzut.',
   'guide.social.lootRollTitle': 'Potrzebuję, Zachłanność lub Pasuję.',
@@ -2913,6 +2982,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.stats.dodgeBody':
     'Unik to twoja szansa na całkowite uniknięcie nadchodzącego ataku wręcz. Zaczynasz z niewielką szansą bazową, a Zręczność ją podnosi, więc zwinne klasy wymijają więcej ciosów.',
   'guide.stats.dodgeTitle': 'Unik',
+  'guide.stats.dpsBody':
+    'Twoja karta postaci pokazuje również szacunkowe obrażenia na sekundę: z grubsza to, co twoja broń, jej szybkość zamachu i moc ataku dają w sumie z biegiem czasu. To szybki sposób, by na pierwszy rzut oka porównać dwie bronie.',
+  'guide.stats.dpsTitle': 'Obrażenia na sekundę',
   'guide.stats.growBody':
     'Dwie rzeczy podnoszą twoje statystyki. Każdy poziom dodaje stałą ilość każdego atrybutu dobraną do twojej klasy, a założony ekwipunek dokłada więcej na wierzch. Utrzymywanie aktualnego ekwipunku to najpewniejszy sposób, by rosnąć w siłę, aż po limit poziomów.',
   'guide.stats.growHeading': 'Jak rosną twoje statystyki',
@@ -2927,6 +2999,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.stats.sheetBody':
     'Otwórz w grze okno postaci, by zobaczyć to wszystko w jednym miejscu: pięć atrybutów po jednej stronie i statystyki, które zasilają, po drugiej. Najedź na dowolną wartość, a podpowiedź rozłoży na czynniki, co robi dla twojej klasy, byś w mig dostrzegł, które liczby naprawdę poruszyło ulepszenie.',
   'guide.stats.sheetHeading': 'Czytanie karty postaci',
+  'guide.stats.spBody':
+    'Moc zaklęć to odpowiednik mocy ataku dla rzucającego zaklęcia: zwiększa obrażenia zadawane przez twoje czary. Zasila ją inteligencja, a ekwipunek i wzmocnienia rzucającego dokładają jeszcze więcej, dlatego rzucający zaklęcia pilnuje mocy zaklęć tak, jak walczący wręcz pilnuje mocy ataku.',
+  'guide.stats.spTitle': 'Moc zaklęć',
   'guide.stats.spiBody':
     'Duch rządzi tym, jak szybko mana rzucającego zaklęcia powraca poza walką. Podobnie jak Inteligencja, służy klasom many i niewiele znaczy dla pozostałych.',
   'guide.stats.spiTitle': 'Duch',
@@ -2956,6 +3031,8 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.talentsPage.resetNote':
     'Talenty możesz zresetować w dowolnej chwili, więc wczesny wybór nigdy nie jest pułapką. Próbuj różnych rzeczy, sprawdzaj, co lubisz, i zmieniaj zdanie do woli.',
   'guide.talentsPage.resetTitle': 'Nic nie jest na stałe',
+  'guide.talentsPage.shareNote':
+    'Gotowy zestaw można skopiować do krótkiego kodu do udostępniania i przekazać przyjacielowi, który wkleja go prosto do własnego panelu talentów, aby go wczytać.',
   'guide.talentsPage.specsBody':
     'Każda klasa ma kilka specjalizacji, a każda z nich ma własną rolę i charakterystyczny motyw przewodni. Oto zarys ich wszystkich. Otwórz klasę, by poznać jej pełny zestaw.',
   'guide.talentsPage.specsHeading': 'Specjalizacje według klas',
@@ -2969,6 +3046,7 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.viewer.error':
     'Nie udało się wczytać modelu 3D. Grafika powyżej i tak pokazuje tę postać: {name}.',
   'guide.viewer.loading': 'Wczytywanie modelu...',
+  'guide.viewer.posterAlt': '{name}',
   'guide.viewer.view3d': 'Zobacz {name} w 3D',
   'guide.viewer.view3dShort': 'Zobacz w 3D',
   'guide.wishPage.heading': 'Rzeczy, które chciałbym wiedzieć wcześniej',

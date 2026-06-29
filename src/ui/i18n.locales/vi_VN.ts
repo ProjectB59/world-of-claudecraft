@@ -2321,6 +2321,11 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.controls.abilities': 'Dùng kỹ năng',
   'guide.controls.actionHeader': 'Hành động',
   'guide.controls.arena': 'Đấu Trường',
+  'guide.controls.controllerBody':
+    'Tay cầm cũng dùng được, và hỗ trợ tay cầm được bật sẵn theo mặc định. Cần trái để di chuyển, cần phải để chỉnh máy quay, còn các nút mặt và nút vai lo phần kỹ năng, nhảy và tương tác của bạn. Mở bất kỳ cửa sổ nào để hiện một con trỏ trên màn hình cho các menu. Bạn có thể đổi lại các nút và chỉnh vùng chết của cần, tốc độ máy quay, rung và đảo chiều nhìn trong phần cài đặt tay cầm ở mục tùy chọn.',
+  'guide.controls.controllerHeading': 'Trên tay cầm',
+  'guide.controls.cycleFriendly': 'Lần lượt chọn mục tiêu thân thiện',
+  'guide.controls.gameMenu': 'Mở menu trò chơi và tùy chọn',
   'guide.controls.groupCamera': 'Máy quay',
   'guide.controls.groupCombat': 'Chọn mục tiêu và chiến đấu',
   'guide.controls.groupInterface': 'Cửa sổ',
@@ -2333,6 +2338,40 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
     'Điều khiển cảm ứng tự động xuất hiện trên điện thoại và máy tính bảng: cần di chuyển ở bên trái, kéo bất cứ đâu ở bên phải để nhìn quanh, và các nút trên màn hình cho kỹ năng và menu của bạn.',
   'guide.controls.mobileHeading': 'Trên di động',
   'guide.controls.talents': 'Thiên Phú',
+  'guide.controls.targetFriendly': 'Chọn mục tiêu thân thiện gần nhất',
+  'guide.delvesPage.affixesBody':
+    'Những lượt khó hơn sẽ bốc một đặc tính làm thay đổi cách cuộc xuống hầm diễn ra, từ người chết không yên đến không khí độc hại đến mái vòm rệu rã. Chúng nâng cả hiểm nguy lẫn phần thưởng lên cùng lúc. Một hang sâu lấy chủ đề hầm mộ có thể bốc bất kỳ đặc tính nào sau đây:',
+  'guide.delvesPage.affixesHeading': 'Đặc tính lượt chơi',
+  'guide.delvesPage.affixesLabel': 'Đặc tính có thể gặp',
+  'guide.delvesPage.companionBody':
+    'Mỗi hang sâu cử một đồng hành xuống cùng bạn, nên một lượt chơi đơn độc chẳng bao giờ là vô vọng. Cô ấy chiến đấu bên cạnh bạn, và khi bạn đầu tư cho cô giữa các lượt, cô dần mạnh lên đều đặn, cho tới khi có thể kéo một đồng đội từ bờ vực trở lại một lần mỗi cuộc xuống hầm. Cô là đồng hành của bạn trong suốt hang sâu và chờ ở bảng giữa các lượt.',
+  'guide.delvesPage.companionHeading': 'Đồng hành của bạn',
+  'guide.delvesPage.companionLabel': 'Đồng Hành',
+  'guide.delvesPage.fromLevel': 'Từ cấp {n}',
+  'guide.delvesPage.heading': 'Hang Sâu',
+  'guide.delvesPage.howBody':
+    'Nói chuyện với người giữ để mở bảng, chọn một độ khó, và đi xuống. Mỗi lượt nối liền vài gian phòng ngắn và kết thúc ở kẻ canh giữ của nó; dọn sạch để nhận phần thưởng và trở lại mặt đất. Rủ một người bạn nếu bạn có, hoặc dựa vào đồng hành nếu bạn không có.',
+  'guide.delvesPage.howHeading': 'Một lượt chơi diễn ra thế nào',
+  'guide.delvesPage.intro':
+    'Hang sâu là những cuộc xuống hầm ngắn, chơi đi chơi lại được, cho một hoặc hai người, với một đồng hành trung thành kề bên mỗi khi bạn xuống một mình. Tìm cái bảng, chọn một lượt chơi, và trèo trở lên với chiến lợi phẩm.',
+  'guide.delvesPage.keeperLabel': 'Người Giữ',
+  'guide.delvesPage.lockpickBody':
+    'Một số cánh cửa và rương chứa bị khóa kín, và mở một cái là một thử thách nhỏ về sự bình tĩnh chứ không phải về chỉ số: giải khóa gọn gàng và vững vàng thì bạn nhận được phần thưởng tốt hơn so với khi vội vàng làm hỏng. Việc này không bắt buộc, nhưng người dò hang cẩn thận mới là người giàu hơn.',
+  'guide.delvesPage.lockpickHeading': 'Khóa và những gì chúng giấu',
+  'guide.delvesPage.marksBody':
+    'Dọn sạch hang sâu kiếm được Huy Hiệu Hang Sâu, một loại tiền tệ tách biệt với tiền vàng của bạn. Tiêu chúng ở chỗ người giữ để tăng sức cho đồng hành và sắm trang bị bạn không tìm thấy ở bất cứ đâu khác.',
+  'guide.delvesPage.marksHeading': 'Huy Hiệu Hang Sâu',
+  'guide.delvesPage.partyLabel': 'Cho một hoặc hai người',
+  'guide.delvesPage.tiersBody':
+    'Mỗi hang sâu có nhiều hơn một độ khó. Độ khó cao hơn khiến kẻ địch mạnh hơn và thêm vào một đặc tính lượt chơi, đổi lại trả thưởng nhiều hơn. Nó cũng đòi bạn phải có vài cấp trong tay trước khi cho bạn vào.',
+  'guide.delvesPage.tiersHeading': 'Độ Khó',
+  'guide.delvesPage.tiersLabel': 'Các độ khó',
+  'guide.delvesPage.whatBody':
+    'Hang sâu là một hầm ngục instance nhỏ làm riêng cho bạn và tối đa một đồng đội, một bản sao riêng tư mà không ai quấy rầy bạn được. Bạn khởi nó từ một cái bảng do một người giữ hang sâu trông coi ngoài thế giới, nhảy vào, đánh xuống qua một nhúm căn phòng, và kết thúc ở một kẻ canh giữ duy nhất. Các lượt chơi nhanh gọn và được tạo ra để chơi lại, nên hang sâu là một nguồn tiến triển đáng tin cậy mỗi khi thế giới mở đã cạn việc để làm.',
+  'guide.delvesPage.whatHeading': 'Hang sâu là gì',
+  'guide.delvesPage.whereBody':
+    'Hang sâu đầu tiên, Thánh Tích Sụp Đổ, mở ra ở Đồi Thánh Tích trong thung lũng khởi đầu Thung Lũng Đông Khê. Tu Huynh Halven trông coi cái bảng ở đó, và ông sẽ cử bạn xuống một khi bạn đã sẵn sàng.',
+  'guide.delvesPage.whereHeading': 'Tìm ở đâu',
   'guide.docTitle': '{page} - {brand}',
   'guide.dungeonsPage.bastionBody':
     'Một pháo đài ngập nước đã mất vào tay đầm lầy, do những kẻ phòng thủ chết chìm và chính con nước dâng nắm giữ.',
@@ -2389,6 +2428,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.economy.marketPricing':
     'Định giá là tùy bạn. Rao thấp hơn một chút so với người khác thường bán nhanh hơn, trong khi giá cao ngất có thể nằm im không ai động đến. Hãy duyệt trước để xem mức giá hiện hành trông thế nào trước khi đăng.',
   'guide.economy.marketTitle': 'Chợ Thế Giới',
+  'guide.economy.marksBody':
+    'Tiền vàng không phải thứ duy nhất bạn cất giữ. Hang sâu trả Huy Hiệu Hang Sâu, một loại tiền tệ riêng mà bạn chỉ tiêu ở chỗ người giữ hang sâu, vào việc nâng cấp đồng hành và trang bị bạn không tìm thấy ở nơi khác. Chúng không bao giờ lẫn với tiền vàng của bạn.',
+  'guide.economy.marksTitle': 'Một loại tiền tệ thứ hai: Huy Hiệu Hang Sâu',
   'guide.economy.tradeBody':
     'Bạn có thể trao đổi mặt đối mặt với bất kỳ ai đứng gần bạn. Cả hai bên đặt vật phẩm và tiền vào một cửa sổ chung và cuộc đổi chỉ diễn ra một khi cả hai cùng xác nhận, nên không bên nào bị mắc lừa. Đó là cách đơn giản để trao cho bạn bè một món đồ rơi hoặc dàn xếp một thỏa thuận.',
   'guide.economy.tradeTitle': 'Giao dịch với người chơi khác',
@@ -2398,6 +2440,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.family.beast.desc':
     'Thú hoang của rừng và đồng, từ sói và lợn lòi đến những kẻ săn mồi chúng. Thợ Săn có thể thuần hóa nhiều trong số chúng.',
   'guide.family.beast.name': 'Mãnh Thú',
+  'guide.family.dragonkin.desc':
+    'Những sinh vật có vảy, thân rắn từ vực sâu cổ xưa. Hiếm gặp, kiêu hãnh, và mạnh hơn vẻ ngoài của chúng rất nhiều.',
+  'guide.family.dragonkin.name': 'Long Tộc',
   'guide.family.elemental.desc':
     'Bão và đá sống động, gắn với những nơi hoang dã nơi các nguyên tố chảy mạnh.',
   'guide.family.elemental.name': 'Nguyên Tố',
@@ -2472,6 +2517,8 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.gear.consumablesPotions':
     'Thuốc hồi máu hoặc mana ngay khoảnh khắc bạn dùng, ngay cả giữa trận, khiến chúng là cú cứu mạng quyết định khi một pha kéo địch đi sai. Chúng chia sẻ một thời gian hồi ngắn, nên hãy tính một thời điểm tốt để dùng.',
   'guide.gear.consumablesTitle': 'Vật Phẩm Tiêu Hao',
+  'guide.gear.cosmeticsApply':
+    'Đặt diện mạo đang dùng từ hàng ngoại hình trên màn hình nhân vật, và đổi thoải mái giữa mọi thứ bạn đã mở khóa.',
   'guide.gear.cosmeticsBody':
     'Một số phần thưởng chỉ thay đổi diện mạo nhân vật của bạn, không bao giờ thay đổi sức mạnh. Những bộ da trang trí này giúp bạn nổi bật mà không ảnh hưởng đến trò chơi, nên hãy mặc bộ nào bạn thích.',
   'guide.gear.cosmeticsCache':
@@ -2490,6 +2537,8 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.gear.fishingTitle': 'Câu Cá',
   'guide.gear.intro':
     'Trang bị là đồ mà nhân vật của bạn mặc và những vật phẩm bạn mang theo. Trang bị tốt hơn là cách ổn định nhất để mạnh lên, và bạn nhặt được phần lớn chúng chỉ bằng cách chơi.',
+  'guide.gear.itemLevelBody':
+    'Nếu bạn muốn một cách nhanh để so hai món đồ, hãy bật Hiện Cấp Vật Phẩm trong tùy chọn. Khi đó mỗi vũ khí và mảnh giáp sẽ hiện một cấp vật phẩm, một con số duy nhất cho biết món đó mạnh cỡ nào dựa trên nơi nó đến, nên bạn có thể nhìn thoáng qua là biết món nâng cấp nào nặng ký hơn, kể cả khi khác ô trang bị.',
   'guide.gear.qualityBody':
     'Mỗi vật phẩm đều có một độ chất lượng, và tên của nó được tô màu tương ứng để bạn đọc được giá trị của nó trong nháy mắt. Từ phổ biến nhất đến quý giá nhất:',
   'guide.gear.qualityCommon': 'Phổ Thông',
@@ -2501,6 +2550,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.gear.qualityRare': 'Hiếm',
   'guide.gear.qualityTitle': 'Chất lượng, nhìn thoáng qua',
   'guide.gear.qualityUncommon': 'Khác Thường',
+  'guide.gear.setsBody':
+    'Giáp hiếm nhất đến theo những gia đình đồng bộ, vài món được tạo để trông và đánh như một thể thống nhất. Mặc đủ số món của một gia đình cùng lúc thì bộ thức dậy, trao thêm hiệu ứng bên trên các chỉ số riêng của từng món, và càng mặc nhiều món thì nó càng mạnh. Những món này rơi ra từ nội dung theo nhóm khó nhất gần cấp tối đa, nên săn cho đủ một bộ là một mục tiêu hậu kỳ kinh điển.',
+  'guide.gear.setsTitle': 'Bộ trang bị và hiệu ứng bộ',
   'guide.gear.slotChest': 'Ngực',
   'guide.gear.slotFeet': 'Chân',
   'guide.gear.slotGloves': 'Tay',
@@ -2521,6 +2573,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.aggroDef':
     'Sự chú ý của kẻ địch. Người chơi tạo ra nhiều mối đe dọa nhất sẽ giữ aggro và bị tấn công.',
   'guide.glossary.aggroTerm': 'Aggro',
+  'guide.glossary.augmentDef':
+    'Một đòn tăng lực tạm thời mà bạn bốc trong một trận đấu trường Fiesta hai đấu hai, tái định hình bộ kỹ năng của bạn chỉ riêng cho trận đó.',
+  'guide.glossary.augmentTerm': 'Cường hóa',
   'guide.glossary.buffDef':
     'Một hiệu ứng có lợi lên bạn hoặc đồng minh, như một phúc lành nâng một chỉ số trong một lúc.',
   'guide.glossary.buffTerm': 'Buff',
@@ -2530,6 +2585,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.debuffDef':
     'Một hiệu ứng có hại lên một mục tiêu, như một đòn làm chậm, một vết chảy máu, hoặc giáp suy yếu.',
   'guide.glossary.debuffTerm': 'Debuff',
+  'guide.glossary.delveDef':
+    'Một cuộc xuống hầm instance ngắn, chơi lại được, cho một hoặc hai người chơi, khởi từ bảng của một người giữ với một đồng hành kề bên.',
+  'guide.glossary.delveTerm': 'Hang sâu',
   'guide.glossary.dotDef':
     'Sát thương theo thời gian và hồi máu theo thời gian: những hiệu ứng kích từng nhịp đều đặn thay vì tất cả cùng một lúc.',
   'guide.glossary.dotTerm': 'DoT và HoT',
@@ -2559,6 +2617,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.pullDef':
     'Lôi kéo một kẻ thù hoặc một nhóm vào trận, thường là có chủ đích và từng đợt một.',
   'guide.glossary.pullTerm': 'Kéo (pull)',
+  'guide.glossary.raidDef':
+    'Một nhóm lớn hơn, ở đây tối đa mười người chơi, lập ra cho hồi kết hậu kỳ khó nhất; một tổ đội chuyển thành raid một khi đầy.',
+  'guide.glossary.raidTerm': 'Raid',
   'guide.glossary.rareDef':
     'Một kẻ thù hiếm có tên riêng đi lang thang trong vùng và rơi chiến lợi phẩm tốt hơn.',
   'guide.glossary.rareTerm': 'Hiếm (rare)',
@@ -2714,6 +2775,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.nav.closeMenu': 'Đóng menu',
   'guide.nav.combat': 'Chiến Đấu',
   'guide.nav.controls': 'Điều Khiển',
+  'guide.nav.delves': 'Hang Sâu',
   'guide.nav.dungeons': 'Hầm Ngục & Raid',
   'guide.nav.economy': 'Kinh Tế & Giao Thương',
   'guide.nav.faq': 'FAQ',
@@ -2798,6 +2860,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.questsPage.sideCryptBody':
     'Cao trên những đỉnh núi có một bí ẩn lặng lẽ hơn: những ngôi mộ cổ khắc một vương miện mà không sử sách nào nhớ tới. Đọc lời người chết, thu thập thứ họ canh giữ, và mở phong ấn một ngôi mộ vốn được định để mãi khép kín. Đó là con đường của một thám tử, mở lối tới một thử thách hậu kỳ thứ hai dành cho một raid đầy đủ.',
   'guide.questsPage.sideCryptTitle': 'Vị vua bị lãng quên',
+  'guide.questsPage.sideTempleBody':
+    'Một cánh cổng ánh sáng nhợt nhạt trên một hồ băng cao giữa những đỉnh núi mở lối vào một ngôi đền chìm nơi một giáo phái chết đuối vẫn còn cất tiếng hát. Chuỗi nhiệm vụ ngắn của nó tách khỏi cốt truyện chính, một bí ẩn khép kín dành cho bất cứ ai trèo lên tới bờ, đọc những lời cảnh báo khắc trên đá, và đi xuống xem chúng để làm gì.',
+  'guide.questsPage.sideTempleTitle': 'Ngôi đền chìm',
   'guide.questsPage.sideTitle': 'Những sợi chỉ rẽ khỏi đường chính',
   'guide.questsPage.sideWardenBody':
     'Song song với cốt truyện, các thủ hộ của Thung Lũng và đầm lầy ban một thang truy nã thường trực. Hãy leo dần lên đó, từng kẻ địch một, theo cách mọi thủ hộ trước bạn đã giành lấy vị trí của mình. Đó là cách lên cấp chân chính và một vòng dạo qua những kẻ gây rối tệ nhất của mỗi khu vực.',
@@ -2840,6 +2905,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.search.placeholder': 'Tìm trong cẩm nang',
   'guide.search.typeClass': 'Lớp Nhân Vật',
   'guide.search.typeCreature': 'Sinh Vật',
+  'guide.search.typeDelve': 'Hang Sâu',
   'guide.search.typeDungeon': 'Hầm Ngục',
   'guide.search.typePage': 'Trang',
   'guide.search.typeTerm': 'Thuật Ngữ',
@@ -2899,6 +2965,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
     'Những món rơi ra thông thường có thể về tay người nhặt, trong khi những món tốt hơn được đưa ra tung xúc xắc để mọi người có cơ hội công bằng.',
   'guide.social.lootCommonTitle': 'Vật phẩm.',
   'guide.social.lootHeading': 'Chiến lợi phẩm tổ đội',
+  'guide.social.lootMasterBody':
+    'Thay vào đó, đội trưởng có thể đứng ra nắm những món rơi tốt hơn, trao mỗi món cho thành viên xứng đáng nhận nó. Cách này giữ cho trang bị quý không rơi vào một lần tung xúc xắc may rủi, đúng kiểu một nhóm có tổ chức chạy hầm ngục.',
+  'guide.social.lootMasterTitle': 'Quản lý chiến lợi phẩm.',
   'guide.social.lootRollBody':
     'Khi một vật phẩm được đưa ra tung xúc xắc, mỗi thành viên đủ điều kiện chọn Cần nếu họ muốn nó, Tham nếu họ chỉ lấy khi dư, hoặc Bỏ Qua để rút lui. Người tung cao nhất thắng.',
   'guide.social.lootRollTitle': 'Cần, Tham, hoặc Bỏ Qua.',
@@ -2924,6 +2993,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.stats.dodgeBody':
     'Né là cơ hội của bạn để hoàn toàn tránh một đòn cận chiến đang đến. Bạn bắt đầu với một cơ hội nền nhỏ, và Nhanh Nhẹn nâng nó lên, nên các lớp nhanh nhẹn lách được nhiều đòn hơn.',
   'guide.stats.dodgeTitle': 'Né tránh',
+  'guide.stats.dpsBody':
+    'Bảng của bạn cũng hiện một ước tính sát thương mỗi giây: gần đúng những gì vũ khí, tốc độ vung của nó, và sức tấn công của bạn cộng lại theo thời gian. Đó là một cách nhanh để so hai vũ khí trong nháy mắt.',
+  'guide.stats.dpsTitle': 'Sát thương mỗi giây',
   'guide.stats.growBody':
     'Hai thứ nâng các chỉ số của bạn. Mỗi cấp độ thêm một lượng cố định mỗi thuộc tính hợp với lớp nhân vật của bạn, và trang bị bạn mặc thêm vào nữa. Giữ trang bị luôn cập nhật là cách vững vàng nhất để mạnh lên, suốt chặng đường đến giới hạn cấp.',
   'guide.stats.growHeading': 'Cách các chỉ số của bạn tăng lên',
@@ -2938,6 +3010,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.stats.sheetBody':
     'Mở cửa sổ nhân vật trong trò chơi để thấy tất cả những điều này ở một nơi: năm thuộc tính của bạn ở một bên và các chỉ số mà chúng nuôi ở bên kia. Di chuột lên bất kỳ giá trị nào và một chú giải sẽ phân tích nó làm gì cho lớp nhân vật của bạn, để bạn có thể thấy ngay con số nào một lần nâng cấp thực sự đã thay đổi.',
   'guide.stats.sheetHeading': 'Đọc bảng nhân vật của bạn',
+  'guide.stats.spBody':
+    'Sức mạnh phép thuật là đối ứng của một pháp sư với sức tấn công: nó nâng sát thương các phép của bạn. Trí Tuệ nuôi nó, và trang bị cùng buff cho pháp sư cộng thêm bên trên, nên một người niệm phép theo dõi sức mạnh phép thuật giống như một chiến binh cận chiến theo dõi sức tấn công.',
+  'guide.stats.spTitle': 'Sức mạnh phép thuật',
   'guide.stats.spiBody':
     'Tinh Thần chi phối tốc độ mana của một pháp sư hồi lại khi ngoài chiến đấu. Giống Trí Tuệ, nó phục vụ các lớp dùng mana và ít có ý nghĩa với các lớp khác.',
   'guide.stats.spiTitle': 'Tinh Thần',
@@ -2967,6 +3042,8 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.talentsPage.resetNote':
     'Bạn có thể đặt lại tài năng bất cứ lúc nào, nên một lựa chọn sớm không bao giờ là cái bẫy. Cứ thử, xem bạn thích gì, và đổi ý thoải mái.',
   'guide.talentsPage.resetTitle': 'Không có gì là vĩnh viễn',
+  'guide.talentsPage.shareNote':
+    'Một cấu hình hoàn chỉnh có thể được sao thành một mã chia sẻ ngắn rồi trao cho một người bạn, người đó dán thẳng vào bảng tài năng của mình để nạp nó.',
   'guide.talentsPage.specsBody':
     'Mỗi lớp nhân vật có một vài chuyên môn hóa, mỗi cái có vai trò riêng và một trọng tâm đặc trưng. Đây là hình hài của tất cả chúng. Mở một lớp để xem trọn bộ kỹ năng của nó.',
   'guide.talentsPage.specsHeading': 'Chuyên môn hóa theo lớp',
@@ -2979,6 +3056,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.viewer.error':
     'Không thể tải mô hình 3D. Hình minh họa phía trên vẫn cho thấy {name} này.',
   'guide.viewer.loading': 'Đang tải mô hình...',
+  'guide.viewer.posterAlt': '{name}',
   'guide.viewer.view3d': 'Xem {name} ở dạng 3D',
   'guide.viewer.view3dShort': 'Xem ở dạng 3D',
   'guide.wishPage.heading': 'Những điều tôi ước mình từng biết',

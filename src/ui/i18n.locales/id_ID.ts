@@ -2338,6 +2338,11 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.controls.abilities': 'Gunakan kemampuan',
   'guide.controls.actionHeader': 'Aksi',
   'guide.controls.arena': 'Arena',
+  'guide.controls.controllerBody':
+    'Gamepad juga berfungsi, dan dukungan kontroler aktif secara bawaan. Tuas kiri untuk bergerak, tuas kanan untuk mengarahkan kamera, dan tombol muka serta bahu menangani kemampuanmu, melompat, dan berinteraksi. Buka jendela mana pun untuk memunculkan penunjuk di layar bagi menu. Kamu bisa memetakan ulang tombol dan menyetel deadzone tuas, kecepatan kamera, getaran, serta arah pandang terbalik dari pengaturan kontroler di opsi.',
+  'guide.controls.controllerHeading': 'Di kontroler',
+  'guide.controls.cycleFriendly': 'Putar target kawan',
+  'guide.controls.gameMenu': 'Buka menu permainan dan opsi',
   'guide.controls.groupCamera': 'Kamera',
   'guide.controls.groupCombat': 'Penargetan dan pertarungan',
   'guide.controls.groupInterface': 'Jendela',
@@ -2350,6 +2355,40 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
     'Kontrol sentuh muncul secara otomatis di ponsel dan tablet: tuas gerak di sebelah kiri, seret di mana saja di sebelah kanan untuk melihat sekeliling, dan tombol di layar untuk kemampuan serta menu kamu.',
   'guide.controls.mobileHeading': 'Di perangkat seluler',
   'guide.controls.talents': 'Bakat',
+  'guide.controls.targetFriendly': 'Targetkan kawan terdekat',
+  'guide.delvesPage.affixesBody':
+    'Penjelajahan yang lebih sulit akan memunculkan satu pengubah yang mengubah jalannya penurunan, dari mayat yang gelisah, udara busuk, hingga atap yang mulai runtuh. Semuanya menaikkan bahaya dan ganjaran sekaligus. Sebuah delve bertema kripta bisa memunculkan salah satu dari ini:',
+  'guide.delvesPage.affixesHeading': 'Pengubah penjelajahan',
+  'guide.delvesPage.affixesLabel': 'Pengubah yang mungkin',
+  'guide.delvesPage.companionBody':
+    'Sebuah delve mengirim seorang pendamping turun bersamamu, jadi penjelajahan seorang diri tak pernah tanpa harapan. Ia bertarung di sisimu, dan seiring kamu berinvestasi padanya di antara penjelajahan, ia tumbuh semakin kuat, hingga ia bisa menarik seorang sekutu kembali dari ambang ajal sekali tiap penurunan. Ia menjadi milikmu selama delve dan menanti di papan di antara penjelajahan.',
+  'guide.delvesPage.companionHeading': 'Pendampingmu',
+  'guide.delvesPage.companionLabel': 'Pendamping',
+  'guide.delvesPage.fromLevel': 'Mulai level {n}',
+  'guide.delvesPage.heading': 'Delve',
+  'guide.delvesPage.howBody':
+    'Bicaralah dengan sang penjaga untuk membuka papan, pilih tingkat kesulitan, lalu turun. Tiap penjelajahan merangkai beberapa ruang pendek dan berakhir pada penjaga akhirnya; bersihkan untuk mengklaim ganjaranmu dan kembali ke permukaan. Ajak seorang teman jika kamu punya, atau andalkan pendampingmu jika tidak.',
+  'guide.delvesPage.howHeading': 'Cara sebuah penjelajahan berjalan',
+  'guide.delvesPage.intro':
+    'Delve adalah penurunan singkat yang bisa diulang untuk satu atau dua pemain, dengan seorang pendamping setia di sisimu setiap kali kamu turun sendiri. Temukan papannya, pilih sebuah penjelajahan, dan naik kembali dengan rampasannya.',
+  'guide.delvesPage.keeperLabel': 'Penjaga',
+  'guide.delvesPage.lockpickBody':
+    'Sebagian pintu dan peti tersegel, dan membukanya adalah uji nyali kecil alih-alih uji statistik: pecahkan kuncinya dengan rapi dan mantap, maka kamu mendapat hadiah yang lebih baik daripada yang dibuka terburu-buru dan gegabah. Ini opsional, tetapi penjelajah yang berhati-hatilah yang lebih kaya.',
+  'guide.delvesPage.lockpickHeading': 'Kunci dan apa yang disembunyikannya',
+  'guide.delvesPage.marksBody':
+    'Menuntaskan delve menghasilkan Tanda Delve, mata uang yang terpisah dari koinmu. Belanjakan di sang penjaga untuk menguatkan pendampingmu dan mengambil perlengkapan yang tak akan kamu temukan di tempat lain.',
+  'guide.delvesPage.marksHeading': 'Tanda Delve',
+  'guide.delvesPage.partyLabel': 'Untuk satu atau dua',
+  'guide.delvesPage.tiersBody':
+    'Sebuah delve menawarkan lebih dari satu tingkat kesulitan. Yang lebih tinggi membuat musuh lebih kuat dan memunculkan satu pengubah penjelajahan, serta membayar lebih sebagai gantinya. Ia juga menuntut kamu sudah punya beberapa level sebelum mengizinkanmu masuk.',
+  'guide.delvesPage.tiersHeading': 'Tingkat kesulitan',
+  'guide.delvesPage.tiersLabel': 'Pilihan kesulitan',
+  'guide.delvesPage.whatBody':
+    'Delve adalah dungeon ber-instance kecil yang dibuat khusus untukmu dan paling banyak satu sekutu, salinan pribadi tempat kamu tak bisa diganggu. Kamu memulainya dari papan yang dijaga seorang penjaga delve di dunia luar, masuk, bertarung menurun melalui segelintir ruangan, dan menutup pada satu penjaga akhir. Penjelajahan berlangsung cepat dan memang dimaksudkan untuk diulang, jadi delve adalah perkembangan yang andal kapan pun dunia terbuka mulai sepi.',
+  'guide.delvesPage.whatHeading': 'Apa itu delve',
+  'guide.delvesPage.whereBody':
+    'Delve pertama, Reliquary yang Runtuh, terbuka di Bukit Reliquary, di lembah awal Lembah Eastbrook. Bruder Halven menjaga papannya di sana, dan ia akan mengirimmu turun begitu kamu siap.',
+  'guide.delvesPage.whereHeading': 'Di mana menemukannya',
   'guide.docTitle': '{page} - {brand}',
   'guide.dungeonsPage.bastionBody':
     'Benteng terendam yang lenyap ditelan rawa, dikuasai para penjaga yang tenggelam dan oleh pasang air itu sendiri.',
@@ -2407,6 +2446,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.economy.marketPricing':
     'Penentuan harga terserah padamu. Memasang sedikit di bawah harga yang diminta orang lain cenderung lebih cepat laku, sementara harga selangit mungkin teronggok tak tersentuh. Telusuri dulu untuk melihat seperti apa harga pasaran sebelum kamu memasang.',
   'guide.economy.marketTitle': 'Pasar Dunia',
+  'guide.economy.marksBody':
+    'Koin bukan satu-satunya yang kamu simpan. Delve membayar Tanda Delve, mata uang terpisah yang hanya kamu belanjakan di penjaga delve, untuk peningkatan pendamping dan perlengkapan yang tak akan kamu temukan di tempat lain. Tanda ini tak pernah bercampur dengan koinmu.',
+  'guide.economy.marksTitle': 'Mata uang kedua: Tanda Delve',
   'guide.economy.tradeBody':
     'Kamu bisa berdagang langsung dengan siapa pun yang berdiri di dekatmu. Kalian berdua menaruh barang dan koin ke dalam jendela bersama dan pertukaran baru terjadi setelah kalian berdua mengonfirmasinya, sehingga tak ada pihak yang bisa diperdaya. Inilah cara mudah memberikan barang rampasan pada kawan atau menyelesaikan sebuah kesepakatan.',
   'guide.economy.tradeTitle': 'Berdagang dengan pemain lain',
@@ -2416,6 +2458,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.family.beast.desc':
     'Hewan liar hutan dan padang, dari serigala dan babi hutan hingga makhluk yang memangsa mereka. Pemburu bisa menjinakkan banyak di antaranya.',
   'guide.family.beast.name': 'Binatang Buas',
+  'guide.family.dragonkin.desc':
+    'Makhluk bersisik dan berlekuk ular dari kedalaman purba. Langka, angkuh, dan jauh lebih kuat dari penampakannya.',
+  'guide.family.dragonkin.name': 'Bangsa Naga',
   'guide.family.elemental.desc':
     'Badai dan batu yang hidup, terikat pada tempat liar tempat unsur-unsur mengalir kuat.',
   'guide.family.elemental.name': 'Elemental',
@@ -2490,6 +2535,8 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.gear.consumablesPotions':
     'Ramuan memulihkan nyawa atau mana saat kamu menggunakannya, bahkan di tengah pertarungan, yang menjadikannya penyelamat jitu saat sebuah serangan berjalan kacau. Mereka berbagi waktu jeda yang singkat, jadi rencanakan satu momen tepat untuk menggunakannya.',
   'guide.gear.consumablesTitle': 'Barang Pakai Habis',
+  'guide.gear.cosmeticsApply':
+    'Atur penampilan aktifmu dari baris penampilan di layar karaktermu, dan berganti dengan bebas di antara semua yang telah kamu buka.',
   'guide.gear.cosmeticsBody':
     'Beberapa hadiah hanya mengubah penampilan karaktermu, tak pernah seberapa kuat dirimu. Skin kosmetik ini membuatmu menonjol tanpa memengaruhi permainan, jadi kenakanlah yang mana pun kamu suka.',
   'guide.gear.cosmeticsCache':
@@ -2508,6 +2555,8 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.gear.fishingTitle': 'Memancing',
   'guide.gear.intro':
     'Perlengkapan adalah peralatan yang dikenakan karaktermu dan barang yang kamu bawa. Perlengkapan yang lebih baik adalah cara paling mantap untuk menjadi lebih kuat, dan kamu mengumpulkan sebagian besarnya hanya dengan bermain.',
+  'guide.gear.itemLevelBody':
+    'Jika kamu ingin cara cepat membandingkan dua potongan, aktifkan Tampilkan Level Item di opsi. Setiap senjata dan potongan zirah lalu menampilkan level item, satu angka untuk kira-kira seberapa kuatnya berdasarkan asalnya, sehingga kamu bisa tahu sekilas peningkatan mana yang lebih berbobot, bahkan lintas slot berbeda.',
   'guide.gear.qualityBody':
     'Setiap barang memiliki kualitas, dan namanya diberi warna yang sesuai sehingga kamu bisa membaca nilainya sekilas. Dari yang paling umum hingga yang paling berharga:',
   'guide.gear.qualityCommon': 'Umum',
@@ -2519,6 +2568,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.gear.qualityRare': 'Langka',
   'guide.gear.qualityTitle': 'Kualitas, sekilas pandang',
   'guide.gear.qualityUncommon': 'Tak Lazim',
+  'guide.gear.setsBody':
+    'Zirah paling langka hadir dalam keluarga yang serasi, beberapa potongan yang dirancang untuk tampak dan bertarung sebagai satu kesatuan. Kenakan cukup banyak dari satu keluarga sekaligus dan set itu pun bangkit, memberi bonus di atas stat tiap potongannya, dan makin banyak potongan yang kamu kenakan makin kuat jadinya. Ini jatuh dari konten kelompok paling tangguh di dekat batas level, jadi memburu satu set lengkap adalah tujuan babak akhir yang klasik.',
+  'guide.gear.setsTitle': 'Set dan bonus set',
   'guide.gear.slotChest': 'Dada',
   'guide.gear.slotFeet': 'Kaki',
   'guide.gear.slotGloves': 'Tangan',
@@ -2539,6 +2591,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.aggroDef':
     'Perhatian seorang musuh. Pemain yang menghasilkan ancaman paling besar memegang aggro dan diserang.',
   'guide.glossary.aggroTerm': 'Aggro',
+  'guide.glossary.augmentDef':
+    'Dorongan sementara yang kamu pilih selama pertandingan arena Fiesta dua lawan dua, yang membentuk ulang perlengkapanmu hanya untuk pertandingan itu.',
+  'guide.glossary.augmentTerm': 'Augmen',
   'guide.glossary.buffDef':
     'Sebuah efek yang membantu pada dirimu atau sekutu, seperti berkah yang menaikkan sebuah statistik untuk sementara.',
   'guide.glossary.buffTerm': 'Buff',
@@ -2548,6 +2603,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.debuffDef':
     'Sebuah efek merugikan pada sasaran, seperti perlambatan, luka berdarah, atau zirah yang melemah.',
   'guide.glossary.debuffTerm': 'Debuff',
+  'guide.glossary.delveDef':
+    'Penurunan ber-instance yang singkat dan bisa diulang untuk satu atau dua pemain, dijalankan dari papan seorang penjaga dengan seorang pendamping di sisimu.',
+  'guide.glossary.delveTerm': 'Delve',
   'guide.glossary.dotDef':
     'Kerusakan dari waktu ke waktu dan penyembuhan dari waktu ke waktu: efek yang berdenyut dalam denyutan tetap alih-alih sekaligus.',
   'guide.glossary.dotTerm': 'DoT dan HoT',
@@ -2577,6 +2635,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.glossary.pullDef':
     'Memancing musuh atau kelompok ke dalam pertarungan, biasanya secara sengaja dan satu rombongan demi satu.',
   'guide.glossary.pullTerm': 'Pull',
+  'guide.glossary.raidDef':
+    'Kelompok yang lebih besar, hingga sepuluh pemain di sini, dibentuk untuk pertarungan babak akhir paling tangguh; sebuah party berubah menjadi raid begitu penuh.',
+  'guide.glossary.raidTerm': 'Raid',
   'guide.glossary.rareDef':
     'Musuh bernama yang jarang muncul, berkeliaran di sebuah zona dan menjatuhkan jarahan lebih bagus.',
   'guide.glossary.rareTerm': 'Rare',
@@ -2731,6 +2792,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.nav.closeMenu': 'Tutup menu',
   'guide.nav.combat': 'Pertarungan',
   'guide.nav.controls': 'Kontrol',
+  'guide.nav.delves': 'Delve',
   'guide.nav.dungeons': 'Dungeon & Raid',
   'guide.nav.economy': 'Ekonomi & Perdagangan',
   'guide.nav.faq': 'FAQ',
@@ -2815,6 +2877,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.questsPage.sideCryptBody':
     'Tinggi di atas puncak terbentang misteri yang lebih hening: makam-makam tua bertanda mahkota yang tak terekam catatan mana pun. Baca para mati, kumpulkan apa yang mereka jaga, dan buka segel makam yang seharusnya tetap tertutup. Ini jejak ala detektif yang membuka jalan menuju uji coba akhir kedua untuk satu raid penuh.',
   'guide.questsPage.sideCryptTitle': 'Raja yang terlupakan',
+  'guide.questsPage.sideTempleBody':
+    'Sebuah gerbang cahaya pucat di atas telaga tinggi di pegunungan terbuka menuju kuil yang tenggelam tempat sebuah kultus yang karam masih bernyanyi. Rangkaian pendeknya berdiri terpisah dari kisah utama, sebuah misteri mandiri bagi siapa pun yang mendaki ke tepiannya, membaca peringatan yang terukir di bebatuan, dan turun untuk melihat untuk apa semua itu.',
+  'guide.questsPage.sideTempleTitle': 'Kuil yang tenggelam',
   'guide.questsPage.sideTitle': 'Benang di luar jalan utama',
   'guide.questsPage.sideWardenBody':
     'Di samping kisah utama, para penjaga Lembah dan rawa membagikan tangga sayembara tetap. Naiki setapak demi setapak, musuh demi musuh, sebagaimana setiap penjaga sebelummu meraih tempatnya. Ini menaikkan level dengan jujur sekaligus tur ke para pembuat onar terburuk di tiap zona.',
@@ -2857,6 +2922,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.search.placeholder': 'Cari di panduan',
   'guide.search.typeClass': 'Kelas',
   'guide.search.typeCreature': 'Makhluk',
+  'guide.search.typeDelve': 'Delve',
   'guide.search.typeDungeon': 'Dungeon',
   'guide.search.typePage': 'Halaman',
   'guide.search.typeTerm': 'Istilah',
@@ -2916,6 +2982,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
     'Jarahan biasa bisa jatuh ke penjarah, sementara jarahan yang lebih baik diajukan untuk diundi agar semua orang mendapat kesempatan yang adil.',
   'guide.social.lootCommonTitle': 'Barang.',
   'guide.social.lootHeading': 'Jarahan party',
+  'guide.social.lootMasterBody':
+    'Sebagai gantinya, pemimpin bisa memegang kendali atas jarahan yang lebih baik, membagikan tiap potongan kepada anggota yang seharusnya menerimanya. Ini menjaga perlengkapan berharga agar tidak jatuh ke undian acak, seperti cara kelompok yang terorganisir menjalankan dungeon.',
+  'guide.social.lootMasterTitle': 'Penjarah utama.',
   'guide.social.lootRollBody':
     'Saat sebuah barang masuk undian, setiap anggota yang memenuhi syarat memilih Need jika menginginkannya, Greed jika hanya akan mengambilnya sebagai cadangan, atau Pass untuk mengundurkan diri. Lemparan tertinggi menang.',
   'guide.social.lootRollTitle': 'Need, Greed, atau Pass.',
@@ -2941,6 +3010,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.stats.dodgeBody':
     'Dodge adalah peluangmu menghindari sepenuhnya serangan jarak dekat yang datang. Kamu mulai dengan peluang dasar kecil, dan Agility menaikkannya, sehingga kelas yang lincah lebih banyak menepis pukulan.',
   'guide.stats.dodgeTitle': 'Dodge',
+  'guide.stats.dpsBody':
+    'Lembarmu juga menampilkan perkiraan kerusakan per detik: kira-kira seberapa besar gabungan senjatamu, kecepatan ayunannya, dan attack power-mu seiring waktu. Ini cara cepat membandingkan dua senjata sekilas.',
+  'guide.stats.dpsTitle': 'Kerusakan per detik',
   'guide.stats.growBody':
     'Dua hal menaikkan statmu. Setiap level menambahkan sejumlah tetap dari tiap atribut yang sesuai dengan kelasmu, dan perlengkapan yang kamu kenakan menambah lebih banyak di atasnya. Menjaga perlengkapanmu tetap terkini adalah cara paling mantap untuk tumbuh lebih kuat, hingga ke batas akhir level.',
   'guide.stats.growHeading': 'Bagaimana statmu tumbuh',
@@ -2955,6 +3027,9 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.stats.sheetBody':
     'Buka jendela karakter dalam permainan untuk melihat semua ini dalam satu tempat: lima atributmu di satu sisi dan stat yang mereka isi di sisi lain. Arahkan kursor ke nilai mana pun dan tooltip menguraikan apa fungsinya bagi kelasmu, sehingga kamu bisa melihat sekilas angka mana yang benar-benar digerakkan oleh sebuah peningkatan.',
   'guide.stats.sheetHeading': 'Membaca lembar karaktermu',
+  'guide.stats.spBody':
+    'Spell power adalah padanan attack power bagi seorang pemantra: ia menaikkan kerusakan yang ditimbulkan mantramu. Intellect mengisinya, dan perlengkapan serta buff pemantra menambah lebih banyak di atasnya, jadi seorang pemantra mengawasi spell power sebagaimana petarung jarak dekat mengawasi attack power.',
+  'guide.stats.spTitle': 'Spell power',
   'guide.stats.spiBody':
     'Spirit mengatur seberapa cepat mana seorang pemantra pulih saat di luar pertempuran. Seperti Intellect, ia melayani kelas mana dan berarti kecil bagi yang lain.',
   'guide.stats.spiTitle': 'Spirit',
@@ -2984,6 +3059,8 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.talentsPage.resetNote':
     'Kamu bisa mengatur ulang bakatmu kapan saja, jadi pilihan awal tidak pernah menjadi jebakan. Cobalah berbagai hal, lihat apa yang kamu suka, dan ubah pikiranmu dengan bebas.',
   'guide.talentsPage.resetTitle': 'Tidak ada yang permanen',
+  'guide.talentsPage.shareNote':
+    'Sebuah susunan yang rampung bisa disalin menjadi kode pendek yang dapat dibagikan dan diberikan kepada teman, yang menempelkannya langsung ke panel bakatnya sendiri untuk memuatnya.',
   'guide.talentsPage.specsBody':
     'Setiap kelas memiliki beberapa spesialisasi, masing-masing dengan peran dan fokus khasnya sendiri. Inilah gambaran semuanya. Buka sebuah kelas untuk melihat perangkat lengkapnya.',
   'guide.talentsPage.specsHeading': 'Spesialisasi per kelas',
@@ -2996,6 +3073,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
     'Seret untuk memutar model. Gunakan tombol panah kiri dan kanan saat model sedang difokuskan.',
   'guide.viewer.error': 'Model 3D tidak dapat dimuat. Gambar di atas tetap menampilkan {name} ini.',
   'guide.viewer.loading': 'Memuat model...',
+  'guide.viewer.posterAlt': '{name}',
   'guide.viewer.view3d': 'Lihat {name} dalam 3D',
   'guide.viewer.view3dShort': 'Lihat dalam 3D',
   'guide.wishPage.heading': 'Hal-hal yang andai kuketahui dulu',
