@@ -23,18 +23,13 @@ const entrySource = `
   export { CLASSES, ABILITIES } from './src/sim/content/classes.ts';
   export { TALENTS } from './src/sim/content/talents.ts';
   export { ALL_CLASSES } from './src/sim/types.ts';
-  export { ZONES, DUNGEONS, MOBS, CAMPS } from './src/sim/data.ts';
+  export { ZONES, DUNGEONS, MOBS, CAMPS, DELVE_LIST, NPCS } from './src/sim/data.ts';
   export { WARLOCK_PET_MOBS } from './src/sim/content/warlock_pets.ts';
   export { ZONE1_MOBS } from './src/sim/content/zone1.ts';
   export { ZONE2_MOBS } from './src/sim/content/zone2.ts';
   export { ZONE3_MOBS } from './src/sim/content/zone3.ts';
   export { TEMPLE_MOBS } from './src/sim/content/temple.ts';
-  export {
-    COLLAPSED_RELIQUARY_DELVE,
-    BROTHER_HALVEN,
-    DELVE_COMPANIONS,
-    DELVE_AFFIXES,
-  } from './src/sim/content/delves/index.ts';
+  export { DELVE_COMPANIONS, DELVE_AFFIXES } from './src/sim/content/delves/index.ts';
   export { VISUALS, visualKeyFor } from './src/render/characters/manifest.ts';
 `;
 
@@ -66,8 +61,8 @@ const {
   ZONE2_MOBS,
   ZONE3_MOBS,
   TEMPLE_MOBS,
-  COLLAPSED_RELIQUARY_DELVE,
-  BROTHER_HALVEN,
+  DELVE_LIST,
+  NPCS,
   DELVE_COMPANIONS,
   DELVE_AFFIXES,
   VISUALS,
@@ -272,9 +267,13 @@ const families = FAMILY_ORDER.filter((f) => famMap[f]).map((f) => ({
 // tier labels, and the run-modifier affix display NAMES for the delve's theme). NEVER
 // the affix counts, enemy-level bonuses, reward multipliers, lock-grid dimensions, or
 // the Marks economy values: those are balance, not public reference.
-const delveList = [COLLAPSED_RELIQUARY_DELVE];
-const delves = delveList.map((d) => {
-  const keeper = BROTHER_HALVEN.id === d.boardNpcId ? BROTHER_HALVEN : null;
+// Derive every delve from the sim registry (like dungeons), not a hardcoded list, so a second
+// delve theme reaches the wiki automatically and the freshness gate has something to catch. The
+// keeper is resolved from the NPC registry by the delve's board NPC id, so a delve with a
+// different host is documented correctly instead of silently dropping its keeper.
+const npcById = new Map(Object.values(NPCS).map((n) => [n.id, n]));
+const delves = DELVE_LIST.map((d) => {
+  const keeper = npcById.get(d.boardNpcId) ?? null;
   const companion = DELVE_COMPANIONS[d.autoCompanionId];
   // Affix display names whose theme list includes this delve's theme, hazards only (a
   // blessing affix is a positive modifier, so it is not part of the "harder run" framing).
