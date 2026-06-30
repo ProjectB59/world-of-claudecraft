@@ -11,7 +11,19 @@ workstream), NOT a gameplay change, NOT a WS wire change.
 
 ## Current phase
 
-Phase 01 (importable-spine) + Phase 01 QA. DONE (QA 2026-06-30: 0 blocking, all findings applied, full mirror gate + bundled-boot green). Next: Phase 02 (test-harness), which standardizes the now-created tests/server/ directory.
+Phase 02 (test-harness) DONE (2026-06-30: frozen contracts + self-tested harness + behavior-preserving clock seam, ZERO runtime behavior change; in-phase reviewers privacy-security-review + qa-checklist clean with ALL findings applied; full mirror gate green). Phase 01 + Phase 01 QA DONE. Next: Phase 02 QA (docs/api-pipeline/phase-02-qa.md), then Phase 03 (surface inventory + characterization/golden corpus, which CONSUMES the Phase 2 normalizer placeholder set + golden generator).
+
+## Phase 2 frozen contracts (Phases 4 to 9 IMPORT these, never redefine)
+
+The single home is `server/http/types.ts` (TYPE-ONLY, zero runtime emit). Verbatim:
+- `RouteDef`: `{ method: Method; path; surface: Surface; middleware?; schema?; params?; query?; handler: RouteHandler; meta? }`. Handler is req/res-free `(ctx: Ctx) => Awaitable<unknown>`.
+- `RouteMeta`: `{ requireOwned?: { kind; ownerScope: 'account'|'operator' }; publicRead?: boolean; envelope?: EnvelopeKind; deprecated?; sunset? }`. The BOLA coverage helper EXCLUDES operator-scoped and `publicRead` :id routes; `publicRead` is the Phase 10 marker for genuinely public `:id` reads.
+- `EnvelopeKind` (7): `'problem+json' | 'oauth' | 'admin' | 'html' | 'redirect' | 'binary' | 'legacy405'`. `Surface` (4): `'api' | 'oauth' | 'admin' | 'internal'`. `Method`: GET/POST/PUT/PATCH/DELETE/OPTIONS/HEAD.
+- `Ctx`: `{ req; res; method; url: URL; path; query; params; ip; reqId; body?; account?: { accountId; scope: 'read'|'full' }; state: Map<string,unknown> }`. Phase 5 buildContext produces it; fakeCtx mirrors it.
+- `Middleware = (ctx, next) => Promise<void>`, `Next = () => Promise<void>`. Schema slot = Standard-Schema-v1 (`StandardSchemaV1`); Phase 6's validator implements it.
+- `RateLimitStore`: `{ hit(key, maxPerMinute): Awaitable<RateLimitOutcome>; reset(): Awaitable<void> }`, `RateLimitOutcome = { allowed; remaining; resetSeconds }`. TYPE-ONLY now; FakeRateLimitStore implements it on an injected clock; Phase 19's PgRateLimitStore implements the SAME interface. The existing ratelimit.ts functions still return booleans (return-shape rework is Phase 19).
+- Dispatch flag: env `API_DISPATCH` = `'legacy' | 'new'`, default `'legacy'` (Phase 25 flips the default; Phase 24 wires loadConfig into boot). loadConfig(env) is pure and frozen; required value = DATABASE_URL (value-free fail-fast).
+- Normalizer placeholder set (load-bearing for Phase 3): exported `NORMALIZER_PLACEHOLDERS` = id/timestamp/token/requestId/date/expires/nonce. Field-name-driven; the generic key `state` is deliberately NOT masked (oauth `state` is masked later with surface context). The parity driver's per-pass isolation resets EVERY limiter bucket (incl. the failed-login bucket) + the clock + an injected hook.
 
 ## Locked design decisions
 
@@ -258,7 +270,7 @@ the X-ms constant; X is TBD, see open items.)
 | Phase | New files |
 |---|---|
 | 01 | DONE. importable `server/ws_auth.ts` (`createWsAuth(deps)` factory -> `{ authenticateWebSocket, onConnection, attachUpgrade(server, wss) }`, wire vocabulary in named constants); in `server/main.ts`: exported `startServer(): Promise<http.Server>` + exported pure `routeHttpRequest(req, res)` dispatcher + `require.main === module` entry guard (NOT import.meta: esbuild empties it under cjs); `tests/server/` dir with `ws_auth.test.ts` + `importable_spine.test.ts` + `route_dispatch.test.ts` (the last added in Phase 01 QA: pins routeHttpRequest's OPTIONS-204 short-circuit + prefix dispatch by mocking the imported sub-dispatchers). NO `server/http/` dir this phase (that is Phase 4+). |
-| 02 | `tests/server/` dir; fake-http + `fakeCtx` helper; `FakeRateLimitStore`; `FakeDb` interfaces (characters/leaderboard/reports); golden-master generator + tested normalizer; parity-harness driver; registry-introspection meta-test helpers; `server/http/config.ts` (pure `loadConfig`); `now()` clock injected into `ratelimit.ts`/`ratelimit_db.ts`. |
+| 02 | DONE. `server/http/types.ts` (TYPE-ONLY frozen contracts; see "Phase 2 frozen contracts" above) + `server/http/config.ts` (pure `loadConfig`); `now()` clock injected into `ratelimit.ts` ONLY (ratelimit_db.ts does not exist until Phase 19), with `setRateLimitClock`/`resetRateLimitClock`/exported `WINDOW_MS`; `tests/server/{helpers,http}/` dirs + `tests/server/helpers/index.ts` barrel: `fake_http.ts` (FakeRes+makeReq) + `fake_ctx.ts` (fakeCtx+nextGuard) + `fake_db.ts` (CharactersDb/LeaderboardDb/ReportsDb + fakes + tsc drift guard) + `fake_ratelimit_store.ts` (FakeRateLimitStore) + `normalizer.ts` (NORMALIZER_PLACEHOLDERS) + `golden.ts` + `parity.ts` (runParity) + `registry_introspect.ts`; plus `tests/server/ratelimit_clock.test.ts` + `tests/server/http/config.test.ts`. Existing ad-hoc makeRes/makeReq suites NOT converted. |
 | 03 | Characterization/golden-master fixtures over every route + the prefix dispatch; route-count freshness gate test; content-type classification + seeded knownDeviation list. |
 | 04 | `server/http/router.ts` + `tests/server/http/router.test.ts`. |
 | 05 | `server/http/compose.ts` + `server/http/context.ts` + tests. |

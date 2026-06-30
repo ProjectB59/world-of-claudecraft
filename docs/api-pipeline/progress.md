@@ -14,7 +14,7 @@ Mark a row's Status as "In progress" or "Done" and fill Started / Completed
 |---|---|---|---|
 | Phase 01 | Done | 2026-06-30 | 2026-06-30 |
 | Phase 01 QA | Done | 2026-06-30 | 2026-06-30 |
-| Phase 02 | Not started |  |  |
+| Phase 02 | Done | 2026-06-30 | 2026-06-30 |
 | Phase 02 QA | Not started |  |  |
 | Phase 03 | Not started |  |  |
 | Phase 03 QA | Not started |  |  |
@@ -86,15 +86,15 @@ Notes:
 ## Phase 02: Shared test scaffolding harness (the phase the SPEC is missing)
 
 Deliverables:
-- [ ] One faithful fake-http helper (setHeader/getHeader/removeHeader/headersSent/writeHead-merge/end) + a buildContext-backed fakeCtx(overrides)
-- [ ] Inject a now() clock into ratelimit.ts/ratelimit_db.ts (default Date.now) for deterministic window/Retry-After tests; the actual {remaining,resetSeconds} return-shape rework is flagged as a P19 prerequisite
-- [ ] An in-memory FakeRateLimitStore implementing the tier-2 interface with the injected clock
-- [ ] FakeDb (SocialDb-style injected-interface) for the new domains characters/leaderboard/reports so handlers take a Db interface, not pool
-- [ ] A golden-master generator + a separately-tested dynamic-field normalizer (timestamps, ids, tokens, reqId, Date) with no manual-approve step
-- [ ] A parity-harness driver running each fixture through BOTH dispatchers in-process with per-pass isolation (reset limiter Maps, fresh ALS run(), reloaded config)
-- [ ] Registry-introspection meta-test helpers (route completeness; :id-route requireOwned* presence)
-- [ ] A pure loadConfig(env) function separate from the boot call site
-- [ ] Create the tests/server/ directory and standardize tests/server/<domain>.test.ts
+- [x] One faithful fake-http helper (FakeRes: setHeader/getHeader/getHeaders/removeHeader/headersSent/writableEnded/writeHead-merge/write/guarded-end + makeReq with node-faithful lower-cased headers) + a fakeCtx(overrides) producing the frozen Ctx (refactor-ready for Phase 5 buildContext) + a nextGuard() onion primitive
+- [x] Inject a now() clock into ratelimit.ts (default Date.now) for deterministic window tests, threaded through every Date.now site; setRateLimitClock is production-guarded; behavior-preserving (no return-shape change; that rework is P19, and ratelimit_db.ts does not exist until P19)
+- [x] An in-memory FakeRateLimitStore implementing the type-only RateLimitStore interface ({remaining,resetSeconds}) with the injected clock; mirrors recordSlidingWindowAttempt semantics
+- [x] FakeDb (SocialDb-style injected-interface) for characters/leaderboard/reports with in-memory fakes + a type-only-import tsc drift guard that fails the build on signature drift (reports targets moderation_db.ts, where createPlayerReport actually lives)
+- [x] A golden-master generator (write-then-compare, no manual-approve) + a separately-tested field-name-driven normalizer with an exported NORMALIZER_PLACEHOLDERS constant (timestamps, ids, tokens, reqId, Date header, expiry seconds, nonces/csrf)
+- [x] A parity-harness driver (runParity) running each fixture through BOTH injected dispatchers in-process with per-pass isolation (every limiter bucket incl. the failed-login bucket + clock reset, plus an injected reset hook for the later fresh-ALS/reloaded-config steps)
+- [x] Registry-introspection meta-test helpers (route completeness; :id requireOwned presence with operator AND publicRead exclusions)
+- [x] A pure loadConfig(env) returning a frozen Config separate from the boot call site (parses the single API_DISPATCH flag; NOT wired into boot, that is P24)
+- [x] Create the tests/server/ + tests/server/helpers/ + tests/server/http/ dirs and an index barrel; standardize tests/server/<domain>.test.ts (existing suites NOT converted)
 
 QA:
 - [ ] Fixes applied
@@ -103,6 +103,10 @@ QA:
 - [ ] Reviews clean
 
 Notes:
+- Shipped server/http/types.ts (TYPE-ONLY, zero runtime emit: RouteDef/RouteMeta/RequireOwned/OwnerScope/Ctx/CtxAccount/Method/Surface/EnvelopeKind/Middleware/Next/RateLimitStore + the Standard-Schema-v1 slot), server/http/config.ts (pure loadConfig), the server/ratelimit.ts clock seam, and tests/server/helpers/{fake_http,fake_ctx,fake_db,fake_ratelimit_store,normalizer,golden,parity,registry_introspect,index}.ts with self-tests, plus tests/server/ratelimit_clock.test.ts and tests/server/http/config.test.ts.
+- Orchestration: lead wrote the frozen types.ts, then three parallel Agents (clock+store; fake-http+ctx; FakeDb+config) on disjoint files, then one Agent for golden/normalizer/parity/registry. All against the one frozen contract.
+- In-phase reviewers (the two the phase doc requires): privacy-security-review 0 BLOCKING / 0 SHOULD-FIX (3 nits), qa-checklist READY 0 BLOCKING / 2 SHOULD-FIX. Per the standing "apply every finding" directive, ALL were applied: production guard on setRateLimitClock; a meta.publicRead marker so public :id reads are not false-flagged (the Phase 10 exemption); resetAuthFailures added to the parity per-pass isolation (the failed-login bucket was bleeding); normalizer no longer over-masks the generic key 'state'; makeReq lower-cases header names. The golden mkdir/write nit was reviewed as intentional (test-only, author-controlled path), no change.
+- Validation: tsc clean; tests/server 15 files / 120 tests; behavior-preservation (woc_balance/wallet_server/discord_server/security/ip_block + ratelimit_clock) 156 tests unchanged; full npm test 582 files / 6115 passed / 11 skipped; build:server/build:env/build green; ci:changed green (only pre-existing ws_auth noExplicitAny warnings). NO DDL, NO ensureSchema change, NO WS wire change, NO src/sim touch.
 
 ## Phase 03: Surface re-inventory, content-type classification + characterization/golden corpus
 
