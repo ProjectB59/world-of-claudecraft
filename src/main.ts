@@ -774,6 +774,7 @@ function enterLoadingState(statusText: string): void {
   hideMobilePreflightPrompt();
   showLoadingScreen(statusText);
   $('#start-screen').style.display = 'none';
+  releaseStartScreenPreview();
 }
 
 async function prepareWorldEntry(): Promise<boolean> {
@@ -2404,6 +2405,12 @@ let characterPreview: CharacterPreview | null = null;
 let authModeApply: ((mode: 'login' | 'register') => void) | null = null;
 let offlineSkin = 0; // chosen appearance skin for the offline quick-start character
 let onlineSkin = 0; // chosen appearance skin for new online characters
+
+function releaseStartScreenPreview(): void {
+  if (!characterPreview) return;
+  characterPreview.destroy();
+  characterPreview = null;
+}
 
 /** Fill a skin-picker row with one option per available skin, each showing an
  *  actual 2D portrait preview of the character in that chroma. */
