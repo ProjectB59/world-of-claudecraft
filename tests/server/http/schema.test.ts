@@ -206,6 +206,27 @@ describe('object', () => {
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
     expect(Object.hasOwn(Object.prototype, 'polluted')).toBe(false);
   });
+
+  it('builds a null-prototype output object (no inherited Object.prototype members)', () => {
+    const result = object({ a: num() }).decode({ a: 1 });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(Object.getPrototypeOf(result.value)).toBeNull();
+      // A null-proto object inherits nothing, so a built-in member is absent, not shadowed.
+      expect('toString' in result.value).toBe(false);
+    }
+  });
+
+  it('is prototype-pollution-safe even when the SHAPE itself declares a __proto__ key', () => {
+    // A computed-key '__proto__' is an OWN declared key (not a prototype mutation); decoding a
+    // matching payload writes it as an own property of the null-proto output, never via the
+    // inherited setter, so Object.prototype stays clean for a shape-declared __proto__ too.
+    const s = object({ ['__proto__']: object({ polluted: bool() }) });
+    const result = s.decode(JSON.parse('{"__proto__":{"polluted":true}}'));
+    expect(result.ok).toBe(true);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(Object.hasOwn(Object.prototype, 'polluted')).toBe(false);
+  });
 });
 
 describe('optional and defaults', () => {
@@ -253,6 +274,22 @@ describe('optional and defaults', () => {
       expect((second.value as { tag: string }).tag).toBe('all'); // unpoisoned
     }
   });
+
+  it('inside an object: a mutable default is cloned per decode via the object path, never shared', () => {
+    // object() resolves an absent optional field through makeDefault(), a SEPARATE clone site from
+    // optional().decode(undefined); this pins that path so a future drop of its clone is caught.
+    const s = object({ filter: optional(object({ tag: str() }), { tag: 'all' }) });
+    const first = s.decode({});
+    const second = s.decode({});
+    expect(first).toEqual({ ok: true, value: { filter: { tag: 'all' } } });
+    if (first.ok && second.ok) {
+      const a = first.value.filter;
+      const b = second.value.filter;
+      expect(a).not.toBe(b); // distinct instances through the object makeDefault path
+      a.tag = 'mutated';
+      expect(b.tag).toBe('all'); // unpoisoned across decodes
+    }
+  });
 });
 
 describe(':id and page/pageSize bounds', () => {
@@ -289,6 +326,15 @@ describe('Standard Schema v1 ~standard adapter', () => {
     }>;
     if (!('issues' in nested) || !nested.issues) throw new Error('expected issues');
     expect(nested.issues[0]).toEqual({ message: 'type', path: ['id'] });
+  });
+
+  it('validate() converts a multi-segment pointer into a nested path array', () => {
+    const s = object({ parent: object({ child: num() }) });
+    const result = s['~standard'].validate({ parent: { child: 'x' } }) as StandardSchemaResult<{
+      parent: { child: number };
+    }>;
+    if (!('issues' in result) || !result.issues) throw new Error('expected issues');
+    expect(result.issues[0]).toEqual({ message: 'type', path: ['parent', 'child'] });
   });
 
   it('reports version 1 and a non-empty vendor', () => {
