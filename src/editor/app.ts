@@ -134,9 +134,11 @@ export class EditorApp {
       meta: {
         id: mintId(),
         name: 'Untitled Map',
+        description: '',
         createdAt: now(),
         updatedAt: now(),
         seed: DEFAULT_PLAYTEST_SEED,
+        parentId: '',
       },
       content, // shared live ref with the markers
       terrainEdits: [],

@@ -1,49 +1,34 @@
-// The CustomMap document: the editor's canonical, serializable map. It carries the
-// spatial content (zones/camps/npcs/objects/roads, the ZoneContent shape the marker
-// editor already uses) plus the net-new authoring layers (terrain height edits and
-// free-form asset placements) and metadata. Pure: no DOM, Vitest-importable.
-//
-// A CustomMap maps onto the engine's WorldContent (src/sim/types.ts) for play-test:
-// content + terrainEdits go straight in; props/playerStart come from the built-in
-// world for now; placements render via the editor's asset instancer (not the Sim).
+// The CustomMap document: the editor's canonical, serializable map. The type and
+// its sanitizer live in src/sim/map_doc.ts (shared with the server, which
+// validates uploaded documents with the SAME code); this module adapts the
+// document to the editor's live editing model and projects it onto the engine's
+// WorldContent for play-test. Pure: no DOM, Vitest-importable.
 
-import { BUILTIN_WORLD } from '../sim/data';
-import type { BiomePaint, HeightStamp, PlacedAsset, WorldContent } from '../sim/types';
+import { BUILTIN_WORLD, PLAYER_START } from '../sim/data';
+import {
+  collideRadiusFor,
+  MAP_DOC_VERSION,
+  type MapDoc,
+  type MapDocMeta,
+  type MapPlacement,
+} from '../sim/map_doc';
+import type { PlacedAsset, WorldContent } from '../sim/types';
+import { WATER_LEVEL } from '../sim/world';
 import { assetById } from './asset_catalog.generated';
 import type { ZoneContent } from './model';
 
-export const CUSTOM_MAP_VERSION = 1;
+export const CUSTOM_MAP_VERSION = MAP_DOC_VERSION;
 
-// A free-form GLB placement from the asset catalogue (asset_catalog.generated.ts).
-// Rendered by the editor/play-test instancer; not a Sim entity (Phase 4).
-export interface AssetPlacement {
-  assetId: string; // catalogue id, e.g. "props/well"
-  x: number;
-  z: number;
-  rotY: number; // radians
-  scale: number;
-  collide: boolean;
-}
+// Editor-facing aliases: the document shape IS the shared MapDoc.
+export type AssetPlacement = MapPlacement;
+export type CustomMapMeta = MapDocMeta;
+// The editor's in-memory document shares the LIVE ZoneContent ref with the
+// marker model (readonly views of the same tables), so content stays readonly
+// here; serialization casts back to the mutable MapDoc shape.
+export type CustomMap = Omit<MapDoc, 'content'> & { content: ZoneContent };
 
-export interface CustomMapMeta {
-  id: string;
-  name: string;
-  createdAt: number;
-  updatedAt: number;
-  seed: number;
-}
-
-export interface CustomMap {
-  version: number;
-  meta: CustomMapMeta;
-  content: ZoneContent;
-  terrainEdits: HeightStamp[];
-  placements: AssetPlacement[];
-  biomePaint?: BiomePaint;
-}
-
-// The game's fixed offline seed; a fresh map defaults to it so its built-in-derived
-// terrain matches what the editor previews. (Mirrors DEFAULT_PLAYTEST_SEED.)
+// The game's fixed offline seed; a fresh map defaults to it so its built-in
+// derived terrain matches what the editor previews (mirrors DEFAULT_PLAYTEST_SEED).
 const DEFAULT_SEED = 20061;
 
 function deepClone<T>(v: T): T {
@@ -56,13 +41,21 @@ function deepClone<T>(v: T): T {
 export function newCustomMap(name: string, id: string, now: number): CustomMap {
   return {
     version: CUSTOM_MAP_VERSION,
-    meta: { id, name, createdAt: now, updatedAt: now, seed: DEFAULT_SEED },
+    meta: {
+      id,
+      name,
+      description: '',
+      createdAt: now,
+      updatedAt: now,
+      seed: DEFAULT_SEED,
+      parentId: '',
+    },
     content: {
-      zones: deepClone(BUILTIN_WORLD.zones as ZoneContent['zones']),
-      camps: deepClone(BUILTIN_WORLD.camps as ZoneContent['camps']),
-      npcs: deepClone(BUILTIN_WORLD.npcs as ZoneContent['npcs']),
-      objects: deepClone(BUILTIN_WORLD.groundObjects as ZoneContent['objects']),
-      roads: deepClone(BUILTIN_WORLD.roads as ZoneContent['roads']),
+      zones: deepClone(BUILTIN_WORLD.zones as CustomMap['content']['zones']),
+      camps: deepClone(BUILTIN_WORLD.camps as CustomMap['content']['camps']),
+      npcs: deepClone(BUILTIN_WORLD.npcs as CustomMap['content']['npcs']),
+      objects: deepClone(BUILTIN_WORLD.groundObjects as CustomMap['content']['objects']),
+      roads: deepClone(BUILTIN_WORLD.roads as CustomMap['content']['roads']),
     },
     terrainEdits: [],
     placements: [],
@@ -73,49 +66,67 @@ export function newCustomMap(name: string, id: string, now: number): CustomMap {
 // authoring layers. Deep-cloned so the document is independent of further edits.
 export function customMapFromContent(
   content: ZoneContent,
-  layers: { terrainEdits?: HeightStamp[]; placements?: AssetPlacement[]; meta: CustomMapMeta },
+  layers: {
+    terrainEdits?: CustomMap['terrainEdits'];
+    placements?: AssetPlacement[];
+    meta: CustomMapMeta;
+    waterLevel?: number;
+    playerStart?: { x: number; z: number };
+  },
 ): CustomMap {
-  return {
+  const map: CustomMap = {
     version: CUSTOM_MAP_VERSION,
     meta: { ...layers.meta },
     content: {
-      zones: deepClone(content.zones as ZoneContent['zones']),
-      camps: deepClone(content.camps as ZoneContent['camps']),
-      npcs: deepClone(content.npcs as ZoneContent['npcs']),
-      objects: deepClone(content.objects as ZoneContent['objects']),
-      roads: deepClone((content.roads ?? []) as ZoneContent['roads']),
+      zones: deepClone(content.zones as CustomMap['content']['zones']),
+      camps: deepClone(content.camps as CustomMap['content']['camps']),
+      npcs: deepClone(content.npcs as CustomMap['content']['npcs']),
+      objects: deepClone(content.objects as CustomMap['content']['objects']),
+      roads: deepClone((content.roads ?? []) as CustomMap['content']['roads']),
     },
     terrainEdits: deepClone(layers.terrainEdits ?? []),
     placements: deepClone(layers.placements ?? []),
   };
+  if (layers.waterLevel !== undefined && layers.waterLevel !== WATER_LEVEL) {
+    map.waterLevel = layers.waterLevel;
+  }
+  if (layers.playerStart) map.playerStart = { ...layers.playerStart };
+  return map;
 }
 
-// Project a CustomMap onto the engine's WorldContent for play-testing. Props and
-// player start come from the built-in world (the editor does not author them yet);
-// placements are not Sim entities, so they are carried separately by the renderer.
+// Project a CustomMap onto the engine's WorldContent for play-testing. Props
+// come from the built-in world (the editor does not author them yet); free
+// placements carry their collide footprint so the Sim's colliders and the
+// renderer read the SAME records.
 export function customMapToWorldContent(map: CustomMap): WorldContent {
-  return {
+  const start = map.playerStart ?? PLAYER_START;
+  const world: WorldContent = {
     zones: deepClone(map.content.zones as WorldContent['zones']),
     camps: deepClone(map.content.camps as WorldContent['camps']),
     npcs: deepClone(map.content.npcs as WorldContent['npcs']),
     groundObjects: deepClone(map.content.objects as WorldContent['groundObjects']),
     roads: deepClone((map.content.roads ?? BUILTIN_WORLD.roads) as WorldContent['roads']),
     props: deepClone(BUILTIN_WORLD.props),
-    playerStart: deepClone(BUILTIN_WORLD.playerStart),
+    playerStart: { x: start.x, z: start.z },
     terrainEdits: deepClone(map.terrainEdits),
     placements: placementsToRenderAssets(map.placements),
     biomePaint: map.biomePaint ? deepClone(map.biomePaint) : undefined,
   };
+  if (map.waterLevel !== undefined) world.waterLevel = map.waterLevel;
+  return world;
 }
 
 // Resolve editor placements (catalogue id) into render-ready PlacedAssets (GLB
-// path). Placements with an unknown id are skipped.
+// path). Placements with an unknown id are skipped; colliding placements get a
+// scale-proportional footprint radius (see src/sim/map_doc.ts collideRadiusFor).
 export function placementsToRenderAssets(placements: readonly AssetPlacement[]): PlacedAsset[] {
   const out: PlacedAsset[] = [];
   for (const p of placements) {
     const asset = assetById(p.assetId);
     if (!asset) continue;
-    out.push({ path: asset.path, x: p.x, z: p.z, rotY: p.rotY, scale: p.scale });
+    const placed: PlacedAsset = { path: asset.path, x: p.x, z: p.z, rotY: p.rotY, scale: p.scale };
+    if (p.collide) placed.collideRadius = collideRadiusFor(p.scale);
+    out.push(placed);
   }
   return out;
 }

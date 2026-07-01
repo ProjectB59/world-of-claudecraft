@@ -1166,7 +1166,7 @@ export interface DungeonDef {
   leaveText: string;
 }
 
-export type BiomeId = 'vale' | 'marsh' | 'peaks';
+export type BiomeId = 'vale' | 'marsh' | 'peaks' | 'beach' | 'desert' | 'volcano' | 'cave';
 
 export interface ZoneDef {
   id: string;
@@ -1737,27 +1737,34 @@ export interface MoveInput {
   jump: boolean;
 }
 
-// A bounded additive height edit (the raise/lower brush stamp), sampled inside
-// terrainHeight() exactly like MIREFEN_IMPACT_CRATER. Pure data, no RNG: the sim
-// and renderer both sample it so collision and the ground mesh stay in agreement.
+// A bounded height edit (the sculpt brush stamp), applied inside terrainHeight()
+// exactly like MIREFEN_IMPACT_CRATER. Pure data, no RNG: the sim and renderer both
+// sample it so collision and the ground mesh stay in agreement. Stamps apply in
+// array order: `add` (default) adds `delta`, weighted by the falloff; `level`
+// pulls the height toward the ABSOLUTE height `delta`, weighted by the falloff
+// (the flatten/plateau brush; full weight means h becomes exactly `delta`).
 export interface HeightStamp {
   x: number;
   z: number;
   radius: number;
-  delta: number; // +raise / -lower at the centre, tapering to 0 by `radius`
+  delta: number; // add: +raise / -lower at the centre; level: target height
   falloff: 'smooth' | 'flat';
+  mode?: 'add' | 'level'; // absent = 'add' (v1 documents)
 }
 
-// A freely placed GLB model the editor drops onto the world. COSMETIC and
-// render-only: the Sim never reads these (they are not entities and do not
-// collide); the renderer instances them from `path` and seats them on the terrain.
-// Carried on WorldContent so they reach the renderer via sim.cfg.world.
+// A freely placed GLB model the editor drops onto the world. Rendered by the
+// placed-asset instancer (never a Sim entity); when `collideRadius` is set (> 0)
+// the sim additionally derives a static circle collider from this record, so
+// what-you-see-is-what-you-collide-with holds for editor placements too.
+// Carried on WorldContent so both sides read the SAME record.
 export interface PlacedAsset {
   path: string; // public GLB url, e.g. "/models/props/well.glb"
   x: number;
   z: number;
   rotY: number; // radians
   scale: number;
+  // Circle collider radius in yards (already scaled), or absent/0 for walk-through.
+  collideRadius?: number;
 }
 
 // A coarse 2D biome paint grid (editor). Each cell holds a biome id (0=vale,
@@ -1788,13 +1795,17 @@ export interface WorldContent {
   roads: { x: number; z: number }[][];
   props: ZonePropsDef;
   playerStart: { x: number; z: number };
-  // Additive heightfield edits sampled in terrainHeight(). Absent/empty for the
+  // Heightfield edits applied inside terrainHeight(). Absent/empty for the
   // built-in world, so its heightfield stays byte-identical.
   terrainEdits?: HeightStamp[];
-  // Render-only freely placed GLB models (editor). The Sim ignores these.
+  // Freely placed GLB models (editor). Rendered by the placed-asset instancer;
+  // records with collideRadius also feed the sim's static colliders.
   placements?: PlacedAsset[];
   // 2D biome paint overriding terrain shape (sim) and color (render).
   biomePaint?: BiomePaint;
+  // Water surface height for this map; absent = the built-in WATER_LEVEL (-4.5).
+  // Read through waterLevel() in src/sim/world.ts, never directly.
+  waterLevel?: number;
 }
 
 export interface SimConfig {

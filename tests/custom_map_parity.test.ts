@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { isBlocked } from '../src/sim/colliders';
 import { BUILTIN_WORLD, getActiveWorldContent, setActiveWorldContent } from '../src/sim/data';
+import { sanitizeMapDoc } from '../src/sim/map_doc';
 import type { WorldContent } from '../src/sim/types';
-import { biomeAt, terrainHeight, zoneBiomeAt } from '../src/sim/world';
+import { biomeAt, terrainHeight, WATER_LEVEL, waterLevel, zoneBiomeAt } from '../src/sim/world';
 
 // The custom-map seam (Phase 0): the terrain function reads the active world
 // content registry, defaulting to the built-in world. These tests prove (a) the
@@ -92,6 +94,131 @@ describe('custom-map terrain seam', () => {
     // A point outside the painted cell is unchanged.
     expect(biomeAt(200, 200)).toBe(zoneBiomeAt(200));
     expect(baseBiome).toBe('vale');
+  });
+
+  it('a level stamp pulls the centre to an absolute height (flatten brush)', () => {
+    setActiveWorldContent({
+      ...BUILTIN_WORLD,
+      terrainEdits: [{ x: 0, z: 0, radius: 25, delta: 7, falloff: 'smooth', mode: 'level' }],
+    });
+    // Full falloff weight at the centre: the height becomes exactly the target.
+    expect(terrainHeight(0, 0, SEED)).toBeCloseTo(7, 6);
+    // Outside the radius is untouched.
+    expect(terrainHeight(100, 0, SEED)).toBeCloseTo(terrainHeightDefaultAt(100, 0), 6);
+  });
+
+  it('stamps compose in array order (add after level)', () => {
+    setActiveWorldContent({
+      ...BUILTIN_WORLD,
+      terrainEdits: [
+        { x: 0, z: 0, radius: 25, delta: 7, falloff: 'flat', mode: 'level' },
+        { x: 0, z: 0, radius: 25, delta: 2, falloff: 'flat' },
+      ],
+    });
+    expect(terrainHeight(0, 0, SEED)).toBeCloseTo(9, 6);
+  });
+
+  it('custom water level flows through waterLevel() and terrain shaping', () => {
+    expect(waterLevel()).toBe(WATER_LEVEL);
+    setActiveWorldContent({ ...BUILTIN_WORLD, waterLevel: 2.5 });
+    expect(waterLevel()).toBe(2.5);
+    // The dry-land soft floor tracks the raised water, so low ground rises with it.
+    const raised = terrainHeight(0, -3, SEED);
+    setActiveWorldContent(null);
+    expect(waterLevel()).toBe(WATER_LEVEL);
+    const builtin = terrainHeight(0, -3, SEED);
+    expect(raised).toBeGreaterThanOrEqual(builtin);
+  });
+
+  it('a colliding placement blocks movement; a cosmetic one does not', () => {
+    // Find a spot that is clear in the built-in world so the only possible
+    // blocker is our placement.
+    setActiveWorldContent(null);
+    let spot: { x: number; z: number } | null = null;
+    for (let x = 30; x < 120 && !spot; x += 7) {
+      for (let z = 10; z < 120 && !spot; z += 7) {
+        if (!isBlocked(SEED, x, z, 0.4)) spot = { x, z };
+      }
+    }
+    expect(spot).not.toBeNull();
+    if (!spot) return;
+    setActiveWorldContent({
+      ...BUILTIN_WORLD,
+      placements: [
+        {
+          path: '/models/props/well.glb',
+          x: spot.x,
+          z: spot.z,
+          rotY: 0,
+          scale: 1,
+          collideRadius: 1.2,
+        },
+      ],
+    });
+    expect(isBlocked(SEED, spot.x, spot.z, 0.4)).toBe(true);
+    // The same placement without a footprint is walk-through.
+    setActiveWorldContent({
+      ...BUILTIN_WORLD,
+      placements: [{ path: '/models/props/well.glb', x: spot.x, z: spot.z, rotY: 0, scale: 1 }],
+    });
+    expect(isBlocked(SEED, spot.x, spot.z, 0.4)).toBe(false);
+  });
+
+  it('new paint-only biomes reshape painted cells', () => {
+    setActiveWorldContent({
+      ...BUILTIN_WORLD,
+      biomePaint: { cell: 20, cols: 1, rows: 1, originX: 30, originZ: 50, ids: [5] }, // volcano
+    });
+    expect(biomeAt(40, 60)).toBe('volcano');
+    expect(biomeAt(200, 200)).toBe(zoneBiomeAt(200));
+  });
+
+  it('sanitizeMapDoc keeps v2 fields and drops garbage', () => {
+    const doc = sanitizeMapDoc({
+      version: 2,
+      meta: { id: 'm1', name: 'X'.repeat(200), seed: 7, parentId: 'p1' },
+      content: {
+        zones: [
+          { id: 'z', name: 'Z', zMin: -10, zMax: 10, hub: { x: 0, z: 0, radius: 5, name: 'H' } },
+          { bogus: true },
+        ],
+        camps: [],
+        npcs: {},
+        objects: [],
+        roads: [
+          [
+            { x: 0, z: 0 },
+            { x: 5, z: 5 },
+          ],
+          'not-a-road',
+        ],
+      },
+      terrainEdits: [
+        { x: 0, z: 0, radius: 10, delta: 3, falloff: 'smooth', mode: 'level' },
+        { x: Number.NaN, z: 0, radius: 10, delta: 3, falloff: 'smooth' },
+      ],
+      placements: [
+        { assetId: 'props/well', x: 1, z: 2, rotY: 0, scale: 2, collide: true },
+        { assetId: 42, x: 1, z: 2 },
+      ],
+      waterLevel: 999,
+      playerStart: { x: 3, z: 4 },
+    });
+    expect(doc).not.toBeNull();
+    expect(doc?.meta.name.length).toBeLessThanOrEqual(60);
+    expect(doc?.meta.parentId).toBe('p1');
+    expect(doc?.content.zones.length).toBe(1);
+    expect(doc?.content.roads.length).toBe(1);
+    expect(doc?.terrainEdits).toEqual([
+      { x: 0, z: 0, radius: 10, delta: 3, falloff: 'smooth', mode: 'level' },
+    ]);
+    expect(doc?.placements).toEqual([
+      { assetId: 'props/well', x: 1, z: 2, rotY: 0, scale: 2, collide: true },
+    ]);
+    expect(doc?.waterLevel).toBe(40); // clamped
+    expect(doc?.playerStart).toEqual({ x: 3, z: 4 });
+    expect(sanitizeMapDoc('not json {')).toBeNull();
+    expect(sanitizeMapDoc({ content: { zones: [] } })).toBeNull();
   });
 
   it('a custom single-biome world re-shapes terrain and biome lookup', () => {

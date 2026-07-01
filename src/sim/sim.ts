@@ -304,7 +304,7 @@ import {
   virtualLevel,
   xpToReachLevel,
 } from './types';
-import { groundHeight, WATER_LEVEL } from './world';
+import { groundHeight, waterLevel } from './world';
 
 // TRIVIAL_LEVEL_GAP moved to mob/targeting.ts (used only by isTrivialTo).
 // CORPSE_DURATION moved to combat/damage.ts (C1; used only by the death path).
@@ -418,7 +418,10 @@ const SOCIAL_PULL_RADIUS: Partial<Record<MobFamily, number>> = {
 };
 // PACK_FRENZY_AURA_ID moved to mob/lifecycle.ts (M4; used only by frenzyPackmates).
 // BLOOD_FRENZY_AURA_ID moved to combat/damage.ts (C1; used only by maybeFrenzyOnHit).
-const SWIM_SURFACE_Y = WATER_LEVEL - 0.75; // body bobs just below the water line
+// Body bobs just below the water line (a function: custom maps move the water).
+function swimSurfaceY(): number {
+  return waterLevel() - 0.75;
+}
 const SWIM_DEPTH = PLAYER_SWIM_DEPTH; // ground this far under the water line = deep water
 const SWIM_SPEED_MULT = 0.65;
 const FISHING_SAMPLE_DISTANCES = [4, 8, 12, 16, 20, 24];
@@ -941,7 +944,7 @@ export class Sim {
     // NPCs — nudged out of buildings and deep water if their data position is bad
     for (const npcDef of Object.values(worldContent.npcs)) {
       if (npcDef.dynamic) continue; // spawned on demand by its owning system, not surface-placed
-      const safe = this.findSafePos(npcDef.pos.x, npcDef.pos.z, WATER_LEVEL + 0.6);
+      const safe = this.findSafePos(npcDef.pos.x, npcDef.pos.z, waterLevel() + 0.6);
       const npc = createNpc(this.nextId++, npcDef, this.groundPos(safe.x, safe.z));
       this.addEntity(npc);
       if (npcDef.market) this.market.merchantIds.push(npc.id); // every auctioneer anchors the shared World Market
@@ -953,7 +956,7 @@ export class Sim {
       const template = MOBS[camp.mobId];
       // Aquatic/flagged swimmers may wade in the shallows; everyone else
       // still spawns on dry land even though combat movement can enter water.
-      const minHeight = this.mobCanSpawnInWater(template) ? WATER_LEVEL - 0.5 : WATER_LEVEL + 0.4;
+      const minHeight = this.mobCanSpawnInWater(template) ? waterLevel() - 0.5 : waterLevel() + 0.4;
       for (let i = 0; i < camp.count; i++) {
         const ang = this.rng.range(0, Math.PI * 2);
         const r = Math.sqrt(this.rng.next()) * camp.radius;
@@ -2608,8 +2611,8 @@ export class Sim {
 
   isSwimming(e: Entity): boolean {
     return (
-      groundHeight(e.pos.x, e.pos.z, this.cfg.seed) < WATER_LEVEL - SWIM_DEPTH &&
-      e.pos.y <= SWIM_SURFACE_Y + 0.15
+      groundHeight(e.pos.x, e.pos.z, this.cfg.seed) < waterLevel() - SWIM_DEPTH &&
+      e.pos.y <= swimSurfaceY() + 0.15
     );
   }
 
@@ -2650,7 +2653,7 @@ export class Sim {
     // deep water and cliffs end the charge early rather than dragging the player in
     const h0 = groundHeight(p.pos.x, p.pos.z, this.cfg.seed);
     const h1 = groundHeight(nx, nz, this.cfg.seed);
-    if (h1 < WATER_LEVEL - SWIM_DEPTH) return done(false);
+    if (h1 < waterLevel() - SWIM_DEPTH) return done(false);
     if (h1 > h0 && (h1 - h0) / step > MAX_CLIMB_SLOPE) return done(false);
     const resolved = this.resolveMove(p.pos.x, p.pos.z, nx, nz, BODY_RADIUS, p);
     p.pos.x = resolved.x;
@@ -2712,7 +2715,7 @@ export class Sim {
     const nz = p.pos.z + Math.cos(p.facing) * step;
     const h0 = groundHeight(p.pos.x, p.pos.z, this.cfg.seed);
     const h1 = groundHeight(nx, nz, this.cfg.seed);
-    if (h1 < WATER_LEVEL - SWIM_DEPTH) return true; // don't trail into deep water
+    if (h1 < waterLevel() - SWIM_DEPTH) return true; // don't trail into deep water
     if (h1 > h0 && step > 1e-5 && (h1 - h0) / step > MAX_CLIMB_SLOPE) return true; // wall/cliff
     const resolved = this.resolveMove(p.pos.x, p.pos.z, nx, nz, BODY_RADIUS, p);
     p.pos.x = resolved.x;
@@ -2820,10 +2823,10 @@ export class Sim {
 
     // Vertical: jumping, gravity, swimming, fall damage
     const ground = groundHeight(p.pos.x, p.pos.z, this.cfg.seed);
-    const deepWater = ground < WATER_LEVEL - SWIM_DEPTH;
-    if (deepWater && p.pos.y <= SWIM_SURFACE_Y + 0.05) {
+    const deepWater = ground < waterLevel() - SWIM_DEPTH;
+    if (deepWater && p.pos.y <= swimSurfaceY() + 0.05) {
       // treading water at the surface
-      p.pos.y = SWIM_SURFACE_Y;
+      p.pos.y = swimSurfaceY();
       p.vy = 0;
       p.vx = 0;
       p.vz = 0;
@@ -2852,9 +2855,9 @@ export class Sim {
       p.vy -= GRAVITY * DT;
       p.pos.y += p.vy * DT;
       p.fallStartY = Math.max(p.fallStartY, p.pos.y);
-      if (deepWater && p.pos.y <= SWIM_SURFACE_Y) {
+      if (deepWater && p.pos.y <= swimSurfaceY()) {
         // splashing into deep water breaks the fall
-        p.pos.y = SWIM_SURFACE_Y;
+        p.pos.y = swimSurfaceY();
         p.vy = 0;
         p.vx = 0;
         p.vz = 0;
@@ -3148,7 +3151,7 @@ export class Sim {
         nz = cz + uz * adv;
       const h0 = groundHeight(cx, cz, this.cfg.seed);
       const h1 = groundHeight(nx, nz, this.cfg.seed);
-      if (h1 < WATER_LEVEL - SWIM_DEPTH) break; // would land in deep water
+      if (h1 < waterLevel() - SWIM_DEPTH) break; // would land in deep water
       if (h1 > h0 && (h1 - h0) / adv > MAX_CLIMB_SLOPE) break; // would slam into a cliff
       cx = nx;
       cz = nz;
@@ -3834,7 +3837,7 @@ export class Sim {
       e.pos.x = nx;
       e.pos.z = nz;
       const g = groundHeight(nx, nz, this.cfg.seed);
-      e.pos.y = Math.max(g, SWIM_SURFACE_Y); // ride the surface while phasing, don't sink under terrain/water
+      e.pos.y = Math.max(g, swimSurfaceY()); // ride the surface while phasing, don't sink under terrain/water
       return d - step < 0.3;
     }
     // Mobs have no nav mesh. Try the straight path first; only if a prop or the
@@ -3849,7 +3852,7 @@ export class Sim {
       const nx = e.pos.x + Math.sin(a) * step;
       const nz = e.pos.z + Math.cos(a) * step;
       // landlocked creatures stop at the waterline instead of walking under it
-      if (!canSwim && groundHeight(nx, nz, this.cfg.seed) < WATER_LEVEL - SWIM_DEPTH) continue;
+      if (!canSwim && groundHeight(nx, nz, this.cfg.seed) < waterLevel() - SWIM_DEPTH) continue;
       const r = this.resolveMovePoint(nx, nz, BODY_RADIUS, e);
       const progress = d - Math.hypot(r.x - dest.x, r.z - dest.z);
       if (progress > bestProgress) {
@@ -3862,7 +3865,7 @@ export class Sim {
     e.pos.x = bestX;
     e.pos.z = bestZ;
     const g = groundHeight(bestX, bestZ, this.cfg.seed);
-    e.pos.y = canSwim && g < WATER_LEVEL - SWIM_DEPTH ? SWIM_SURFACE_Y : g;
+    e.pos.y = canSwim && g < waterLevel() - SWIM_DEPTH ? swimSurfaceY() : g;
     return dist2d(e.pos, dest) < 0.3;
   }
 
@@ -4262,7 +4265,7 @@ export class Sim {
     return FISHING_SAMPLE_DISTANCES.some(
       (d) =>
         groundHeight(p.pos.x + sin * d, p.pos.z + cos * d, this.cfg.seed) <
-        WATER_LEVEL - SWIM_DEPTH,
+        waterLevel() - SWIM_DEPTH,
     );
   }
 

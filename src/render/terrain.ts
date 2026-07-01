@@ -132,10 +132,47 @@ const BIOME_PALETTE: Record<
     dirt: 0x7d6a50,
     sand: 0xb0a486,
   },
+  // Paint-only biomes (editor brush): flat palettes, no zone-band blend.
+  beach: {
+    grass: 0x9aa55e,
+    grassDark: 0x7a8a4e,
+    grassYellow: 0xb5b06a,
+    dirt: 0xb59a6b,
+    sand: 0xe2d3a4,
+  },
+  desert: {
+    grass: 0xb0a060,
+    grassDark: 0x8f8350,
+    grassYellow: 0xc4b070,
+    dirt: 0xa87f4f,
+    sand: 0xd8b581,
+  },
+  volcano: {
+    grass: 0x5a4a42,
+    grassDark: 0x40332e,
+    grassYellow: 0x6e5a4a,
+    dirt: 0x4a3a32,
+    sand: 0x6a5548,
+  },
+  cave: {
+    grass: 0x6a6a62,
+    grassDark: 0x50504a,
+    grassYellow: 0x7a7a6e,
+    dirt: 0x5a5248,
+    sand: 0x8a8274,
+  },
 };
 
 // rock starts creeping in at lower slopes in the peaks, later in the marsh
-const ROCK_SLOPE_START: Record<BiomeId, number> = { vale: 0.55, marsh: 0.62, peaks: 0.45 };
+const ROCK_SLOPE_START: Record<BiomeId, number> = {
+  vale: 0.55,
+  marsh: 0.62,
+  peaks: 0.45,
+  beach: 0.7,
+  desert: 0.55,
+  volcano: 0.35,
+  cave: 0.4,
+};
 
 const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
 
@@ -179,6 +216,10 @@ const biomePalettes: Record<BiomeId, (typeof zonePalettes)[number]> = {
   vale: makeBiomePalette('vale'),
   marsh: makeBiomePalette('marsh'),
   peaks: makeBiomePalette('peaks'),
+  beach: makeBiomePalette('beach'),
+  desert: makeBiomePalette('desert'),
+  volcano: makeBiomePalette('volcano'),
+  cave: makeBiomePalette('cave'),
 };
 function makeBiomePalette(b: BiomeId): (typeof zonePalettes)[number] {
   const p = BIOME_PALETTE[b];

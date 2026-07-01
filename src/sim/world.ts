@@ -17,13 +17,28 @@ import type { BiomeId, WorldContent } from './types';
 const HILL_SCALE = 0.013;
 const DETAIL_SCALE = 0.05;
 
+// The built-in world's water surface height. Fixed-content call sites (tests,
+// built-in tuning constants) may use the const; anything that must respect a
+// custom map's water goes through waterLevel() below.
 export const WATER_LEVEL = -4.5;
+
+// The ACTIVE water surface height: the custom map's level if one is loaded, else
+// the built-in constant. Cheap (identity-cached content lookup), safe in hot paths.
+export function waterLevel(): number {
+  return world().content.waterLevel ?? WATER_LEVEL;
+}
 
 // Hill amplitude / base elevation / hub plateau height per biome.
 const BIOME_SHAPE: Record<BiomeId, { hill: number; base: number; hubHeight: number }> = {
   vale: { hill: 26, base: 0, hubHeight: 1.5 },
   marsh: { hill: 11, base: -1.0, hubHeight: 1.2 },
   peaks: { hill: 34, base: 7, hubHeight: 9 },
+  // Paint-only biomes (the editor's biome brush): never a zone band in the
+  // built-in world, so these rows only shape painted cells on custom maps.
+  beach: { hill: 5, base: -2.4, hubHeight: 0.8 },
+  desert: { hill: 15, base: 2.5, hubHeight: 2 },
+  volcano: { hill: 42, base: 9, hubHeight: 6 },
+  cave: { hill: 9, base: 1, hubHeight: 1 },
 };
 
 // Per-active-content derived terrain inputs: the ridge walls between zone bands
@@ -77,13 +92,15 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-// Additive height from the custom-map edit layer (the raise/lower brush). Sums
-// every stamp covering (x,z). Pure data, no RNG, so the sim and renderer agree.
-// The built-in world has no edits, so this is 0 and the heightfield is unchanged.
-function editLayerOffset(x: number, z: number): number {
+// The custom-map edit layer (the sculpt brushes), applied to the height computed
+// so far. Stamps apply in array order; pure data, no RNG, so the sim and renderer
+// agree. `add` stamps add a falloff-weighted delta; `level` stamps pull the height
+// toward the absolute height `delta` (flatten/plateau/terrace). The built-in world
+// has no edits, so the heightfield is unchanged.
+function applyEditLayer(x: number, z: number, h0: number): number {
   const edits = world().content.terrainEdits;
-  if (!edits || edits.length === 0) return 0;
-  let sum = 0;
+  if (!edits || edits.length === 0) return h0;
+  let h = h0;
   for (const e of edits) {
     if (e.radius <= 0) continue;
     const dx = x - e.x;
@@ -93,9 +110,10 @@ function editLayerOffset(x: number, z: number): number {
     const t = d / e.radius; // 0 at centre, 1 at edge
     // 'flat' = full delta out to the edge; 'smooth' = eased taper to 0.
     const w = e.falloff === 'flat' ? 1 : 1 - smoothstep(0, 1, t);
-    sum += e.delta * w;
+    if (e.mode === 'level') h = lerp(h, e.delta, w);
+    else h += e.delta * w;
   }
-  return sum;
+  return h;
 }
 
 export function mirefenImpactCraterOffset(x: number, z: number): number {
@@ -118,7 +136,16 @@ export function mirefenImpactCraterOffset(x: number, z: number): number {
   return bowl + rim;
 }
 
-const BIOME_BY_ID: BiomeId[] = ['vale', 'marsh', 'peaks'];
+// Paint grid id -> biome. APPEND-ONLY: the id is persisted in map documents.
+export const BIOME_BY_ID: BiomeId[] = [
+  'vale',
+  'marsh',
+  'peaks',
+  'beach',
+  'desert',
+  'volcano',
+  'cave',
+];
 
 // The painted biome at (x,z), or null if unpainted / no paint layer. Cheap grid
 // lookup; absent for the built-in world.
@@ -129,7 +156,7 @@ function paintedBiomeAt(x: number, z: number): BiomeId | null {
   const r = Math.floor((z - bp.originZ) / bp.cell);
   if (c < 0 || c >= bp.cols || r < 0 || r >= bp.rows) return null;
   const id = bp.ids[r * bp.cols + c];
-  return id === 0 || id === 1 || id === 2 ? BIOME_BY_ID[id] : null;
+  return id >= 0 && id < BIOME_BY_ID.length ? BIOME_BY_ID[id] : null;
 }
 
 // Biome at a world point: the painted override if any, else the zone-band biome.
@@ -177,7 +204,7 @@ function baseHeight(x: number, z: number, seed: number): number {
     }
   }
   // Keep dry land everywhere: soft-floor low dips above the water level...
-  const minLand = WATER_LEVEL + 1.4;
+  const minLand = waterLevel() + 1.4;
   if (h < minLand) h = minLand - (minLand - h) * 0.12;
   // ...except the carved lake basins
   for (const zone of zones) {
@@ -185,7 +212,7 @@ function baseHeight(x: number, z: number, seed: number): number {
       const dLake = Math.sqrt((x - lake.x) ** 2 + (z - lake.z) ** 2);
       if (dLake < lake.radius * 1.6) {
         const lakeBlend = smoothstep(lake.radius * 0.55, lake.radius * 1.6, dLake);
-        h = h * lakeBlend + (WATER_LEVEL - 4) * (1 - lakeBlend);
+        h = h * lakeBlend + (waterLevel() - 4) * (1 - lakeBlend);
       }
     }
   }
@@ -233,7 +260,7 @@ export function terrainHeight(x: number, z: number, seed: number): number {
   const rim = Math.max(rimX, rimS, rimN);
   h += rim * 40;
   h += mirefenImpactCraterOffset(x, z);
-  h += editLayerOffset(x, z);
+  h = applyEditLayer(x, z, h);
   return h;
 }
 
@@ -297,7 +324,9 @@ export function generateDecorations(seed: number): Decoration[] {
   for (let gx = -xHalf; gx < xHalf; gx += step) {
     for (let gz = w.minZ + 14; gz < w.maxZ - 14; gz += step) {
       const r = hash2(Math.round(gx), Math.round(gz), seed + 31);
-      const biome = zoneBiomeAt(gz);
+      // biomeAt so painted areas grow the right mix; without paint this is the
+      // zone-band biome exactly (byte-identical built-in world).
+      const biome = biomeAt(gx, gz);
       // density gate + kind mix per biome
       let kind: Decoration['kind'] | null = null;
       if (biome === 'vale') {
@@ -306,6 +335,18 @@ export function generateDecorations(seed: number): Decoration[] {
       } else if (biome === 'marsh') {
         if (r > 0.34) continue;
         kind = r < 0.08 ? 'tree' : r < 0.26 ? 'tree2' : 'rock';
+      } else if (biome === 'beach') {
+        if (r > 0.14) continue;
+        kind = r < 0.05 ? 'tree' : r < 0.08 ? 'tree2' : 'rock';
+      } else if (biome === 'desert') {
+        if (r > 0.1) continue;
+        kind = r < 0.025 ? 'tree2' : 'rock';
+      } else if (biome === 'volcano') {
+        if (r > 0.2) continue;
+        kind = 'rock';
+      } else if (biome === 'cave') {
+        if (r > 0.16) continue;
+        kind = 'rock';
       } else {
         if (r > 0.44) continue;
         kind = r < 0.2 ? 'tree' : r < 0.24 ? 'tree2' : 'rock';
@@ -325,7 +366,7 @@ export function generateDecorations(seed: number): Decoration[] {
         }
       }
       if (inHub) continue;
-      if (terrainHeight(x, z, seed) < WATER_LEVEL + 1) continue;
+      if (terrainHeight(x, z, seed) < waterLevel() + 1) continue;
       if (roadDistance(x, z) < 5) continue;
       let inCamp = false;
       for (const c of w.content.camps) {

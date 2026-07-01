@@ -57,7 +57,15 @@ describe('CustomMap build + projection', () => {
       roads: [],
     };
     const map = customMapFromContent(content, {
-      meta: { id: 'a', name: 'A', createdAt: 0, updatedAt: 0, seed: 1 },
+      meta: {
+        id: 'a',
+        name: 'A',
+        description: '',
+        createdAt: 0,
+        updatedAt: 0,
+        seed: 1,
+        parentId: '',
+      },
     });
     content.zones[0].hub.x = 999;
     expect(map.content.zones[0].hub.x).toBe(0); // clone, not the live ref

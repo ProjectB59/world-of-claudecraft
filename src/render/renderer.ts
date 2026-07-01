@@ -3431,6 +3431,10 @@ export class Renderer {
     vale: { color: 0xa6c6e0, near: 130, far: 470 },
     marsh: { color: 0xa3b294, near: 80, far: 330 },
     peaks: { color: 0xbdd3ec, near: 160, far: 560 },
+    beach: { color: 0xbcd6e6, near: 150, far: 520 },
+    desert: { color: 0xd8c9a8, near: 140, far: 500 },
+    volcano: { color: 0x8a7468, near: 70, far: 300 },
+    cave: { color: 0x76807c, near: 60, far: 260 },
   };
   private static LOW_FOG = { color: 0xa6c6e0, near: 70, far: 260 };
 
