@@ -191,6 +191,7 @@ type ClientMessage = Record<string, unknown> & {
   mode?: string;
   n?: string;
   name?: string;
+  node?: string;
   npc?: number;
   objectId?: number;
   price?: number;
@@ -2429,6 +2430,9 @@ export class GameServer {
         break;
       case 'buyback':
         if (typeof msg.item === 'string') sim.buyBackItem(msg.item, pid);
+        break;
+      case 'harvest_node':
+        if (typeof msg.node === 'string') sim.harvestNode(msg.node, pid);
         break;
       case 'sell_all_junk':
         sim.sellAllJunk(pid);
