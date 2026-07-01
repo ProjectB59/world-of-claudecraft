@@ -12,11 +12,10 @@
 //  - the handlers are thin Ctx adapters that write the SAME legacy body shapes with
 //    the same http_util json() helper, so every ported success/error body is
 //    byte-identical to today and the parity harness proves it. RFC-9457-ification of
-//    these bodies is Phase 22; the sole intentional divergence is the dash-to-comma
-//    rate-limit detail (the authRateLimitDashToComma known deviation), forced by the
-//    no-em-dash code invariant and kept matcher-safe (the client prose-matcher keys
-//    on the "too many attempts" / "too many failed attempts" prefix, before the
-//    punctuation, so the localized message is unchanged).
+//    these bodies is Phase 22. The rate-limit 429 strings use a comma (the no-em-dash
+//    code invariant forbids a U+2014 literal in new code); Phase 13 aligned the legacy
+//    handleApi ladder strings to the same comma, so the bodies are now byte-identical
+//    and the former authRateLimitDashToComma known deviation was retired.
 //  - the credential checks stay in their exact legacy ORDER, decomposed into small
 //    per-route guard middleware so the onion runs them cheap-reject-first (origin
 //    guard, IP rate-limit, register IP block) BEFORE withBody parses the body and the
@@ -83,10 +82,10 @@ import { isWebClientRequest, webLoginEnforced } from './web_login_guard';
 // ---------------------------------------------------------------------------
 
 const WEB_LOGIN_ONLY = 'logins are only allowed from the game client';
-// A comma, NOT an em dash: the no-em-dash code invariant forbids the U+2014 the
-// legacy ladder still uses here (Phase 13 aligns the legacy strings). The client
-// matcher keys on the prefix, so the localized text is unchanged. See the
-// authRateLimitDashToComma known deviation.
+// A comma (the no-em-dash code invariant forbids a U+2014 literal in new code).
+// Phase 13 aligned the legacy handleApi ladder strings to this same comma, so the
+// legacy and migrated 429 bodies are now byte-identical. The client matcher keys on
+// the prefix, so the localized text is unchanged either way.
 const TOO_MANY_ATTEMPTS = 'too many attempts, wait a minute and try again';
 const TOO_MANY_FAILED_ATTEMPTS = 'too many failed attempts, wait a few minutes and try again';
 const INVALID_CREDENTIALS = 'invalid username or password';

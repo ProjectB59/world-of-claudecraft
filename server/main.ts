@@ -14,6 +14,7 @@ import type { PlayerClass } from '../src/sim/types';
 import { virtualLevel } from '../src/sim/types';
 import type { GuildLeaderboardEntry, LeaderboardEntry } from '../src/world_api';
 import {
+  configureAccountRuntime,
   handleAccount2faDisable,
   handleAccount2faEnable,
   handleAccount2faSetup,
@@ -205,7 +206,7 @@ const CHAT_LOG_RETENTION_DAYS = Number(process.env.CHAT_LOG_RETENTION_DAYS ?? 90
 const PERF_REPORT_RETENTION_DAYS = Number(process.env.PERF_REPORT_RETENTION_DAYS ?? 14);
 const ADMIN_ONLINE_SAMPLE_MS = 60_000;
 // Cloudflare Turnstile secret. When unset (local dev / tests) registration and
-// login skip human verification entirely — see requireTurnstile below.
+// login skip human verification entirely, see requireTurnstile below.
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET ?? '';
 // Hard WS connection limit per IP. Soft threshold (adds bot evidence) is in game.ts.
 const MAX_WS_PER_IP_HARD = Number(process.env.MAX_WS_PER_IP_HARD ?? '20');
@@ -230,7 +231,7 @@ function initialCharacterState(
 // ---------------------------------------------------------------------------
 // Lifetime-XP leaderboard cache (Max-Level XP Overflow, FR-4.2 / PR-3).
 // Same shape as the chat-censor memoization: compute once, serve from memory,
-// refresh on an interval. The query is never run per request under load — at
+// refresh on an interval. The query is never run per request under load, at
 // most once per LEADERBOARD_TTL_MS, plus the boot warm-up below.
 // ---------------------------------------------------------------------------
 const LEADERBOARD_TTL_MS = 30_000;
@@ -324,7 +325,7 @@ async function getGuildLeaderboard(scope: 'realm' | 'global'): Promise<GuildLead
 // ---------------------------------------------------------------------------
 const GITHUB_REPO = process.env.GITHUB_REPO ?? 'levy-street/world-of-claudecraft';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN ?? '';
-const RELEASES_TTL_MS = 15 * 60_000; // 15 min — releases change rarely
+const RELEASES_TTL_MS = 15 * 60_000; // 15 min, releases change rarely
 const RELEASES_SIZE = 20;
 const RELEASE_BODY_MAX = 8_000; // guard against a pathologically long body
 
@@ -446,7 +447,7 @@ async function bearerScopeAccount(
   return accountAndScopeForToken(m[1]);
 }
 
-// Raw bearer token string (or null) — needed when an account action must keep
+// Raw bearer token string (or null), needed when an account action must keep
 // the caller's own session alive while revoking the rest (password change).
 function bearerToken(req: http.IncomingMessage): string | null {
   const m = /^Bearer ([a-f0-9]{64})$/.exec(req.headers.authorization ?? '');
@@ -455,7 +456,7 @@ function bearerToken(req: http.IncomingMessage): string | null {
 
 // Mutating + owner-scoped routes funnel through here. HARDENED: a read-only
 // token (scope!=='full') is rejected with 403, so every existing mutating route
-// (which already calls this) automatically refuses companion/OAuth read tokens —
+// (which already calls this) automatically refuses companion/OAuth read tokens,
 // the single choke point that keeps read tokens harmless.
 async function bearerActiveAccount(
   req: http.IncomingMessage,
@@ -479,7 +480,7 @@ async function bearerActiveAccount(
 }
 
 // Read routes (the owner character sheet) accept both 'read' and 'full' tokens.
-// Moderation still applies — a banned account can't read through a read token.
+// Moderation still applies, a banned account can't read through a read token.
 async function bearerReadAccount(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -507,7 +508,7 @@ function requestMetadata(req: http.IncomingMessage): { ip: string; userAgent: st
 // Gate account creation / login behind Cloudflare Turnstile. Returns true when
 // the request may proceed: trivially true when no secret is configured, else the
 // client-supplied token must verify. The English error is matched to a t() key
-// by userFacingApiError() in src/main.ts — keep the two strings in sync.
+// by userFacingApiError() in src/main.ts, keep the two strings in sync.
 async function passesTurnstile(
   req: http.IncomingMessage,
   body: Record<string, unknown>,
@@ -537,7 +538,7 @@ const MIME: Record<string, string> = {
 
 // The admin dashboard is reached via the admin.* subdomain (Caddy proxies it
 // to this same port) or /admin for local dev. The hostname only picks which
-// HTML shell is served — the admin API itself is gated by admin tokens.
+// HTML shell is served, the admin API itself is gated by admin tokens.
 function isAdminRequest(req: http.IncomingMessage): boolean {
   const host = String(req.headers.host ?? '').toLowerCase();
   const urlPath = (req.url ?? '/').split('?')[0];
@@ -554,7 +555,7 @@ function serveStatic(req: http.IncomingMessage, res: http.ServerResponse): void 
   // Pretty-URL aliases for standalone static pages.
   urlPath = STATIC_PAGE_ALIASES.get(urlPath) ?? urlPath;
   if (urlPath === '/' || urlPath === '/admin' || urlPath === '/admin/') urlPath = `/${shell}`;
-  // normalize once and reuse for BOTH file resolution and cache policy —
+  // normalize once and reuse for BOTH file resolution and cache policy,
   // otherwise /assets/../x would serve a mutable file with immutable caching
   urlPath = path.posix.normalize(urlPath).replace(/^([.][.][/\\])+/, '');
   const file = path.join(STATIC_DIR, urlPath);
@@ -668,13 +669,13 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       (url === '/api/register' || url === '/api/login') &&
       rateLimited(req)
     ) {
-      return json(res, 429, { error: 'too many attempts — wait a minute and try again' });
+      return json(res, 429, { error: 'too many attempts, wait a minute and try again' });
     }
     // Reuse the rate-limit message so a blocked client gets no signal that the
     // block exists. Login is gated separately below, after the account is known,
     // so admins can bypass; registration has no account to check.
     if (req.method === 'POST' && url === '/api/register' && game.isIpBlocked(requestIp(req))) {
-      return json(res, 429, { error: 'too many attempts — wait a minute and try again' });
+      return json(res, 429, { error: 'too many attempts, wait a minute and try again' });
     }
     if (req.method === 'POST' && url === '/api/register') {
       const body = await readBody(req);
@@ -743,7 +744,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       // bad-password response so it never reveals whether the account exists.
       if (username && authThrottled(username)) {
         return json(res, 429, {
-          error: 'too many failed attempts — wait a few minutes and try again',
+          error: 'too many failed attempts, wait a few minutes and try again',
         });
       }
       const account = username ? await findAccount(username) : null;
@@ -755,10 +756,10 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       if (status.locked) return json(res, 403, { error: status.message });
       // Checked only now that the account is known, so admins (verified after the
       // password) are never locked out. This does mean a blocked IP gets 429 on a
-      // correct password vs 401 on a wrong one — a small credential-validity tell
+      // correct password vs 401 on a wrong one, a small credential-validity tell
       // we accept, since moving the check before the password would lock admins out.
       if (game.isIpBlocked(requestIp(req)) && !(await isAdminAccount(account.id))) {
-        return json(res, 429, { error: 'too many attempts — wait a minute and try again' });
+        return json(res, 429, { error: 'too many attempts, wait a minute and try again' });
       }
       // Second factor: if 2FA is enabled, the password alone is not enough. With
       // no code supplied we return a challenge (not a token) so the client shows
@@ -942,8 +943,8 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       }
       // A rename mutates the DB name and clears force_rename, but a live
       // ClientSession keeps its own copy of the name (used by reports, chat and
-      // /api/status). Renaming an online character desyncs that copy and — worse
-      // — lets a force-renamed player already in the world clear the moderation
+      // /api/status). Renaming an online character desyncs that copy and, worse
+      // lets a force-renamed player already in the world clear the moderation
       // flag without ever leaving. Mirror the DELETE guard and require offline.
       if ([...game.clients.values()].some((s) => s.characterId === characterId)) {
         return json(res, 400, { error: 'character is currently online' });
@@ -1217,7 +1218,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       const entries = await getReleases();
       return json(res, 200, { repo: GITHUB_REPO, releases: entries.slice(0, limit) });
     }
-    // Account self-service portal — all bearer-auth, account-scoped. Each route
+    // Account self-service portal, all bearer-auth, account-scoped. Each route
     // delegates to an exported, testable handler in server/account.ts (mirroring
     // server/wallet.ts); main.ts only resolves the bearer account first.
     if (req.method === 'GET' && url === '/api/account') {
@@ -1259,7 +1260,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
     // Companion read-only tokens: a 90-day scope='read' token a user can paste
     // into a companion app instead of running OAuth. Managed from a full web
     // session only (bearerActiveAccount rejects read tokens, so a read token can
-    // never mint or list more — no privilege escalation).
+    // never mint or list more, no privilege escalation).
     if (url === '/api/account/companion-token') {
       const accountId = await bearerActiveAccount(req, res);
       if (accountId === null) return;
@@ -1324,7 +1325,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       const token = new URL(req.url ?? '', 'http://localhost').searchParams.get('token') ?? '';
       return handleEmailUnsubscribe(res, token);
     }
-    // Non-custodial Solana wallet linking — all account-scoped.
+    // Non-custodial Solana wallet linking, all account-scoped.
     if (req.method === 'POST' && url === '/api/wallet/link/challenge') {
       const accountId = await bearerActiveAccount(req, res);
       if (accountId === null) return;
@@ -1416,7 +1417,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       if (githubRateLimited(req, accountId)) return json(res, 429, { error: 'rate limited' });
       return handleGitHubUnlink(req, res, accountId);
     }
-    // $WOC balance proxy — keeps the Solana RPC endpoint (and any key in it)
+    // $WOC balance proxy, keeps the Solana RPC endpoint (and any key in it)
     // server-side so it never ships in the client bundle. Public (on-chain
     // balances are public) but narrow + IP rate-limited + per-wallet cached.
     if (req.method === 'GET' && url === '/api/woc/balance') {
@@ -1514,6 +1515,19 @@ configureCharactersRuntime({
   saveMarket: () => game.saveMarket(),
   initialCharacterState,
   publicOrigin,
+});
+
+// Inject the main.ts game-session hooks the ported account handlers
+// (server/account.ts) need but cannot import without a cycle: the live
+// character-online check and the post-deactivation disconnect off the GameServer.
+// These are the exact AccountGameHooks the legacy /api/account/deactivate arm
+// built inline; the legacy account arms stay intact as the flag-off rollback path.
+configureAccountRuntime({
+  anyCharacterOnline: (characterIds) =>
+    [...game.clients.values()].some(
+      (s) => s.characterId != null && characterIds.includes(s.characterId),
+    ),
+  disconnectAccount: (id, reason) => game.disconnectAccount(id, reason),
 });
 
 // The in-house dispatcher that fronts the legacy handleApi ladder via a per-path

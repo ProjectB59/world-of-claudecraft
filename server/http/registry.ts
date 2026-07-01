@@ -22,6 +22,7 @@
 // interceptable by an earlier, non-owned catch-all that would skip its ownership
 // loader.
 
+import { routes as accountRoutes } from '../account';
 import { routes as authRoutes } from '../auth_routes';
 import { routes as characterRoutes } from '../characters';
 import { routes as leaderboardRoutes } from '../leaderboard';
@@ -58,11 +59,14 @@ export interface ApiRegistry {
  * (server/auth_routes.ts: register, login, native-attestation challenge); Phase 12
  * adds the owner-gated character surface (server/characters.ts: the character list
  * pair, create, and the account-owned :id subroutes behind requireOwnedCharacter).
+ * Phase 13 adds the account-portal surface (server/account.ts: the /api/account/*
+ * family, the companion-token method trio, and /api/email/unsubscribe).
  */
 export const apiRoutes: readonly RouteDef[] = [
   ...leaderboardRoutes,
   ...authRoutes,
   ...characterRoutes,
+  ...accountRoutes,
 ];
 
 /**

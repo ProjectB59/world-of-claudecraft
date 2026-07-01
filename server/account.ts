@@ -6,16 +6,25 @@
 // no module-private seam. main.ts resolves the bearer account once and then
 // delegates here. All four routes are bearer-auth + account-scoped.
 import type http from 'node:http';
-import { hashPassword, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, verifyPassword } from './auth';
+import {
+  hashPassword,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  newToken,
+  verifyPassword,
+} from './auth';
 import {
   type AccountRow,
+  accountAndScopeForToken,
   accountById,
   accountByUnsubscribeToken,
+  accountForToken,
   accountTwoFactorEnabled,
   characterCountForAccount,
   claimTotpWindow,
   consumeEmailChangeRequest,
   consumeRecoveryCode,
+  createCompanionToken,
   createEmailChangeRequest,
   disableTotp,
   enableTotp,
@@ -23,8 +32,12 @@ import {
   exportAccountData,
   getTotpState,
   listCharacters,
+  listCompanionTokens,
+  moderationStatusForAccount,
+  revokeCompanionToken,
   revokeToken,
   revokeTokensExcept,
+  scopeAllowsMutation,
   setAccountDeactivated,
   setAccountMarketingOptIn,
   setTotpPending,
@@ -41,6 +54,8 @@ import {
   hashEmailToken,
   makeEmailToken,
 } from './email';
+import { ctxAccountId } from './http/context';
+import type { Ctx, Middleware, RouteDef } from './http/types';
 import { json, readBody } from './http_util';
 import { clearAuthFailures, rateLimited, recordAuthFailure } from './ratelimit';
 import {
@@ -384,3 +399,409 @@ export async function handleEmailUnsubscribe(
   }
   return json(res, 200, { ok: true });
 }
+
+// ===========================================================================
+// Route layer, ported onto RouteDefs (Phase 13 of docs/api-pipeline/).
+//
+// The account-portal endpoints move off the inline handleApi ladder in
+// server/main.ts onto the shared server/http/ pipeline the Phase 9 dispatcher
+// serves when API_DISPATCH is 'new'. It follows the server/characters.ts +
+// server/auth_routes.ts template:
+//  - the handlers are THIN Ctx adapters that resolve the bearer, then call the
+//    existing handleAccount* domain functions above UNCHANGED. Those functions
+//    write the SAME legacy { error } / success bodies with the same http_util
+//    json() helper, so every ported response is byte-identical to today and the
+//    parity harness proves it. RFC-9457-ification of these bodies is Phase 22;
+//    until then the client prose-matcher (src/main.ts userFacingApiError) keys on
+//    them, so a migrated route MUST keep the legacy prose body, not problem+json.
+//  - the bearer + moderation gate is a per-route guard middleware (activeGuard)
+//    that mirrors the legacy bearerActiveAccount resolver and writes the legacy
+//    { error } bodies, NOT the generic requireAccount middleware (which throws a
+//    problem+json HttpError and would break the goldens and the prose-matcher).
+//    Logout has its OWN guard (logoutGuard): a banned/suspended/deactivated
+//    account must still be able to sign out, so it validates only that the token
+//    maps to an account, with no scope or moderation gate (mirrors the legacy arm).
+//  - the account handlers self-read their body with readBody, so NO withBody
+//    middleware is composed (that would double-consume the stream). A malformed or
+//    over-cap body therefore throws inside readBody and surfaces as a 500 through
+//    the shared error boundary (the accountBodyValidationRemap known deviation).
+//  - the deactivate route needs the live game session (to refuse deactivation
+//    while a character is online and to disconnect the account afterwards); that
+//    singleton is INJECTED once at boot via configureAccountRuntime, so
+//    `export const routes` stays a static array registry.ts can spread. The db.ts
+//    reads the guards + companion-token handlers use are bundled behind
+//    setAccountDbForTests so they are unit-testable with a fake and no Postgres.
+// ===========================================================================
+
+// The exact legacy { error } identities the guards emit. Named constants so the
+// guards cannot drift from the bearerActiveAccount / logout arms they mirror. No
+// em dash appears in any of these (the legacy account strings never used one).
+const NOT_AUTHENTICATED = { error: 'not authenticated' } as const;
+const READ_ONLY_TOKEN = { error: 'this token is read-only' } as const;
+const COMPANION_TOKEN_NOT_FOUND = { error: 'token not found' } as const;
+
+// The bearer token shape: a 64-hex secret behind the "Bearer " scheme. Mirrors
+// the regex the legacy bearer* resolvers in server/main.ts use.
+const BEARER_PATTERN = /^Bearer ([a-f0-9]{64})$/;
+
+// Companion read-only token lifetime: 90 days (mirrors the legacy inline const in
+// the main.ts companion-token arm; a MOVE of the named constant, not a new literal).
+const COMPANION_TOKEN_TTL_HOURS = 24 * 90;
+// The companion secret is minted with scope 'read' and reported as 90 days on
+// creation, exactly as the legacy arm returned it.
+const COMPANION_TOKEN_SCOPE = 'read';
+const COMPANION_TOKEN_EXPIRES_IN_DAYS = 90;
+
+// ---------------------------------------------------------------------------
+// Runtime injection. registry.ts spreads the static `routes` array at module
+// load, before main.ts has booted the GameServer, so the deactivate handler
+// cannot close over `game` directly (that would be a cycle: main -> registry ->
+// account -> main). Instead main.ts injects the live session hooks once at boot
+// via configureAccountRuntime; a request never arrives before that runs. The
+// hooks are the exact AccountGameHooks handleAccountDeactivate already takes.
+// ---------------------------------------------------------------------------
+
+let runtime: AccountGameHooks | null = null;
+
+/** Inject the main.ts game-session hooks the deactivate handler needs (boot). */
+export function configureAccountRuntime(rt: AccountGameHooks): void {
+  runtime = rt;
+}
+
+/** Clear the injected runtime so a unit test can install its own fake. */
+export function resetAccountRuntimeForTests(): void {
+  runtime = null;
+}
+
+/** The injected runtime, or a loud failure if a request somehow beat boot wiring. */
+function useRuntime(): AccountGameHooks {
+  if (runtime === null) {
+    throw new Error('account runtime is not configured; call configureAccountRuntime');
+  }
+  return runtime;
+}
+
+// ---------------------------------------------------------------------------
+// Db seam. The bearer-resolution + companion-token reads/writes, bundled once
+// behind a test-only setter so the guards and companion handlers can be driven
+// with a fake and no Postgres. Production never calls the setter, so
+// REAL_ACCOUNT_DB is the only runtime binding and it references the exact
+// functions the legacy arms call. scopeAllowsMutation is pure (no DB), so it
+// stays a direct import rather than a seam member. The handleAccount* domain
+// functions keep their own direct db.ts imports (driven by the existing
+// account_server.test.ts pg-mock harness); this seam covers only the NEW code.
+// ---------------------------------------------------------------------------
+
+const REAL_ACCOUNT_DB = {
+  accountAndScopeForToken,
+  accountForToken,
+  moderationStatusForAccount,
+  createCompanionToken,
+  listCompanionTokens,
+  revokeCompanionToken,
+};
+let accountDb = REAL_ACCOUNT_DB;
+
+/** Override the account db bundle with a fake (test-only; merges over the real reads). */
+export function setAccountDbForTests(overrides: Partial<typeof REAL_ACCOUNT_DB>): void {
+  accountDb = { ...REAL_ACCOUNT_DB, ...overrides };
+}
+
+/** Restore the real account db bundle after a setAccountDbForTests override (test-only). */
+export function resetAccountDbForTests(): void {
+  accountDb = REAL_ACCOUNT_DB;
+}
+
+// ---------------------------------------------------------------------------
+// Bearer helpers + guards. activeGuard mirrors bearerActiveAccount (full-session,
+// read-only 403, moderation 403); logoutGuard mirrors the logout arm (any token
+// that still maps to an account, no scope or moderation gate). Both write the
+// legacy { error } bodies and short-circuit (no next()) on rejection, and a
+// missing/malformed bearer 401s WITHOUT a DB call (so the no-auth goldens replay
+// DB-free through both dispatch paths).
+// ---------------------------------------------------------------------------
+
+/** The raw 64-hex bearer token, or null (no header or bad shape). */
+function bearerToken(req: http.IncomingMessage): string | null {
+  const m = BEARER_PATTERN.exec(req.headers.authorization ?? '');
+  return m ? m[1] : null;
+}
+
+/** Resolve the bearer to { accountId, scope }, or null (no header, bad shape, unknown). */
+async function resolveBearerScope(
+  req: http.IncomingMessage,
+): Promise<{ accountId: number; scope: 'read' | 'full' } | null> {
+  const token = bearerToken(req);
+  if (token === null) return null;
+  return accountDb.accountAndScopeForToken(token);
+}
+
+/** Mutating + account-scoped gate (mirrors server/main.ts bearerActiveAccount). */
+const activeGuard: Middleware = async (ctx, next) => {
+  const info = await resolveBearerScope(ctx.req);
+  if (info === null) {
+    json(ctx.res, 401, NOT_AUTHENTICATED);
+    return;
+  }
+  if (!scopeAllowsMutation(info.scope)) {
+    json(ctx.res, 403, READ_ONLY_TOKEN);
+    return;
+  }
+  const status = await accountDb.moderationStatusForAccount(info.accountId);
+  if (status.locked) {
+    json(ctx.res, 403, { error: status.message });
+    return;
+  }
+  ctx.account = { accountId: info.accountId, scope: info.scope };
+  await next();
+};
+
+/**
+ * Logout gate (mirrors the legacy /api/account/logout arm): any bearer token that
+ * still maps to an account may proceed, with NO scope or moderation gate, so a
+ * banned/suspended/deactivated account can still sign out this device. A missing
+ * token 401s DB-free; a present-but-unknown token 401s after the accountForToken
+ * lookup, exactly as the legacy arm did.
+ */
+const logoutGuard: Middleware = async (ctx, next) => {
+  const token = bearerToken(ctx.req);
+  if (token === null || (await accountDb.accountForToken(token)) === null) {
+    json(ctx.res, 401, NOT_AUTHENTICATED);
+    return;
+  }
+  await next();
+};
+
+// ---------------------------------------------------------------------------
+// Thin Ctx handlers. Each starts after its guard has run, resolves the account /
+// caller token from the Ctx, and delegates to the matching handleAccount* domain
+// function above UNCHANGED (so the response bytes are identical to the legacy arm).
+// ---------------------------------------------------------------------------
+
+/** GET /api/account: whoami. */
+async function whoamiHandler(ctx: Ctx): Promise<void> {
+  return handleAccountWhoami(ctx.res, ctxAccountId(ctx));
+}
+
+/** POST /api/account/password: re-verify + rotate password, keeping this session alive. */
+async function passwordHandler(ctx: Ctx): Promise<void> {
+  const callerToken = bearerToken(ctx.req);
+  // activeGuard already validated a full-scope Bearer header, so callerToken is
+  // non-null here; the guard mirrors the legacy arm's explicit 401 fallback.
+  if (callerToken === null) {
+    json(ctx.res, 401, NOT_AUTHENTICATED);
+    return;
+  }
+  return handleAccountChangePassword(ctx.req, ctx.res, ctxAccountId(ctx), callerToken);
+}
+
+/** POST /api/account/logout: revoke this device's bearer token. */
+async function logoutHandler(ctx: Ctx): Promise<void> {
+  const callerToken = bearerToken(ctx.req);
+  // logoutGuard already validated the token maps to an account; re-guard for tsc.
+  if (callerToken === null) {
+    json(ctx.res, 401, NOT_AUTHENTICATED);
+    return;
+  }
+  return handleAccountLogout(ctx.res, callerToken);
+}
+
+/** POST /api/account/email: the retired setter (410 use verified change). */
+async function setEmailHandler(ctx: Ctx): Promise<void> {
+  return handleAccountSetEmail(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/** POST /api/account/deactivate: re-confirm, require offline, lock + disconnect. */
+async function deactivateHandler(ctx: Ctx): Promise<void> {
+  return handleAccountDeactivate(ctx.req, ctx.res, ctxAccountId(ctx), useRuntime());
+}
+
+/** POST /api/account/email/change: request a verified email change. */
+async function emailChangeHandler(ctx: Ctx): Promise<void> {
+  return handleAccountEmailChange(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/** GET /api/account/email/verify: consume a one-time email-change token (unauthenticated). */
+async function emailVerifyHandler(ctx: Ctx): Promise<void> {
+  const token = ctx.url.searchParams.get('token') ?? '';
+  return handleAccountEmailVerify(ctx.res, token);
+}
+
+/** POST /api/account/export: GDPR-style self-service data export. */
+async function exportHandler(ctx: Ctx): Promise<void> {
+  return handleAccountExport(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/** POST /api/account/marketing: set the marketing opt-in flag. */
+async function marketingHandler(ctx: Ctx): Promise<void> {
+  return handleAccountMarketing(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/** POST /api/account/2fa/setup: password re-verify, mint a pending TOTP secret. */
+async function twoFaSetupHandler(ctx: Ctx): Promise<void> {
+  return handleAccount2faSetup(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/** POST /api/account/2fa/enable: confirm a code, activate 2FA, return recovery codes. */
+async function twoFaEnableHandler(ctx: Ctx): Promise<void> {
+  return handleAccount2faEnable(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/** POST /api/account/2fa/disable: password re-verify, clear the second factor. */
+async function twoFaDisableHandler(ctx: Ctx): Promise<void> {
+  return handleAccount2faDisable(ctx.req, ctx.res, ctxAccountId(ctx));
+}
+
+/**
+ * POST /api/account/companion-token: mint a 90-day read-only companion token.
+ * Ported byte-for-byte from the legacy inline arm (self-reads the body; the full
+ * secret is returned ONCE, on creation).
+ */
+async function companionCreateHandler(ctx: Ctx): Promise<void> {
+  const accountId = ctxAccountId(ctx);
+  const body = await readBody(ctx.req);
+  const rawLabel = typeof body.label === 'string' ? body.label.trim().slice(0, 64) : '';
+  const label = rawLabel || null;
+  const token = newToken();
+  await accountDb.createCompanionToken(token, accountId, label, COMPANION_TOKEN_TTL_HOURS);
+  return json(ctx.res, 200, {
+    token,
+    label,
+    scope: COMPANION_TOKEN_SCOPE,
+    expiresInDays: COMPANION_TOKEN_EXPIRES_IN_DAYS,
+  });
+}
+
+/** GET /api/account/companion-token: list the account's companion tokens (no secrets). */
+async function companionListHandler(ctx: Ctx): Promise<void> {
+  return json(ctx.res, 200, { tokens: await accountDb.listCompanionTokens(ctxAccountId(ctx)) });
+}
+
+/** DELETE /api/account/companion-token: revoke a companion token by prefix. */
+async function companionRevokeHandler(ctx: Ctx): Promise<void> {
+  const accountId = ctxAccountId(ctx);
+  const body = await readBody(ctx.req);
+  const prefix = typeof body.prefix === 'string' ? body.prefix.trim().toLowerCase() : '';
+  const ok = await accountDb.revokeCompanionToken(accountId, prefix);
+  return json(ctx.res, ok ? 200 : 404, ok ? { ok: true } : COMPANION_TOKEN_NOT_FOUND);
+}
+
+/** GET /api/email/unsubscribe: public one-click marketing unsubscribe (unauthenticated). */
+async function unsubscribeHandler(ctx: Ctx): Promise<void> {
+  const token = ctx.url.searchParams.get('token') ?? '';
+  return handleEmailUnsubscribe(ctx.res, token);
+}
+
+// ---------------------------------------------------------------------------
+// The route table. registry.ts spreads this into apiRoutes. Under API_DISPATCH
+// 'new' the Phase 9 dispatcher serves these via the onion; the legacy handleApi
+// arms stay in main.ts for the flag-off rollback until Phase 25. All routes carry
+// [activeGuard] EXCEPT: logout (logoutGuard: sign-out survives moderation locks)
+// and the two token-in-query link routes email/verify + email/unsubscribe (no
+// auth). companion-token is THREE method-specific RouteDefs (the legacy arm fanned
+// POST/GET/DELETE inside one method-agnostic block; an unsupported method now
+// answers 405 + Allow before auth, the companionTokenMethodFan known deviation).
+// ---------------------------------------------------------------------------
+
+export const routes: RouteDef[] = [
+  {
+    method: 'GET',
+    path: '/api/account',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: whoamiHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/password',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: passwordHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/logout',
+    surface: 'api',
+    middleware: [logoutGuard],
+    handler: logoutHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/email',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: setEmailHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/deactivate',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: deactivateHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/companion-token',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: companionCreateHandler,
+  },
+  {
+    method: 'GET',
+    path: '/api/account/companion-token',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: companionListHandler,
+  },
+  {
+    method: 'DELETE',
+    path: '/api/account/companion-token',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: companionRevokeHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/email/change',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: emailChangeHandler,
+  },
+  { method: 'GET', path: '/api/account/email/verify', surface: 'api', handler: emailVerifyHandler },
+  {
+    method: 'POST',
+    path: '/api/account/export',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: exportHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/marketing',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: marketingHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/2fa/setup',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: twoFaSetupHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/2fa/enable',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: twoFaEnableHandler,
+  },
+  {
+    method: 'POST',
+    path: '/api/account/2fa/disable',
+    surface: 'api',
+    middleware: [activeGuard],
+    handler: twoFaDisableHandler,
+  },
+  { method: 'GET', path: '/api/email/unsubscribe', surface: 'api', handler: unsubscribeHandler },
+];
