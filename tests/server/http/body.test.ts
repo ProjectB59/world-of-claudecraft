@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { HttpError, mapError } from '../../../server/http/errors';
 import { withBody } from '../../../server/http/middleware/body';
+import { DEFAULT_JSON_BODY_MAX_BYTES } from '../../../server/http_util';
 import { fakeCtx, nextGuard } from '../helpers/fake_ctx';
 import { makeReq } from '../helpers/fake_http';
 
@@ -76,6 +77,32 @@ describe('withBody: valid JSON', () => {
   it('uses the default 64 KiB cap when no maxBytes is passed', async () => {
     const payload = { ok: true };
     const ctx = fakeCtx({ method: 'POST', req: makeReq({ method: 'POST', body: payload }) });
+    await expect(withBody()(ctx, nextGuard())).resolves.toBeUndefined();
+    expect(ctx.body).toEqual(payload);
+  });
+
+  it('rejects a body just over the default 64 KiB cap with 413 (exercises the real boundary)', async () => {
+    const overCap = 'x'.repeat(DEFAULT_JSON_BODY_MAX_BYTES + 1);
+    const ctx = fakeCtx({ method: 'POST', req: makeReq({ method: 'POST', body: overCap }) });
+    await expect(withBody()(ctx, nextGuard())).rejects.toMatchObject({
+      status: 413,
+      code: 'body.too_large',
+      params: { maxBytes: DEFAULT_JSON_BODY_MAX_BYTES },
+    });
+  });
+});
+
+describe('withBody: no Content-Type enforcement (no 415)', () => {
+  it('parses a valid JSON body even when Content-Type is not application/json', async () => {
+    // Content-Type enforcement (415) is Phase 21, log-only first; withBody must
+    // never impose it. A valid JSON body under a text/plain header still parses.
+    const payload = { note: 'plain-labeled but valid json' };
+    const req = makeReq({
+      method: 'POST',
+      headers: { 'content-type': 'text/plain' },
+      body: payload,
+    });
+    const ctx = fakeCtx({ method: 'POST', req });
     await expect(withBody()(ctx, nextGuard())).resolves.toBeUndefined();
     expect(ctx.body).toEqual(payload);
   });

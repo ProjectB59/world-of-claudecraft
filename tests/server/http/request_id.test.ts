@@ -40,4 +40,16 @@ describe('withRequestId: binds ctx.reqId as the ambient id', () => {
     await compose([withRequestId(), async (_ctx, next) => next()])(fakeCtx());
     expect(currentReqId()).toBeUndefined();
   });
+
+  it('mints a fresh id when ctx.reqId is empty (the degenerate-caller fallback)', async () => {
+    const ctx = fakeCtx({ reqId: '' });
+    let seen: string | undefined;
+    const inner: Middleware = async (_ctx, next) => {
+      seen = currentReqId();
+      await next();
+    };
+    await compose([withRequestId(), inner])(ctx);
+    expect(seen).toBeTruthy();
+    expect(seen).not.toBe('');
+  });
 });

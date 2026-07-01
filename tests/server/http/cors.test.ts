@@ -8,6 +8,7 @@ import { compose } from '../../../server/http/compose';
 import { withCors } from '../../../server/http/middleware/cors';
 import { withErrors } from '../../../server/http/middleware/with_errors';
 import type { Ctx, Middleware } from '../../../server/http/types';
+import { NATIVE_APP_ORIGINS } from '../../../server/web_login_guard';
 import { fakeCtx } from '../helpers/fake_ctx';
 import type { FakeRes } from '../helpers/fake_http';
 
@@ -51,6 +52,23 @@ describe('withCors: api allow class', () => {
     const ctx = fakeCtx();
     const res = resOf(ctx);
     await compose([withCors('api', () => true), async (_ctx, next) => next()])(ctx);
+    expect(res.headers['access-control-allow-origin']).toBeUndefined();
+  });
+});
+
+describe('withCors: api default allow predicate (defaultApiAllow)', () => {
+  it('reflects a NATIVE_APP_ORIGINS member with the SHIPPING predicate (no injected allow)', async () => {
+    const allowed = [...NATIVE_APP_ORIGINS][0];
+    const ctx = fakeCtx({ headers: { origin: allowed } });
+    const res = resOf(ctx);
+    await compose([withCors('api'), async (_ctx, next) => next()])(ctx);
+    expect(res.headers['access-control-allow-origin']).toBe(allowed);
+  });
+
+  it('does not reflect an origin outside the REALM/NATIVE allowlist with the shipping predicate', async () => {
+    const ctx = fakeCtx({ headers: { origin: 'https://not-an-allowed-origin.example.com' } });
+    const res = resOf(ctx);
+    await compose([withCors('api'), async (_ctx, next) => next()])(ctx);
     expect(res.headers['access-control-allow-origin']).toBeUndefined();
   });
 });

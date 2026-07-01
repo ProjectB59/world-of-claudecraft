@@ -8,15 +8,21 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mapError } from '../../../server/http/errors';
 import {
   CARD_UPLOAD_POLICY,
+  DISCORD_POLICY,
   rateLimit,
+  WALLET_LINK_POLICY,
   WOC_BALANCE_POLICY,
 } from '../../../server/http/middleware/rate_limit';
 import {
   CARD_UPLOAD_MAX_PER_MINUTE,
+  DISCORD_MAX_PER_MINUTE,
   resetCardUploadRateLimits,
+  resetDiscordRateLimits,
   resetRateLimitClock,
+  resetWalletLinkRateLimits,
   resetWocBalanceRateLimits,
   setRateLimitClock,
+  WALLET_LINK_MAX_PER_MINUTE,
   WINDOW_MS,
   WOC_BALANCE_MAX_PER_MINUTE,
 } from '../../../server/ratelimit';
@@ -96,6 +102,49 @@ describe('rateLimit: ip+account policy', () => {
   it('throws a 500 internal.error when ctx.account is missing (a composition bug)', async () => {
     const ctx = fakeCtx();
     await expect(rateLimit(CARD_UPLOAD_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+      status: 500,
+      code: 'internal.error',
+    });
+  });
+});
+
+describe('rateLimit: wallet-link and discord ip+account policies', () => {
+  beforeEach(() => {
+    resetWalletLinkRateLimits();
+    resetDiscordRateLimits();
+  });
+  afterEach(() => {
+    resetWalletLinkRateLimits();
+    resetDiscordRateLimits();
+  });
+
+  it('WALLET_LINK_POLICY is ip+account and 429s once its cap is exceeded', async () => {
+    expect(WALLET_LINK_POLICY.keyClass).toBe('ip+account');
+    const ctx = fakeCtx({ account: { accountId: 11, scope: 'full' } });
+    for (let i = 0; i < WALLET_LINK_MAX_PER_MINUTE; i++) {
+      await rateLimit(WALLET_LINK_POLICY)(ctx, async () => {});
+    }
+    await expect(rateLimit(WALLET_LINK_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+      status: 429,
+      code: 'rate_limit.exceeded',
+    });
+  });
+
+  it('DISCORD_POLICY is ip+account and 429s once its cap is exceeded', async () => {
+    expect(DISCORD_POLICY.keyClass).toBe('ip+account');
+    const ctx = fakeCtx({ account: { accountId: 12, scope: 'full' } });
+    for (let i = 0; i < DISCORD_MAX_PER_MINUTE; i++) {
+      await rateLimit(DISCORD_POLICY)(ctx, async () => {});
+    }
+    await expect(rateLimit(DISCORD_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+      status: 429,
+      code: 'rate_limit.exceeded',
+    });
+  });
+
+  it('DISCORD_POLICY 500s when ctx.account is missing (ip+account composition bug)', async () => {
+    const ctx = fakeCtx();
+    await expect(rateLimit(DISCORD_POLICY)(ctx, async () => {})).rejects.toMatchObject({
       status: 500,
       code: 'internal.error',
     });
