@@ -40,12 +40,25 @@ describe('prewarmIconCache', () => {
   let restore = () => {};
   afterEach(() => restore());
 
+  // fake clock: each warm() call costs 2ms, so the 6ms slice budget admits 3
+  // icons per pump before the per-icon check trips
+  function fakeClock(costMs = 2): { now: () => number; tick: () => void } {
+    let t = 0;
+    return { now: () => t, tick: () => (t += costMs) };
+  }
+
   it('warms every entry across slices and stops rescheduling when drained', () => {
     const w = stubWindow();
     restore = w.restore;
+    const clock = fakeClock();
     const warmed: string[] = [];
-    prewarmIconCache(entries(20), { warm: (_k, id) => warmed.push(id) });
-    // no deadline (undefined) means one bounded slice per callback
+    prewarmIconCache(entries(20), {
+      warm: (_k, id) => {
+        warmed.push(id);
+        clock.tick();
+      },
+      now: clock.now,
+    });
     while (w.idleQueue.length > 0) w.idleQueue.shift()!(undefined as any);
     expect(warmed).toHaveLength(20);
     expect(warmed[0]).toBe('it0');
@@ -53,20 +66,55 @@ describe('prewarmIconCache', () => {
     expect(w.idleQueue).toHaveLength(0); // drained: no further schedule
   });
 
-  it('uses the idle deadline to run multiple slices in one callback', () => {
+  it('checks the budget per icon: one pump never exceeds the slice budget', () => {
     const w = stubWindow();
     restore = w.restore;
+    const clock = fakeClock(2);
     const warmed: string[] = [];
-    prewarmIconCache(entries(30), { warm: (_k, id) => warmed.push(id) });
-    w.idleQueue.shift()!({ timeRemaining: () => 50 }); // generous deadline drains all
-    expect(warmed).toHaveLength(30);
+    prewarmIconCache(entries(20), {
+      warm: (_k, id) => {
+        warmed.push(id);
+        clock.tick();
+      },
+      now: clock.now,
+    });
+    // one pump with a GENEROUS idle deadline: the 6ms wall-clock budget must
+    // still stop it after 3 icons (2ms each), not run the whole list
+    w.idleQueue.shift()!({ timeRemaining: () => 50 });
+    expect(warmed).toHaveLength(3);
+  });
+
+  it('yields early when the idle deadline runs out before the budget', () => {
+    const w = stubWindow();
+    restore = w.restore;
+    const clock = fakeClock(1);
+    const warmed: string[] = [];
+    let remaining = 10;
+    prewarmIconCache(entries(30), {
+      warm: (_k, id) => {
+        warmed.push(id);
+        clock.tick();
+        remaining -= 4; // deadline shrinks faster than the 6ms budget
+      },
+      now: clock.now,
+    });
+    w.idleQueue.shift()!({ timeRemaining: () => remaining });
+    expect(warmed).toHaveLength(2); // stopped by timeRemaining() <= 3, not the budget
+    expect(w.idleQueue).toHaveLength(1); // rescheduled for the rest
   });
 
   it('cancel stops the pump between slices', () => {
     const w = stubWindow();
     restore = w.restore;
+    const clock = fakeClock(2);
     const warmed: string[] = [];
-    const cancel = prewarmIconCache(entries(20), { warm: (_k, id) => warmed.push(id) });
+    const cancel = prewarmIconCache(entries(20), {
+      warm: (_k, id) => {
+        warmed.push(id);
+        clock.tick();
+      },
+      now: clock.now,
+    });
     w.idleQueue.shift()!(undefined as any); // first slice only
     const after = warmed.length;
     expect(after).toBeGreaterThan(0);

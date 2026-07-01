@@ -11,9 +11,12 @@ import { type IconKind, iconDataUrl } from './icons';
 
 export type IconPrewarmEntry = { kind: IconKind; id: string };
 
-// Icons per slice on the no-deadline (setTimeout) path: ~8 x 3-8ms stays well
-// under one dropped frame while draining a few hundred entries in seconds.
-const ICONS_PER_SLICE = 8;
+// Hard time budget per pump callback. One icon composes in ~3-8ms, so the
+// budget is checked BEFORE each icon (never between batches): a callback can
+// overshoot by at most one icon, not one batch. requestIdleCallback deadlines
+// are estimates; trusting them across a whole batch produced real 60-100ms
+// long tasks in CPU profiles of the first minute of play.
+const SLICE_BUDGET_MS = 6;
 
 /** Every icon the item/ability windows can ask for: the whole item catalog
  *  (bags, vendor, loot, market, quest rewards) plus every ability (action bar,
@@ -38,26 +41,29 @@ type IdleWindow = typeof window & {
  *  failing recipe is skipped rather than aborting the pump. */
 export function prewarmIconCache(
   entries: IconPrewarmEntry[],
-  opts: { warm?: (kind: IconKind, id: string) => void } = {},
+  opts: { warm?: (kind: IconKind, id: string) => void; now?: () => number } = {},
 ): () => void {
   const warm = opts.warm ?? ((kind: IconKind, id: string) => void iconDataUrl(kind, id));
+  const now = opts.now ?? (() => performance.now());
   let next = 0;
   let cancelled = false;
 
   const pump = (deadline?: IdleDeadline): void => {
     if (cancelled) return;
-    do {
-      const end = Math.min(entries.length, next + ICONS_PER_SLICE);
-      for (; next < end; next++) {
-        const entry = entries[next];
-        try {
-          warm(entry.kind, entry.id);
-        } catch {
-          // one bad recipe must not kill the warmer; the icon falls back to
-          // its normal on-demand path (which surfaces the same failure)
-        }
+    const start = now();
+    while (next < entries.length) {
+      // budget checked per ICON: stop when either our own wall-clock budget is
+      // spent or the idle deadline says the frame needs the thread back
+      if (now() - start >= SLICE_BUDGET_MS) break;
+      if (deadline !== undefined && deadline.timeRemaining() <= 3) break;
+      const entry = entries[next++];
+      try {
+        warm(entry.kind, entry.id);
+      } catch {
+        // one bad recipe must not kill the warmer; the icon falls back to
+        // its normal on-demand path (which surfaces the same failure)
       }
-    } while (next < entries.length && deadline !== undefined && deadline.timeRemaining() > 3);
+    }
     if (next < entries.length) schedule();
   };
 
