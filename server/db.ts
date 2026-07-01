@@ -2064,7 +2064,7 @@ export async function pruneClientPerfReports(retentionDays: number): Promise<num
 // ---------------------------------------------------------------------------
 // World state: a tiny key→JSONB store for shared, global game state that isn't
 // tied to one character. The World Market (the Merchant's auction house) lives
-// here under the per-realm `market:<realm>` key — listings + per-seller
+// here under the per-realm `market:<realm>` key, listings plus per-seller
 // collections. See loadMarketState/saveMarketState below.
 // ---------------------------------------------------------------------------
 
