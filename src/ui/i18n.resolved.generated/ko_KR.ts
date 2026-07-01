@@ -308,7 +308,8 @@ export const ko_KR: EnTranslations = {
     "keybinds": {
       "emoteWheel": "감정 표현 휠",
       "targetFriendly": "가장 가까운 아군 대상 지정",
-      "targetFriendlyNext": "아군 대상 순환"
+      "targetFriendlyNext": "아군 대상 순환",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "왼쪽 클릭",
@@ -482,6 +483,9 @@ export const ko_KR: EnTranslations = {
       "ineligible": "이 퀘스트의 요구 조건을 충족하지 못합니다.",
       "noQuestSelected": "공유할 퀘스트를 기록에서 선택하세요.",
       "linkTitle": "Shift + 클릭하면 이 퀘스트를 채팅에 연결합니다."
+    },
+    "itemShare": {
+      "linkHint": "Shift + 클릭하면 이 아이템을 채팅에 연결합니다."
     },
     "plurals": {
       "guildMembers": {

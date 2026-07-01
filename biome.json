@@ -20,7 +20,9 @@
       "!tests/parity/golden",
       "!tests/server/fixtures",
       "!**/*.svelte",
-      "!**/*.min.js"
+      "!**/*.min.js",
+      "!docs/design/professions-system",
+      "!docs/design/professions-system.html"
     ]
   },
   "formatter": {

@@ -308,7 +308,8 @@ export const pl_PL: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Koło emotek",
       "targetFriendly": "Obierz najbliższego sojusznika",
-      "targetFriendlyNext": "Przełączaj przyjazny cel"
+      "targetFriendlyNext": "Przełączaj przyjazny cel",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Lewy przycisk",
@@ -482,6 +483,9 @@ export const pl_PL: EnTranslations = {
       "ineligible": "Nie spełniasz wymagań tego zadania.",
       "noQuestSelected": "Wybierz zadanie w dzienniku, aby je udostępnić.",
       "linkTitle": "Kliknij z Shiftem, aby podlinkować to zadanie na czacie."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

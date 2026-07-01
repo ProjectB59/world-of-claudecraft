@@ -46,6 +46,7 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.questShare.ineligible': 'このクエストの条件を満たしていません。',
   'hudChrome.questShare.noQuestSelected': '共有するクエストをログから選択してください。',
   'hudChrome.questShare.linkTitle': 'Shift + クリックでこのクエストをチャットにリンクします。',
+  'hudChrome.itemShare.linkHint': 'Shift + クリックでこのアイテムをチャットにリンクします。',
   'hudChrome.unitFrame.partyGroup': 'グループ {n}',
   'hudChrome.character.modelPreview': 'キャラクターモデルプレビュー',
   'character.sortBy': '並べ替え',

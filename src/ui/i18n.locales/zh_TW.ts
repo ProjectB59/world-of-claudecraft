@@ -44,6 +44,7 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.questShare.ineligible': '你不符合該任務的要求。',
   'hudChrome.questShare.noQuestSelected': '在任務日誌中選擇一個任務進行分享。',
   'hudChrome.questShare.linkTitle': 'Shift + 點擊可在聊天中連結該任務。',
+  'hudChrome.itemShare.linkHint': 'Shift + 點擊可在聊天中連結該物品。',
   'hudChrome.unitFrame.partyGroup': '小隊 {n}',
   'hudChrome.character.modelPreview': '角色模型預覽',
   'character.sortBy': '排序',

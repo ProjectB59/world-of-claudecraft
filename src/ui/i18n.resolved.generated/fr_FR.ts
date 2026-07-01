@@ -308,7 +308,8 @@ export const fr_FR: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Roue des emotes",
       "targetFriendly": "Cibler l'allié le plus proche",
-      "targetFriendlyNext": "Changer de cible alliée"
+      "targetFriendlyNext": "Changer de cible alliée",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Clic gauche",
@@ -482,6 +483,9 @@ export const fr_FR: EnTranslations = {
       "ineligible": "Vous ne remplissez pas les conditions de cette quête.",
       "noQuestSelected": "Sélectionnez une quête dans votre journal à partager.",
       "linkTitle": "Maj + clic pour insérer le lien de cette quête dans le chat."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

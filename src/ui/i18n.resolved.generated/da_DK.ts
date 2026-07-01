@@ -308,7 +308,8 @@ export const da_DK: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Følelseshjul",
       "targetFriendly": "Sigt mod nærmeste allierede",
-      "targetFriendlyNext": "Skift allieret mål"
+      "targetFriendlyNext": "Skift allieret mål",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Venstreklik",
@@ -482,6 +483,9 @@ export const da_DK: EnTranslations = {
       "ineligible": "Du opfylder ikke kravene til denne opgave.",
       "noQuestSelected": "Vælg en opgave i din log for at dele den.",
       "linkTitle": "Shift-klik for at linke denne opgave i chatten."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

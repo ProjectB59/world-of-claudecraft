@@ -308,7 +308,8 @@ export const it_IT: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Ruota emote",
       "targetFriendly": "Bersaglia l'amico più vicino",
-      "targetFriendlyNext": "Scorri i bersagli amici"
+      "targetFriendlyNext": "Scorri i bersagli amici",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Clic sinistro",
@@ -482,6 +483,9 @@ export const it_IT: EnTranslations = {
       "ineligible": "Non soddisfi i requisiti di questa missione.",
       "noQuestSelected": "Seleziona una missione nel registro da condividere.",
       "linkTitle": "Maiusc + clic per collegare questa missione in chat."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

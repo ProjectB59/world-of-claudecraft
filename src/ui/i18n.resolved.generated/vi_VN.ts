@@ -308,7 +308,8 @@ export const vi_VN: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Vòng Biểu Cảm",
       "targetFriendly": "Chọn Đồng Minh Gần Nhất",
-      "targetFriendlyNext": "Luân Phiên Mục Tiêu Đồng Minh"
+      "targetFriendlyNext": "Luân Phiên Mục Tiêu Đồng Minh",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Nhấp Trái",
@@ -482,6 +483,9 @@ export const vi_VN: EnTranslations = {
       "ineligible": "Bạn chưa đáp ứng yêu cầu cho nhiệm vụ này.",
       "noQuestSelected": "Chọn một nhiệm vụ trong nhật ký để chia sẻ.",
       "linkTitle": "Shift-click để dẫn nhiệm vụ này vào khung trò chuyện."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

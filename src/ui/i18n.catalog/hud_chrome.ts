@@ -255,6 +255,8 @@ export const hudChromeStrings = {
     emoteWheel: 'Emote Wheel',
     targetFriendly: 'Target Nearest Friendly',
     targetFriendlyNext: 'Cycle Friendly Target',
+    // Discord is a brand name; it stays identical across locales.
+    discord: 'Discord',
   },
   // Click-to-move mouse-button toggle labels (Key Bindings panel). The button id
   // 0/2 maps to these at the HUD render boundary.
@@ -483,6 +485,9 @@ export const hudChromeStrings = {
     ineligible: "You don't meet the requirements for this quest.",
     noQuestSelected: 'Select a quest in your log to share.',
     linkTitle: 'Shift-click to link this quest in chat.',
+  },
+  itemShare: {
+    linkHint: 'Shift-click to link this item in chat.',
   },
   // CLDR-categorized count strings resolved through tPlural(base, count) in
   // src/ui/i18n.ts: it selects the active locale's cardinal category (one / few /

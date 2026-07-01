@@ -308,7 +308,8 @@ export const en_XA: EnTranslations = {
     "keybinds": {
       "emoteWheel": "[Éɱóţé Ŵĥééļ]",
       "targetFriendly": "[Ţáŕĝéţ Ñéáŕéšţ Ƒŕíéñðļý]",
-      "targetFriendlyNext": "[Çýçļé Ƒŕíéñðļý Ţáŕĝéţ]"
+      "targetFriendlyNext": "[Çýçļé Ƒŕíéñðļý Ţáŕĝéţ]",
+      "discord": "[Ðíšçóŕð]"
     },
     "options": {
       "clickMoveLeft": "[Ļéƒţ Çļíçķ]",
@@ -482,6 +483,9 @@ export const en_XA: EnTranslations = {
       "ineligible": "[Ýóú ðóñ'ţ ɱééţ ţĥé ŕéɋúíŕéɱéñţš ƒóŕ ţĥíš ɋúéšţ.]",
       "noQuestSelected": "[Šéļéçţ á ɋúéšţ íñ ýóúŕ ļóĝ ţó šĥáŕé.]",
       "linkTitle": "[Šĥíƒţ-çļíçķ ţó ļíñķ ţĥíš ɋúéšţ íñ çĥáţ.]"
+    },
+    "itemShare": {
+      "linkHint": "[Šĥíƒţ-çļíçķ ţó ļíñķ ţĥíš íţéɱ íñ çĥáţ.]"
     },
     "plurals": {
       "guildMembers": {

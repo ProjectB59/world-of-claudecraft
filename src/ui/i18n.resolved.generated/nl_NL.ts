@@ -308,7 +308,8 @@ export const nl_NL: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Emotewiel",
       "targetFriendly": "Dichtstbijzijnde Bondgenoot Aanwijzen",
-      "targetFriendlyNext": "Door Bondgenoten Bladeren"
+      "targetFriendlyNext": "Door Bondgenoten Bladeren",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Linkermuisklik",
@@ -482,6 +483,9 @@ export const nl_NL: EnTranslations = {
       "ineligible": "Je voldoet niet aan de vereisten voor deze queeste.",
       "noQuestSelected": "Selecteer een queeste in je logboek om te delen.",
       "linkTitle": "Shift-klik om deze queeste in de chat te koppelen."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

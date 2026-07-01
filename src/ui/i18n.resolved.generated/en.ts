@@ -308,7 +308,8 @@ export const en: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Emote Wheel",
       "targetFriendly": "Target Nearest Friendly",
-      "targetFriendlyNext": "Cycle Friendly Target"
+      "targetFriendlyNext": "Cycle Friendly Target",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Left Click",
@@ -482,6 +483,9 @@ export const en: EnTranslations = {
       "ineligible": "You don't meet the requirements for this quest.",
       "noQuestSelected": "Select a quest in your log to share.",
       "linkTitle": "Shift-click to link this quest in chat."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

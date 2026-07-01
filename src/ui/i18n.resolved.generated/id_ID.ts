@@ -308,7 +308,8 @@ export const id_ID: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Roda Emote",
       "targetFriendly": "Bidik Sekutu Terdekat",
-      "targetFriendlyNext": "Putar Bidikan Sekutu"
+      "targetFriendlyNext": "Putar Bidikan Sekutu",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Klik Kiri",
@@ -482,6 +483,9 @@ export const id_ID: EnTranslations = {
       "ineligible": "Anda tidak memenuhi persyaratan untuk misi ini.",
       "noQuestSelected": "Pilih misi di catatan Anda untuk dibagikan.",
       "linkTitle": "Shift-klik untuk menautkan misi ini di obrolan."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

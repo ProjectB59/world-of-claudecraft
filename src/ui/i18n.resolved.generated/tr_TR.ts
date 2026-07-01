@@ -308,7 +308,8 @@ export const tr_TR: EnTranslations = {
     "keybinds": {
       "emoteWheel": "İfade Çarkı",
       "targetFriendly": "En Yakın Dostu Hedefle",
-      "targetFriendlyNext": "Dost Hedefler Arasında Geç"
+      "targetFriendlyNext": "Dost Hedefler Arasında Geç",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Sol Tık",
@@ -482,6 +483,9 @@ export const tr_TR: EnTranslations = {
       "ineligible": "Bu görevin gereksinimlerini karşılamıyorsun.",
       "noQuestSelected": "Paylaşmak için günlüğünden bir görev seç.",
       "linkTitle": "Bu görevi sohbette bağlamak için Shift'e basılı tutarak tıkla."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

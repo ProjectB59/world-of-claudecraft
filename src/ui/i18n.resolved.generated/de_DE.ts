@@ -308,7 +308,8 @@ export const de_DE: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Emote-Rad",
       "targetFriendly": "Nächsten Verbündeten anvisieren",
-      "targetFriendlyNext": "Freundliches Ziel wechseln"
+      "targetFriendlyNext": "Freundliches Ziel wechseln",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Linksklick",
@@ -482,6 +483,9 @@ export const de_DE: EnTranslations = {
       "ineligible": "Ihr erfüllt die Voraussetzungen für diese Quest nicht.",
       "noQuestSelected": "Wählt eine Quest in Eurem Questlog zum Teilen aus.",
       "linkTitle": "Umschalt + Klick, um diese Quest im Chat zu verlinken."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

@@ -308,7 +308,8 @@ export const ja_JP: EnTranslations = {
     "keybinds": {
       "emoteWheel": "エモートホイール",
       "targetFriendly": "最も近い味方をターゲット",
-      "targetFriendlyNext": "味方ターゲットを順に切り替え"
+      "targetFriendlyNext": "味方ターゲットを順に切り替え",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "左クリック",
@@ -482,6 +483,9 @@ export const ja_JP: EnTranslations = {
       "ineligible": "このクエストの条件を満たしていません。",
       "noQuestSelected": "共有するクエストをログから選択してください。",
       "linkTitle": "Shift + クリックでこのクエストをチャットにリンクします。"
+    },
+    "itemShare": {
+      "linkHint": "Shift + クリックでこのアイテムをチャットにリンクします。"
     },
     "plurals": {
       "guildMembers": {

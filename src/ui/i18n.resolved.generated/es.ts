@@ -308,7 +308,8 @@ export const es: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Rueda de gestos",
       "targetFriendly": "Objetivo amistoso más cercano",
-      "targetFriendlyNext": "Objetivo amistoso siguiente"
+      "targetFriendlyNext": "Objetivo amistoso siguiente",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Clic izquierdo",
@@ -482,6 +483,9 @@ export const es: EnTranslations = {
       "ineligible": "No cumples los requisitos de esta misión.",
       "noQuestSelected": "Selecciona una misión en tu diario para compartirla.",
       "linkTitle": "Mayús + clic para enlazar esta misión en el chat."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

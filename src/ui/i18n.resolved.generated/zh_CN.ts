@@ -308,7 +308,8 @@ export const zh_CN: EnTranslations = {
     "keybinds": {
       "emoteWheel": "表情轮盘",
       "targetFriendly": "选中最近友方",
-      "targetFriendlyNext": "切换友方目标"
+      "targetFriendlyNext": "切换友方目标",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "左键",
@@ -482,6 +483,9 @@ export const zh_CN: EnTranslations = {
       "ineligible": "你不满足该任务的要求。",
       "noQuestSelected": "在任务日志中选择一个任务进行分享。",
       "linkTitle": "Shift + 点击可在聊天中链接该任务。"
+    },
+    "itemShare": {
+      "linkHint": "Shift + 点击可在聊天中链接该物品。"
     },
     "plurals": {
       "guildMembers": {

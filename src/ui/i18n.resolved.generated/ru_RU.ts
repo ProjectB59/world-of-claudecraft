@@ -308,7 +308,8 @@ export const ru_RU: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Колесо эмоций",
       "targetFriendly": "Ближайший союзник",
-      "targetFriendlyNext": "Следующий союзник"
+      "targetFriendlyNext": "Следующий союзник",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Левая кнопка",
@@ -482,6 +483,9 @@ export const ru_RU: EnTranslations = {
       "ineligible": "Вы не соответствуете требованиям этого задания.",
       "noQuestSelected": "Выберите задание в журнале, чтобы поделиться им.",
       "linkTitle": "Shift + клик, чтобы вставить ссылку на это задание в чат."
+    },
+    "itemShare": {
+      "linkHint": "Shift + клик, чтобы вставить ссылку на этот предмет в чат."
     },
     "plurals": {
       "guildMembers": {

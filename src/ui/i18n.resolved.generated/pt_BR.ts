@@ -308,7 +308,8 @@ export const pt_BR: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Roda de emotes",
       "targetFriendly": "Selecionar aliado mais próximo",
-      "targetFriendlyNext": "Alternar alvo aliado"
+      "targetFriendlyNext": "Alternar alvo aliado",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Clique esquerdo",
@@ -482,6 +483,9 @@ export const pt_BR: EnTranslations = {
       "ineligible": "Você não atende aos requisitos desta missão.",
       "noQuestSelected": "Selecione uma missão no seu registro para compartilhar.",
       "linkTitle": "Shift + clique para vincular esta missão no chat."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {

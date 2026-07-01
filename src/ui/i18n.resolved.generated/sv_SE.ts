@@ -308,7 +308,8 @@ export const sv_SE: EnTranslations = {
     "keybinds": {
       "emoteWheel": "Gesthjul",
       "targetFriendly": "Måltavla närmaste vänlig",
-      "targetFriendlyNext": "Växla vänligt mål"
+      "targetFriendlyNext": "Växla vänligt mål",
+      "discord": "Discord"
     },
     "options": {
       "clickMoveLeft": "Vänsterklick",
@@ -482,6 +483,9 @@ export const sv_SE: EnTranslations = {
       "ineligible": "Du uppfyller inte kraven för det här uppdraget.",
       "noQuestSelected": "Välj ett uppdrag i din loggbok att dela.",
       "linkTitle": "Skift-klicka för att länka det här uppdraget i chatten."
+    },
+    "itemShare": {
+      "linkHint": "Shift-click to link this item in chat."
     },
     "plurals": {
       "guildMembers": {
