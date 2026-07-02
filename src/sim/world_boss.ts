@@ -95,7 +95,10 @@ export function worldBossContributors(ctx: SimContext, mob: Entity): PlayerMeta[
   const out: PlayerMeta[] = [];
   for (const attackerId of mob.threat.keys()) {
     const attacker = ctx.entities.get(attackerId);
-    // controlled pets credit their owner; everyone else credits themselves
+    // controlled pets credit their owner; everyone else credits themselves. A pet
+    // already despawned at the death frame cannot resolve to its owner (the hate
+    // table holds only the pet's id), so that credit is dropped: rare, and
+    // deterministic either way.
     const pid = attacker && attacker.ownerId !== null ? attacker.ownerId : attackerId;
     if (seen.has(pid)) continue;
     seen.add(pid);
@@ -110,6 +113,10 @@ export function worldBossContributors(ctx: SimContext, mob: Entity): PlayerMeta[
 // to the shared corpse as `personalFor` slots only that player can take. Mirrors
 // rollLoot's per-entry semantics (exclusive rollGroups via one partitioned draw,
 // plain per-entry chance) but runs the whole table once per eligible contributor.
+// SUPPORTED ENTRY SHAPES: itemId with optional rollGroup only. Unlike rollLoot,
+// there is no questId gating and no per-entry copper here; a world-boss loot
+// table must not use those fields (they would hand quest items to everyone
+// ungated / silently drop the copper).
 export function rollWorldBossLoot(ctx: SimContext, mob: Entity, contributors: PlayerMeta[]): void {
   const template = MOBS[mob.templateId];
   if (!template) return;

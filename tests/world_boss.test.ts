@@ -208,6 +208,25 @@ describe('world boss raid-tier combat (melee, Stormcall hardcast, yells)', () =>
     expect(yells).toHaveLength(1);
     expect(boss.summonedIds.length).toBeGreaterThan(0);
   });
+
+  it('collapses the summoned stormlings the moment the boss dies', () => {
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Ada');
+    const { boss } = spawnBossNow(sim);
+    const p = engageBoss(sim, pid, boss);
+    sim.tick();
+    boss.hp = Math.floor(boss.maxHp * 0.6);
+    sim.tick();
+    const addIds = [...boss.summonedIds];
+    expect(addIds.length).toBeGreaterThan(0);
+    (sim as any).dealDamage(p, boss, 999_999, false, 'physical', 'Finisher', 'hit', true);
+    expect(boss.dead).toBe(true);
+    // Adds despawn with the boss (no live stormlings harassing looters, no
+    // in-place add respawn during the 300s loot window); the corpse remains.
+    expect(boss.summonedIds).toHaveLength(0);
+    for (const id of addIds) expect((sim as any).entities.has(id)).toBe(false);
+    expect((sim as any).entities.has(boss.id)).toBe(true);
+  });
 });
 
 describe('world boss personal loot', () => {

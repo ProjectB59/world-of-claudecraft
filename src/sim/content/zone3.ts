@@ -810,9 +810,10 @@ export const ZONE3_MOBS: Record<string, MobTemplate> = {
     // (Varkas and Bound Guardian scale the same way from ~2k / ~1.3k base).
     hpBase: 4000,
     hpPerLevel: 800,
-    // Raid-tier melee: 260 per swing at level 20 over the 2.4s swing matches
-    // Nythraxis (282 over 2.6s, content/dungeons.ts) for the same tank-shredding
-    // dps, so the pull needs a healed tank exactly like the raid.
+    // Raid-tier melee, tuned to Nythraxis dps parity (content/dungeons.ts): at
+    // level 20 after createMob's 1.5x elite multiplier this averages ~375 per
+    // 2.4s swing vs Nythraxis ~406 per 2.6s, ~156 melee dps for both, so the
+    // pull needs a healed tank exactly like the raid.
     dmgBase: 54,
     dmgPerLevel: 10.3,
     attackSpeed: 2.4,
@@ -2573,8 +2574,8 @@ export const ZONE3_ITEMS: Record<string, ItemDef> = {
     requiredClass: ['shaman'],
     set: 'stormcallers', // 3rd Stormcaller's piece, unlocks the set's 3-piece bonus
   },
-  // --- Thunzharr, the Waking Peak (world boss): epic BELTS that add fourth and
-  // fifth pieces for the Tier-2 families alongside the glove drops above. ---
+  // --- Thunzharr, the Waking Peak (world boss): epic BELTS, each family's fourth
+  // piece (helm, shoulder, glove, belt), alongside the glove drops above. ---
   crownforged_girdle: {
     id: 'crownforged_girdle',
     name: 'Crownforged Girdle',
