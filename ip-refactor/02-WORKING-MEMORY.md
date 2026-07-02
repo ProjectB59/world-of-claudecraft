@@ -56,6 +56,14 @@ gate-text edit). Integrator re-mints on the merged tree in Phase 5; Z1 inspector
 final goldens. Map amendment #2 in the same ruling: Quaking Blow / Armor Shear / Oath of Iron
 / Seething Fury (+ pairings) and polymorph critter sheep -> toad.
 
+RULING ADDENDUM (2026-07-02, same principle): V1 proved Aura.name (the ability display name)
+also flows into per-frame STATE digests, and built the stronger machine proof: reverse-mapping
+every golden string leaf new->old via the locked map and re-digesting reproduces the baseline
+hashes exactly (49/49 frames). Sanction extended: state-hash deltas are allowed ONLY with a
+passing reverse-map re-digest proof, committed as the env-gated
+tests/parity/rename_state_proof.test.ts (RENAME_PROOF=1); the inspector accepts them only
+under --allow-state-hashes, and slice QA re-runs BOTH the proof and the inspector.
+
 ## Scanner worklist registry (owned by G0) — the verbatim names still present
 > G0 seeds this from the RED baseline (the names `tests/ip_scrub.test.ts` currently flags). Each
 > track ticks the entries it clears. Z1 requires the whole list ticked (scanner fully green).

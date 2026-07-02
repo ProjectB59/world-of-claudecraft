@@ -21,7 +21,13 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const root = process.argv[2] || process.cwd();
-const baseRef = process.argv[3] || "HEAD";
+const args = process.argv.slice(3).filter(Boolean);
+const baseRef = args.find((a) => !a.startsWith("--")) || "HEAD";
+// --allow-state-hashes: sanctioned ONLY together with a passing reverse-map
+// re-digest proof (tests/parity/rename_state_proof.test.ts, RENAME_PROOF=1):
+// aura names flow into per-frame state digests, so a rename legitimately moves
+// them; the proof shows reverse-mapping names reproduces the baseline hashes.
+const allowStateHashes = args.includes("--allow-state-hashes");
 const mapPath = join(root, "ip-refactor", "NAME-MAP.md");
 
 // ---- load locked old->new pairs ----
@@ -55,12 +61,13 @@ function applyDisplayMap(s) {
 
 // ---- diff engine ----
 const violations = [];
-let digestChanges = 0, tokenChanges = 0, filesChanged = 0;
+let digestChanges = 0, tokenChanges = 0, filesChanged = 0, stateHashChanges = 0;
 function walk(file, a, b, path) {
   if (typeof a === "string" && typeof b === "string") {
     if (a === b) return;
     const last = path[path.length - 1];
     if (String(last) === "events" || /(^|\.)events$/.test(path.join("."))) { digestChanges++; return; }
+    if (allowStateHashes && String(last) === "state" && /^[0-9a-f]{8,}$/i.test(a) && /^[0-9a-f]{8,}$/i.test(b)) { stateHashChanges++; return; }
     const idHit = idPairs.find(([o]) => a === o);
     if (idHit && b === idHit[1]) { tokenChanges++; return; }
     if (applyDisplayMap(a) === b) { tokenChanges++; return; }
@@ -98,6 +105,6 @@ for (const name of readdirSync(goldenDir)) {
   walk(name, JSON.parse(headText), JSON.parse(workText), []);
 }
 
-console.log(`goldens changed: ${filesChanged} | events-digest deltas: ${digestChanges} | sanctioned token swaps: ${tokenChanges} | violations: ${violations.length}`);
+console.log(`goldens changed: ${filesChanged} | events-digest deltas: ${digestChanges} | state-hash deltas (proof-gated): ${stateHashChanges} | sanctioned token swaps: ${tokenChanges} | violations: ${violations.length}`);
 for (const v of violations.slice(0, 40)) console.log("VIOLATION:", v);
 process.exit(violations.length ? 1 : 0);
