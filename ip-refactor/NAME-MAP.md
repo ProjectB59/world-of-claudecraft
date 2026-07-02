@@ -33,6 +33,10 @@
 > / counts byte-identical), and the hardcoded old names in tests/parity/coverage.test.ts are
 > updated to the new names as an operator-authorized gate-text edit. The integrator re-mints
 > once more on the merged tree at Phase 5; Z1 runs the inspector across the whole map.
+>
+> POST-LOCK AMENDMENT #3 (2026-07-02): scanner self-collision #5 found by C1 - 'Gallowglass
+> Maul' contains the armed word 'Maul'; fixed to 'Gallowglass Hammer' (same defect class and
+> treatment as amendment #2; 'Warhammer' rejected - Games Workshop).
 
 This file is the single source of truth for every old -> new string, the analog of the
 world-api `CommandName` table. Every rename slice applies it VERBATIM and never invents a name.
@@ -812,7 +816,7 @@ Kept original: none.
 | `tallow_candle` | Tallow Candle | Greasy Tallow Lump | item | rename |
 | `blessed_wax` | Blessed Tallow | Blessed Tallow | item | generic-keep? |
 | `q_boars` quest name | Bristleback Hides | Bristly Boar Hides | quest | rename |
-| `bristleback_maul` | Bristleback Maul | Gallowglass Maul | item | rename |
+| `bristleback_maul` | Bristleback Maul | Gallowglass Hammer | item | rename |
 | `sanctum_drakonid` | Sanctum Drakonid | Sanctum Scaleguard | mob | rename |
 | `mogger` | Mogger | Mogger | mob | generic-keep? |
 | `tunnel_rat` | Tunnel Rat Digger | Deeprock Digger | mob | rename |
