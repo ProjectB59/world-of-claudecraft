@@ -18,6 +18,18 @@ vi.mock('../../server/internal', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../server/internal')>();
   return { ...actual, handleInternalApi: vi.fn() };
 });
+vi.mock('../../server/daily_rewards', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../server/daily_rewards')>();
+  // Default: the daily-rewards internal pre-check declines (false) so the /internal/
+  // arm falls through to handleInternalApi, matching every non-daily-rewards path.
+  // A test that exercises the short-circuit overrides with mockResolvedValueOnce(true).
+  return { ...actual, handleDailyRewardInternalApi: vi.fn(async () => false) };
+});
+
+// The /internal/ arm dispatches inside an async IIFE (it awaits the daily-rewards
+// internal pre-check before falling through to handleInternalApi), so drain the
+// microtask queue before asserting the fire-and-forget dispatch landed.
+const flush = () => new Promise((resolve) => setImmediate(resolve));
 
 function fakeReq(method: string, url: string, headers: Record<string, string> = {}) {
   return { method, url, headers } as unknown as http.IncomingMessage;
@@ -58,10 +70,12 @@ async function loadRoute() {
   const main = await import('../../server/main');
   const admin = await import('../../server/admin');
   const internal = await import('../../server/internal');
+  const dailyRewards = await import('../../server/daily_rewards');
   return {
     routeHttpRequest: main.routeHttpRequest,
     handleAdminApi: vi.mocked(admin.handleAdminApi),
     handleInternalApi: vi.mocked(internal.handleInternalApi),
+    handleDailyRewardInternalApi: vi.mocked(dailyRewards.handleDailyRewardInternalApi),
   };
 }
 
@@ -94,18 +108,39 @@ describe('routeHttpRequest: OPTIONS-204 + CORS short-circuit', () => {
 });
 
 describe('routeHttpRequest: prefix ladder dispatch order', () => {
-  it('routes /internal/ to handleInternalApi and never 204s a non-OPTIONS request', async () => {
-    const { routeHttpRequest, handleInternalApi, handleAdminApi } = await loadRoute();
+  it('routes a non-daily-rewards /internal/ path to handleInternalApi and never 204s a non-OPTIONS request', async () => {
+    const { routeHttpRequest, handleInternalApi, handleAdminApi, handleDailyRewardInternalApi } =
+      await loadRoute();
     handleInternalApi.mockClear();
     handleAdminApi.mockClear();
+    handleDailyRewardInternalApi.mockClear();
     const res = fakeRes();
     const req = fakeReq('POST', '/internal/restart-countdown');
     routeHttpRequest(req, res as unknown as http.ServerResponse);
+    await flush();
+    // The daily-rewards internal pre-check is tried first, declines for this path,
+    // and the arm falls through to handleInternalApi.
+    expect(handleDailyRewardInternalApi).toHaveBeenCalledTimes(1);
     expect(handleInternalApi).toHaveBeenCalledTimes(1);
     // The request object is forwarded verbatim (fire-and-forget void dispatch).
     expect(handleInternalApi.mock.calls[0][0]).toBe(req);
     expect(handleAdminApi).not.toHaveBeenCalled();
     expect(res.writeHeadCodes).not.toContain(204);
+  });
+
+  it('short-circuits an /internal/daily-rewards/ path to handleDailyRewardInternalApi (no fall-through)', async () => {
+    const { routeHttpRequest, handleInternalApi, handleDailyRewardInternalApi } = await loadRoute();
+    handleInternalApi.mockClear();
+    handleDailyRewardInternalApi.mockClear();
+    // The pre-check reports it handled the request; the arm must NOT fall through.
+    handleDailyRewardInternalApi.mockResolvedValueOnce(true);
+    const res = fakeRes();
+    const req = fakeReq('POST', '/internal/daily-rewards/pending-payouts');
+    routeHttpRequest(req, res as unknown as http.ServerResponse);
+    await flush();
+    expect(handleDailyRewardInternalApi).toHaveBeenCalledTimes(1);
+    expect(handleDailyRewardInternalApi.mock.calls[0][0]).toBe(req);
+    expect(handleInternalApi).not.toHaveBeenCalled();
   });
 
   it('routes /admin/api/ to handleAdminApi, distinct from the /api/ arm', async () => {

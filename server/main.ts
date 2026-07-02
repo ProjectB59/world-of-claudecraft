@@ -45,6 +45,7 @@ import { configureAuthRuntime } from './auth_routes';
 import { BUG_DESCRIPTION_MAX, BugReportRateLimitError, createBugReport } from './bug_report_db';
 import { characterSheet, type SheetRank } from './character_sheet';
 import { configureCharactersRuntime } from './characters';
+import { handleDailyRewardApi, handleDailyRewardInternalApi } from './daily_rewards';
 import {
   accountAndScopeForToken,
   accountById,
@@ -1445,6 +1446,11 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       const { owner, fresh } = parseWocBalanceQuery(req.url ?? '');
       return handleWocBalance(res, owner, fresh);
     }
+    if (url.startsWith('/api/daily-rewards')) {
+      const accountId = await bearerActiveAccount(req, res);
+      if (accountId === null) return;
+      return handleDailyRewardApi(req, res, accountId);
+    }
     // Shareable player card: publish (PNG body) + referral stats for the card.
     if (req.method === 'POST' && url === '/api/card') {
       recordUsageMetric('card.publish.request');
@@ -1673,8 +1679,15 @@ export function routeHttpRequest(req: http.IncomingMessage, res: http.ServerResp
   // other /api route keeps the narrow realm/native allowlist.
   const publicCorsPath = isPublicCorsPath(path);
   if (applyCorsAndPreflight(req, res, isApi, publicCorsPath)) return;
-  if (url.startsWith('/internal/')) void handleInternalApi(req, res, game);
-  else if (url.startsWith('/admin/api/')) void adminApiEntry(req, res);
+  if (url.startsWith('/internal/')) {
+    // Daily-rewards internal ops (/internal/daily-rewards/*) are tried first and
+    // short-circuit when handled; every other /internal/* path falls through to
+    // handleInternalApi. Mirrors the pre-Phase-8 inline ladder 1:1.
+    void (async () => {
+      if (await handleDailyRewardInternalApi(req, res)) return;
+      await handleInternalApi(req, res, game);
+    })();
+  } else if (url.startsWith('/admin/api/')) void adminApiEntry(req, res);
   else if (url.startsWith('/api/')) void apiEntry(req, res);
   else if (url.startsWith('/oauth/')) void handleOAuth(req, res);
   else if (req.method === 'GET' && url.startsWith('/p/')) void handleCardRoutes(req, res);
