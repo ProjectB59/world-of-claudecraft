@@ -84,6 +84,31 @@ describe('createPgRateLimitStore hit()', () => {
     expect(pool.query).toHaveBeenCalledWith(RATE_LIMIT_UPSERT_SQL, ['default', 'globalflood', 0]);
   });
 
+  it('coerces a string count / window_start (pg returns BIGINT as a string)', async () => {
+    // The real pg driver returns window_start (BIGINT) as a STRING to preserve
+    // precision. Drive that shape so a dropped Number() cannot survive: string
+    // arithmetic ('60000' + WINDOW_MS) would concatenate instead of add and blow
+    // up resetSeconds, while tsc alone cannot reject it (string + number is
+    // legal). Same numbers as the pinned-clock case below, string-typed.
+    const pool = fakePool({ count: '3', window_start: '60000' });
+    const store = createPgRateLimitStore({ pool: pool.asPool, now: () => 90_000 });
+
+    const outcome = await store.hit('login:ip', 5);
+
+    expect(outcome).toEqual({ allowed: true, remaining: 2, resetSeconds: 30 });
+  });
+
+  it('rejects when the UPSERT returns no row (the resolver fail-open catch absorbs it)', async () => {
+    // INSERT ... ON CONFLICT ... RETURNING always returns exactly one row, so an
+    // empty result means a broken driver or statement. hit() throws rather than
+    // fabricating an outcome, and the two-tier resolver's fail-open catch turns
+    // that into tier-1-only limiting (never a 500).
+    const query = vi.fn(() => Promise.resolve({ rows: [] }));
+    const store = createPgRateLimitStore({ pool: { query } as unknown as Pool, now: () => 0 });
+
+    await expect(store.hit('login:ip', 5)).rejects.toThrow();
+  });
+
   it('computes allowed / remaining / resetSeconds from the returned row at a pinned clock', async () => {
     const clock = fakeClock(90_000);
     // Stored window opened at 60000; it closes at 60000 + WINDOW_MS = 120000, so
@@ -182,6 +207,23 @@ describe('createPgRateLimitStore hit()', () => {
 
     const outcome = await store.hit('login:ip', 5);
     expect(outcome).toEqual({ allowed: true, remaining: 4, resetSeconds: WINDOW_MS / 1000 });
+  });
+});
+
+describe('RATE_LIMIT_UPSERT_SQL', () => {
+  it('pins the load-bearing UPSERT fragments to literal text', () => {
+    // The hit() assertions above reference the exported constant, so both sides
+    // of those checks move together on an edit. These literal pins anchor the
+    // atomic counting logic itself (mirroring the schema_wiring prune pin): a
+    // flipped comparison or a dropped increment cannot pass silently.
+    expect(RATE_LIMIT_UPSERT_SQL).toContain('ON CONFLICT (policy, key) DO UPDATE');
+    expect(RATE_LIMIT_UPSERT_SQL).toContain(
+      'CASE WHEN rate_limits.window_start >= EXCLUDED.window_start THEN rate_limits.count + 1 ELSE 1 END',
+    );
+    expect(RATE_LIMIT_UPSERT_SQL).toContain(
+      'GREATEST(rate_limits.window_start, EXCLUDED.window_start)',
+    );
+    expect(RATE_LIMIT_UPSERT_SQL).toContain('RETURNING count, window_start');
   });
 });
 
