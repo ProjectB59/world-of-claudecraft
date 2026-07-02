@@ -20,6 +20,7 @@ import {
   type RateLimitPolicy,
   REPORTS_CREATE_POLICY,
   rateLimit,
+  resetTier2ErrorLogThrottle,
   WALLET_LINK_POLICY,
   WOC_BALANCE_POLICY,
 } from '../../../server/http/middleware/rate_limit';
@@ -48,8 +49,10 @@ const PINNED = 1_000_000;
 
 // A recording fake tier-2 store: it logs every hit (key + advertised max) and
 // returns whatever the per-key outcome function decides, so a test can trip,
-// allow, or throw from tier-2 deterministically.
-class FakeRateLimitStore implements RateLimitStore {
+// allow, or throw from tier-2 deterministically. Named Recording* (not Fake*)
+// so it never shadows the DIFFERENT sliding-window FakeRateLimitStore in
+// tests/server/helpers/fake_ratelimit_store.ts.
+class RecordingRateLimitStore implements RateLimitStore {
   hits: Array<{ key: string; max: number }> = [];
   constructor(private readonly outcomeFor: (key: string) => RateLimitOutcome) {}
   async hit(key: string, maxPerMinute: number): Promise<RateLimitOutcome> {
@@ -75,6 +78,7 @@ afterEach(() => {
   setRateLimitTier2Store(null);
   resetWocBalanceRateLimits();
   resetCardUploadRateLimits();
+  resetTier2ErrorLogThrottle();
 });
 
 describe('rateLimit: tier-1 ip policy flood', () => {
@@ -211,7 +215,7 @@ describe('rateLimit: allowed call', () => {
 
 describe('rateLimit: tier-1 rejects before tier-2', () => {
   it('never records a tier-2 hit for the flooded (tier-1-rejected) portion', async () => {
-    const store = new FakeRateLimitStore(() => ALWAYS_ALLOWED);
+    const store = new RecordingRateLimitStore(() => ALWAYS_ALLOWED);
     setRateLimitTier2Store(store);
     const ctx = fakeCtx();
 
@@ -234,7 +238,7 @@ describe('rateLimit: tier-1 rejects before tier-2', () => {
 
 describe('rateLimit: tier-2 trip', () => {
   it('throws the 429 with the TIER-2 numbers when tier-1 allows but tier-2 rejects', async () => {
-    const store = new FakeRateLimitStore(() => ({
+    const store = new RecordingRateLimitStore(() => ({
       allowed: false,
       remaining: 3,
       resetSeconds: 17,
@@ -262,7 +266,7 @@ describe('rateLimit: tier-2 trip', () => {
 describe('rateLimit: tier-2 fails open', () => {
   it('proceeds (next runs) when the tier-2 store throws', async () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const store = new FakeRateLimitStore(() => {
+    const store = new RecordingRateLimitStore(() => {
       throw new Error('pg is down');
     });
     setRateLimitTier2Store(store);
@@ -278,6 +282,28 @@ describe('rateLimit: tier-2 fails open', () => {
     expect(errSpy).toHaveBeenCalled();
     errSpy.mockRestore();
   });
+
+  it('logs the fail-open error at most once per window', async () => {
+    // During a pg outage EVERY tier-1-allowed request lands in the fail-open
+    // catch; the log line is throttled to one per WINDOW_MS (via the injected
+    // clock) so an outage under load cannot flood the ops log.
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const store = new RecordingRateLimitStore(() => {
+      throw new Error('pg is down');
+    });
+    setRateLimitTier2Store(store);
+    const ctx = fakeCtx();
+
+    await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {});
+    await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {});
+    expect(errSpy).toHaveBeenCalledTimes(1);
+
+    // A full window later the next failure logs again.
+    setRateLimitClock(() => PINNED + WINDOW_MS);
+    await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {});
+    expect(errSpy).toHaveBeenCalledTimes(2);
+    errSpy.mockRestore();
+  });
 });
 
 describe('rateLimit: ip+account tier-2 key composition and merge', () => {
@@ -286,7 +312,7 @@ describe('rateLimit: ip+account tier-2 key composition and merge', () => {
     // The ip bucket is looser (allowed, r=5, t=30); the acct bucket is the binding
     // one (rejected, r=0, t=45). The merge must reject with r=min(5,0)=0 and
     // t=max(30,45)=45.
-    const store = new FakeRateLimitStore((key) =>
+    const store = new RecordingRateLimitStore((key) =>
       key.includes(':acct:')
         ? { allowed: false, remaining: 0, resetSeconds: 45 }
         : { allowed: true, remaining: 5, resetSeconds: 30 },

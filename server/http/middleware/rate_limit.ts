@@ -22,9 +22,11 @@ import {
   characterMutationRateLimited,
   DISCORD_MAX_PER_MINUTE,
   discordRateLimited,
+  mergeFusedOutcomes,
   PUBLIC_READ_MAX_PER_MINUTE,
   publicReadRateLimited,
   REPORTS_CREATE_MAX_PER_MINUTE,
+  rateLimitNow,
   rateLimitTier2Store,
   reportsCreateRateLimited,
   WALLET_LINK_MAX_PER_MINUTE,
@@ -40,7 +42,15 @@ import type { Ctx, Middleware, Next, RateLimitOutcome, RateLimitStore } from '..
 /** How a policy derives its rate-limit key: per client IP, or per (IP AND account). */
 export type RateLimitKeyClass = 'ip' | 'ip+account';
 
-/** Whether a policy is backed by the pg-global tier-2 store, or tier-1 only. */
+/**
+ * Whether a policy is backed by the pg-global tier-2 store, or tier-1 only.
+ * Every current policy is 'global' (the derivation guard test pins that), so no
+ * code constructs 'none' today. It is the deliberate per-policy opt-out the
+ * two-tier resolver spec calls for: tier-2 costs one pg UPSERT per ALLOWED
+ * request (two for 'ip+account'), so a future mounted high-volume policy (e.g.
+ * public_read at 60/min per IP) can stay tier-1-only with a one-word policy
+ * edit instead of a resolver change.
+ */
 export type RateLimitTier2 = 'global' | 'none';
 
 /**
@@ -73,21 +83,13 @@ function rateLimit429(policy: RateLimitPolicy, outcome: RateLimitOutcome): HttpE
   );
 }
 
-/** Merge two tier-2 bucket outcomes, mirroring tier-1's fused (IP AND account) rule. */
-function mergeTier2(a: RateLimitOutcome, b: RateLimitOutcome): RateLimitOutcome {
-  return {
-    allowed: a.allowed && b.allowed,
-    remaining: Math.min(a.remaining, b.remaining),
-    resetSeconds: Math.max(a.resetSeconds, b.resetSeconds),
-  };
-}
-
 /**
  * Record the tier-2 attempt(s) for `policy` and return the merged outcome. The
  * store key is `${policy.name}:ip:${ctx.ip}` for keyClass 'ip'; for 'ip+account'
- * BOTH that and `${policy.name}:acct:${accountId}` are recorded and merged,
- * mirroring tier-1's fused semantics. The store splits at the first ':' into its
- * (policy, key) columns, so an IPv6 address in the remainder is safe.
+ * BOTH that and `${policy.name}:acct:${accountId}` are recorded and merged via
+ * the SAME mergeFusedOutcomes rule tier-1 uses (allowed = both, remaining = min,
+ * resetSeconds = max). The store splits at the first ':' into its (policy, key)
+ * columns, so an IPv6 address in the remainder is safe.
  */
 async function tier2Outcome(
   store: RateLimitStore,
@@ -97,7 +99,18 @@ async function tier2Outcome(
   const ip = await store.hit(`${policy.name}:ip:${ctx.ip}`, policy.limit);
   if (policy.keyClass === 'ip') return ip;
   const account = await store.hit(`${policy.name}:acct:${ctxAccountId(ctx)}`, policy.limit);
-  return mergeTier2(ip, account);
+  return mergeFusedOutcomes(ip, account);
+}
+
+// Log the tier-2 fail-open error at most once per window per process: during a
+// pg outage EVERY tier-1-allowed request lands in the catch below, and one line
+// per request would flood the ops log exactly when it is busiest. Reads the
+// injected limiter clock (rateLimitNow) so tests stay deterministic.
+let lastTier2ErrorLogMs = Number.NEGATIVE_INFINITY;
+
+/** Reset the fail-open log throttle. Test-only: keeps log assertions isolated. */
+export function resetTier2ErrorLogThrottle(): void {
+  lastTier2ErrorLogMs = Number.NEGATIVE_INFINITY;
 }
 
 /**
@@ -122,7 +135,11 @@ export function rateLimit(policy: RateLimitPolicy): Middleware {
           merged = await tier2Outcome(store, policy, ctx);
         } catch (err) {
           // Fail open: a tier-2 (pg) outage degrades to tier-1-only limiting.
-          console.error('[ratelimit] tier-2 store error, failing open', err);
+          const nowMs = rateLimitNow();
+          if (nowMs - lastTier2ErrorLogMs >= WINDOW_MS) {
+            lastTier2ErrorLogMs = nowMs;
+            console.error('[ratelimit] tier-2 store error, failing open', err);
+          }
         }
         // Throw OUTSIDE the try so a deliberate tier-2 429 is never swallowed by
         // the fail-open catch.
