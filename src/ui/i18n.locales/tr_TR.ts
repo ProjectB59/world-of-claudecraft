@@ -53,6 +53,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
     'Ganimet Ayarları: Yönetilen Ganimet, Ganimet Yöneticisi {name}, eşik {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Ganimet eşiği {threshold} olarak ayarlandı.',
   'hudChrome.options.showDevBadges': 'Geliştirici Rozetlerini Göster',
+  'hudChrome.options.groundReticle': 'Yer hedefleme halkası',
   'hudChrome.options.startAttackOnAbility': 'Yetenek Kullanımında Otomatik Saldırı',
   'hudChrome.party.promoteLeader': 'Lider Yap',
   'hudChrome.plurals.playersMatching.few':
@@ -566,6 +567,21 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Ateşli bir top fırlatarak {damage} Ateş hasarı ve ek olarak zamana yayılı hasar verir.',
   'entities.abilities.fireball.name': 'Ateş Topu',
+  'entities.abilities.rain_of_fire.name': 'Ateş Yağmuru',
+  'entities.abilities.rain_of_fire.description':
+    'Hedef alana ateş yağdırır ve düşmanları yakarak {damage} Ateş hasarı verir.',
+  'entities.abilities.volley.name': 'Ok Yağmuru',
+  'entities.abilities.volley.description':
+    'Hedef alana ok yağdırır ve içindeki düşmanlara {damage} hasar verir.',
+  'entities.abilities.hurricane.name': 'Kasırga',
+  'entities.abilities.hurricane.description':
+    'Hedef alana bir kasırga indirir ve düşmanlara {damage} Doğa hasarı verir.',
+  'entities.abilities.earthquake.name': 'Deprem',
+  'entities.abilities.earthquake.description':
+    'Hedef alanı sarsar ve düşmanlara {damage} Doğa hasarı verir.',
+  'entities.abilities.flamestrike.name': 'Alev Vuruşu',
+  'entities.abilities.flamestrike.description':
+    'Hedef alanda bir alev patlaması yaratır ve patlamaya yakalanan düşmanlara {damage} Ateş hasarı verir.',
   'entities.abilities.flame_shock.description':
     'Hedefi ateşle dağlar: 25 hasar artı 12 saniye boyunca {damage}.',
   'entities.abilities.flame_shock.name': 'Alev Şoku',

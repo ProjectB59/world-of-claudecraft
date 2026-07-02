@@ -164,6 +164,16 @@ import { fctSpawnShape } from './fct_event';
 import { FctPainter } from './fct_painter';
 import { FocusManager, type FocusTrapHandle } from './focus_manager';
 import {
+  type AimPoint,
+  abilityAoeRadius,
+  cancelGroundAim,
+  clampAimToRange,
+  commitGroundAim,
+  createGroundAimState,
+  enterGroundAim,
+  type GroundAimState,
+} from './ground_aim';
+import {
   holderTierBadgeDataUrl,
   holderTierByIndex,
   holderTierDisplayName,
@@ -643,6 +653,9 @@ export class Hud {
   private loadedSlotMapFromStorage = false;
   private knownAbilityIdsAtLastSlotSync: Set<string> | null = null;
   private activeHotbarForm: HotbarForm = 'normal';
+  private groundAim: GroundAimState = createGroundAimState();
+  private groundAimPoint: AimPoint | null = null;
+  private groundAimClamped = false;
   private dragAction: { action: Exclude<HotbarAction, null>; sourceIndex: number | null } | null =
     null;
   // Set while dragging an equipped piece out of the paperdoll onto the bags window.
@@ -3586,8 +3599,111 @@ export class Hud {
     );
   }
 
+  // Where a ground-targeted ability should land: the current target's position if
+  // one is selected (the usual "cast on that pack" intent), else the caster's own
+  // spot for an open-ground cast. The sim clamps this to the ability's range.
+  private groundTargetAim(): { x: number; z: number } {
+    const me = this.sim.player;
+    const tid = me.targetId;
+    const t = tid !== null ? this.sim.entities.get(tid) : null;
+    if (t && !t.dead && t.id !== me.id) return { x: t.pos.x, z: t.pos.z };
+    return { x: me.pos.x, z: me.pos.z };
+  }
+
+  private groundReticleEnabled(): boolean {
+    if (document.body.classList.contains('mobile-touch')) return false;
+    return this.optionsHooks?.settings.get('groundReticle') ?? true;
+  }
+
+  isGroundAimActive(): boolean {
+    return this.groundAim.activeAbilityId !== null;
+  }
+
+  cancelGroundAim(): boolean {
+    if (!this.isGroundAimActive()) return false;
+    this.groundAim = cancelGroundAim(this.groundAim);
+    this.groundAimPoint = null;
+    this.groundAimClamped = false;
+    this.renderer.setGroundAimReticle(null);
+    return true;
+  }
+
+  private beginGroundAim(abilityId: string, slot: number): void {
+    this.groundAim = enterGroundAim(this.groundAim, abilityId, slot);
+    this.groundAimPoint = null;
+  }
+
+  private activeGroundAimAbility(): ResolvedAbility | null {
+    const id = this.groundAim.activeAbilityId;
+    if (!id) return null;
+    return this.sim.known.find((k) => k.def.id === id) ?? null;
+  }
+
+  updateGroundAimPoint(rawPoint: AimPoint | null): void {
+    if (!this.isGroundAimActive() || !rawPoint) {
+      this.groundAimPoint = null;
+      this.groundAimClamped = false;
+      return;
+    }
+    const res = this.activeGroundAimAbility();
+    if (!res) {
+      this.cancelGroundAim();
+      return;
+    }
+    const aim = clampAimToRange(this.sim.player, rawPoint, res.def.range);
+    this.groundAimPoint = aim.point;
+    this.groundAimClamped = aim.clamped;
+  }
+
+  groundAimReticle(): {
+    point: AimPoint;
+    radius: number;
+    school: string;
+    clamped: boolean;
+  } | null {
+    if (!this.isGroundAimActive()) return null;
+    const point = this.groundAimPoint;
+    if (!point) return null;
+    const res = this.activeGroundAimAbility();
+    if (!res) return null;
+    return {
+      point,
+      radius: abilityAoeRadius(res),
+      school: res.def.school,
+      clamped: this.groundAimClamped,
+    };
+  }
+
+  commitGroundAimAt(rawPoint: AimPoint | null = this.groundAimPoint): boolean {
+    if (!this.isGroundAimActive()) return false;
+    const res = this.activeGroundAimAbility();
+    const abilityId = this.groundAim.activeAbilityId;
+    if (!res || !abilityId) {
+      this.cancelGroundAim();
+      return true;
+    }
+    const point = rawPoint
+      ? clampAimToRange(this.sim.player, rawPoint, res.def.range).point
+      : this.groundTargetAim();
+    const committed = commitGroundAim(this.groundAim);
+    this.groundAim = committed.state;
+    this.groundAimPoint = null;
+    this.groundAimClamped = false;
+    this.renderer.setGroundAimReticle(null);
+    this.sim.castAbilityAt(abilityId, point);
+    return true;
+  }
+
   // Shared entry point for hotbar clicks and the 1..0-= keybinds.
   castSlot(barSlot: number): void {
+    if (this.isGroundAimActive()) {
+      if (this.groundAim.activeSlot === barSlot) {
+        this.commitGroundAimAt();
+        this.flashActionSlot(barSlot);
+        return;
+      }
+      this.cancelGroundAim();
+    }
     if (barSlot === 0) {
       if (this.sim.player.autoAttack) this.sim.stopAutoAttack();
       else this.sim.startAutoAttack();
@@ -3600,24 +3716,32 @@ export class Hud {
       // so the client-side slot remap never desyncs slot semantics
       const resolved = this.abilityForSlot(barSlot);
       if (resolved) {
-        this.sim.castAbility(action.id);
-        // Optional QoL: also engage auto-attack when the ability is an offensive
-        // attack, so white swings start without a separate Attack press. Gated on
-        // the player setting; abilityStartsAutoAttack skips heals/buffs and any
-        // damage-breakable CC (gouge/sap/sheep) the swing would shatter. We MUST also
-        // gate on hasAutoAttackTarget: many damaging abilities are requiresTarget:false
-        // AOEs (Arcane Explosion, Frost Nova, Thunder Clap, ...) cast with no hostile
-        // target, where startAutoAttack does NOT no-op but errors "Invalid attack
-        // target." (sim/combat/auto_attack.ts). The explicit Attack button keeps that
-        // error feedback; this convenience path must not trip it.
-        const tid = this.sim.player.targetId;
-        const target = tid !== null ? (this.sim.entities.get(tid) ?? null) : null;
-        if (
-          this.optionsHooks?.settings.get('startAttackOnAbilityUse') &&
-          abilityStartsAutoAttack(resolved.effects) &&
-          hasAutoAttackTarget(target)
-        ) {
-          this.sim.startAutoAttack();
+        if (resolved.def.targetMode === 'position') {
+          if (this.groundReticleEnabled()) {
+            this.beginGroundAim(action.id, barSlot);
+          } else {
+            this.sim.castAbilityAt(action.id, this.groundTargetAim());
+          }
+        } else {
+          this.sim.castAbility(action.id);
+          // Optional QoL: also engage auto-attack when the ability is an offensive
+          // attack, so white swings start without a separate Attack press. Gated on
+          // the player setting; abilityStartsAutoAttack skips heals/buffs and any
+          // damage-breakable CC (gouge/sap/sheep) the swing would shatter. We MUST also
+          // gate on hasAutoAttackTarget: many damaging abilities are requiresTarget:false
+          // AOEs (Arcane Explosion, Frost Nova, Thunder Clap, ...) cast with no hostile
+          // target, where startAutoAttack does NOT no-op but errors "Invalid attack
+          // target." (sim/combat/auto_attack.ts). The explicit Attack button keeps that
+          // error feedback; this convenience path must not trip it.
+          const tid = this.sim.player.targetId;
+          const target = tid !== null ? (this.sim.entities.get(tid) ?? null) : null;
+          if (
+            this.optionsHooks?.settings.get('startAttackOnAbilityUse') &&
+            abilityStartsAutoAttack(resolved.effects) &&
+            hasAutoAttackTarget(target)
+          ) {
+            this.sim.startAutoAttack();
+          }
         }
         this.flashActionSlot(barSlot);
       }

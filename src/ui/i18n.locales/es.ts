@@ -65,6 +65,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
     'Ajustes de botín: botín maestro, repartidor {name}, umbral {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Umbral de botín fijado en {threshold}.',
   'hudChrome.options.showDevBadges': 'Mostrar insignias de desarrollador',
+  'hudChrome.options.groundReticle': 'Retícula de objetivo terrestre',
   'hudChrome.options.startAttackOnAbility': 'Ataque automático al usar habilidad',
   'hudChrome.party.promoteLeader': 'Promover a líder',
   'hudChrome.statInfo.desc.spellPower':
@@ -1700,6 +1701,21 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Provoca al objetivo: tu amenaza sube hasta igualar la de su enemigo más odiado y queda obligado a atacarte durante 3 s.',
   'entities.abilities.fireball.name': 'Bola de Fuego',
+  'entities.abilities.rain_of_fire.name': 'Lluvia de Fuego',
+  'entities.abilities.rain_of_fire.description':
+    'Hace caer una lluvia de fuego sobre el área objetivo, quemando a los enemigos e infligiendo {damage} de daño de Fuego.',
+  'entities.abilities.volley.name': 'Andanada',
+  'entities.abilities.volley.description':
+    'Lanza una lluvia de flechas sobre el área objetivo, infligiendo {damage} de daño a los enemigos atrapados.',
+  'entities.abilities.hurricane.name': 'Huracán',
+  'entities.abilities.hurricane.description':
+    'Desata un huracán sobre el área objetivo, golpeando a los enemigos e infligiendo {damage} de daño de Naturaleza.',
+  'entities.abilities.earthquake.name': 'Terremoto',
+  'entities.abilities.earthquake.description':
+    'Sacude el área objetivo, golpeando a los enemigos e infligiendo {damage} de daño de Naturaleza.',
+  'entities.abilities.flamestrike.name': 'Llamarada',
+  'entities.abilities.flamestrike.description':
+    'Invoca un estallido de fuego en el área objetivo que inflige {damage} de daño de Fuego a los enemigos alcanzados por la explosión.',
   'entities.abilities.fireball.description':
     'Lanza una bola ígnea que causa {damage} de daño de Fuego y daño adicional en el tiempo.',
   'entities.abilities.frost_armor.name': 'Armadura de Escarcha',

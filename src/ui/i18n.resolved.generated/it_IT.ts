@@ -340,6 +340,7 @@ export const it_IT: EnTranslations = {
       "uiScale": "Scala dell'interfaccia",
       "highContrastBackground": "Sfondo a contrasto elevato",
       "startAttackOnAbility": "Attacco automatico all'uso dell'abilita",
+      "groundReticle": "Reticolo di puntamento a terra",
       "showItemLevel": "Mostra livello oggetto",
       "itemLevelLine": "Livello oggetto {level}",
       "itemScoreLine": "Punteggio {score}",
@@ -3692,6 +3693,26 @@ export const it_IT: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Ondata di Fiamme",
+        "description": "Evoca un'esplosione di fiamme sulla zona bersaglio, infliggendo {damage} danni da Fuoco ai nemici investiti dalla deflagrazione."
+      },
+      "rain_of_fire": {
+        "name": "Pioggia di Fuoco",
+        "description": "Fa piovere fuoco sulla zona bersaglio, bruciando i nemici per {damage} danni da Fuoco."
+      },
+      "volley": {
+        "name": "Scarica di Frecce",
+        "description": "Fa piovere frecce sulla zona bersaglio, infliggendo {damage} danni ai nemici colpiti."
+      },
+      "hurricane": {
+        "name": "Uragano",
+        "description": "Scatena un uragano sulla zona bersaglio, colpendo i nemici per {damage} danni della Natura."
+      },
+      "earthquake": {
+        "name": "Terremoto",
+        "description": "Scuote la zona bersaglio, colpendo i nemici per {damage} danni della Natura."
+      },
       "heroic_strike": {
         "name": "Colpo Eroico",
         "description": "Un attacco potente che aumenta i danni in mischia di {damage}. Si attiva al tuo prossimo colpo."

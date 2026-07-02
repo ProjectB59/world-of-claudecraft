@@ -2991,12 +2991,18 @@ export class Sim {
     pushbackCastImpl(p);
   }
 
-  castAbilityBySlot(slot: number, pid?: number): void {
-    castAbilityBySlotImpl(this.ctx, slot, pid);
+  castAbilityBySlot(slot: number, pid?: number, aim?: { x: number; z: number }): void {
+    castAbilityBySlotImpl(this.ctx, slot, pid, aim);
   }
 
-  castAbility(abilityId: string, pid?: number): void {
-    castAbilityImpl(this.ctx, abilityId, pid);
+  castAbility(abilityId: string, pid?: number, aim?: { x: number; z: number }): void {
+    castAbilityImpl(this.ctx, abilityId, pid, aim);
+  }
+
+  // IWorld ground-targeted cast: offline, the local player (pid undefined) casts
+  // the ability aimed at the world point (x, z).
+  castAbilityAt(abilityId: string, aim: { x: number; z: number }): void {
+    castAbilityImpl(this.ctx, abilityId, undefined, aim);
   }
 
   // Voluntarily cancel one of a player's own helpful auras (the HUD right-click-a-buff

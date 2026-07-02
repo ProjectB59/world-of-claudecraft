@@ -124,6 +124,7 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.theme.knob.rage': '怒り',
   'hudChrome.theme.knob.energy': 'エネルギー',
   'hudChrome.options.interfaceMode': '操作モード',
+  'hudChrome.options.groundReticle': '地面ターゲットのレティクル',
   'hudChrome.options.interfaceModeAuto': '自動',
   'hudChrome.options.interfaceModeDesktop': 'デスクトップ',
   'hudChrome.options.interfaceModeTouch': 'タッチ',
@@ -1669,6 +1670,21 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     '対象を挑発します。あなたの脅威が対象の最も憎む敵と同じ値まで上がり、3秒間あなたを攻撃させます。',
   'entities.abilities.fireball.name': 'ファイアボール',
+  'entities.abilities.rain_of_fire.name': '火炎の雨',
+  'entities.abilities.rain_of_fire.description':
+    '対象地点に火の雨を降らせ、敵に{damage}の火炎ダメージを与えます。',
+  'entities.abilities.volley.name': '乱射',
+  'entities.abilities.volley.description':
+    '対象地点に矢を降らせ、範囲内の敵に{damage}のダメージを与えます。',
+  'entities.abilities.hurricane.name': 'ハリケーン',
+  'entities.abilities.hurricane.description':
+    '対象地点にハリケーンを呼び起こし、敵に{damage}の自然ダメージを与えます。',
+  'entities.abilities.earthquake.name': '地震',
+  'entities.abilities.earthquake.description':
+    '対象地点を揺るがし、敵に{damage}の自然ダメージを与えます。',
+  'entities.abilities.flamestrike.name': 'フレイムストライク',
+  'entities.abilities.flamestrike.description':
+    '対象地点に炎の爆発を呼び出し、爆発に巻き込まれた敵に{damage}の火炎ダメージを与えます。',
   'entities.abilities.fireball.description':
     '炎の球を放ち、{damage} の火炎ダメージと追加の継続ダメージを与えます。',
   'entities.abilities.frost_armor.name': 'フロストアーマー',

@@ -456,20 +456,35 @@ export function runEffects(
         break;
       }
       case 'aoeDamage': {
-        ctx.emit({
-          type: 'spellfx',
-          sourceId: p.id,
-          targetId: p.id,
-          school: ability.school,
-          fx: 'nova',
-        });
+        // Ground-targeted casts blast where they were aimed; others detonate on
+        // the caster. The fx follows the same center (a world-anchored burst for
+        // an aimed blast, the entity-anchored nova otherwise).
+        const aoeCenter = p.castAim ?? p.pos;
+        if (p.castAim) {
+          ctx.emit({
+            type: 'spellfxAt',
+            x: aoeCenter.x,
+            z: aoeCenter.z,
+            school: ability.school,
+            fx: 'nova',
+            radius: eff.radius,
+          });
+        } else {
+          ctx.emit({
+            type: 'spellfx',
+            sourceId: p.id,
+            targetId: p.id,
+            school: ability.school,
+            fx: 'nova',
+          });
+        }
         const aoeSpBonus = directHitBonus(
           abilityScalingPower(p, ability),
           ability,
           res.castTime,
           true,
         );
-        for (const m of ctx.hostilesInRadius(p, p.pos, eff.radius)) {
+        for (const m of ctx.hostilesInRadius(p, aoeCenter, eff.radius)) {
           if (!ctx.hasLineOfSight(p, m)) continue;
           let dmg = ctx.rng.range(eff.min, eff.max) + aoeSpBonus;
           // Armor only mitigates physical damage, mirroring the single-target
@@ -491,9 +506,12 @@ export function runEffects(
         break;
       }
       case 'groundAoE': {
+        // Ground-targeted casts drop the zone where they were aimed; others lay it
+        // under the caster (e.g. Consecration at your feet).
+        const zoneCenter = p.castAim ?? p.pos;
         const groundEffect: GroundAoE = {
           sourceId: p.id,
-          pos: { ...p.pos },
+          pos: { ...zoneCenter },
           radius: eff.radius,
           min: eff.min,
           max: eff.max,
@@ -506,13 +524,24 @@ export function runEffects(
           // (Spell Power, Ranged AP, or melee Attack Power for physical pulses).
           spBonus: directHitBonus(abilityScalingPower(p, ability), ability, res.castTime, true),
         };
-        ctx.emit({
-          type: 'spellfx',
-          sourceId: p.id,
-          targetId: p.id,
-          school: ability.school,
-          fx: 'nova',
-        });
+        if (p.castAim) {
+          ctx.emit({
+            type: 'spellfxAt',
+            x: zoneCenter.x,
+            z: zoneCenter.z,
+            school: ability.school,
+            fx: 'nova',
+            radius: eff.radius,
+          });
+        } else {
+          ctx.emit({
+            type: 'spellfx',
+            sourceId: p.id,
+            targetId: p.id,
+            school: ability.school,
+            fx: 'nova',
+          });
+        }
         ctx.pulseGroundAoE(groundEffect, threatOpts, true);
         ctx.groundAoEs.push(groundEffect);
         break;

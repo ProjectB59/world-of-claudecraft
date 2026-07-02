@@ -340,6 +340,7 @@ export const de_DE: EnTranslations = {
       "uiScale": "UI-Skalierung",
       "highContrastBackground": "Hintergrund mit hohem Kontrast",
       "startAttackOnAbility": "Auto-Angriff bei Fähigkeitseinsatz",
+      "groundReticle": "Bodenziel-Fadenkreuz",
       "showItemLevel": "Gegenstandsstufe anzeigen",
       "itemLevelLine": "Gegenstandsstufe {level}",
       "itemScoreLine": "Wertung {score}",
@@ -3692,6 +3693,26 @@ export const de_DE: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Flammenschlag",
+        "description": "Lässt am Zielort eine Feuerexplosion niedergehen, die allen Gegnern im Wirkungsbereich {damage} Feuerschaden zufügt."
+      },
+      "rain_of_fire": {
+        "name": "Feuerregen",
+        "description": "Lässt einen Feuerregen auf den Zielbereich niedergehen, der Gegner verbrennt und {damage} Feuerschaden verursacht."
+      },
+      "volley": {
+        "name": "Pfeilhagel",
+        "description": "Lässt einen Pfeilhagel auf den Zielbereich niedergehen und verursacht {damage} Schaden an den Gegnern darin."
+      },
+      "hurricane": {
+        "name": "Wirbelsturm",
+        "description": "Entfesselt einen Wirbelsturm über dem Zielbereich, der Gegner trifft und {damage} Naturschaden verursacht."
+      },
+      "earthquake": {
+        "name": "Erdbeben",
+        "description": "Lässt den Zielbereich erbeben, trifft Gegner und verursacht {damage} Naturschaden."
+      },
       "heroic_strike": {
         "name": "Heldenhafter Stoß",
         "description": "Ein mächtiger Angriff, der den Nahkampfschaden um {damage} erhöht. Wird bei eurem nächsten Schwung ausgelöst."

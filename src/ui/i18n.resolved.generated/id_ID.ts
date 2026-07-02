@@ -340,6 +340,7 @@ export const id_ID: EnTranslations = {
       "uiScale": "Skala UI",
       "highContrastBackground": "Latar Kontras Tinggi",
       "startAttackOnAbility": "Serangan Otomatis Saat Memakai Kemampuan",
+      "groundReticle": "Retikel bidik darat",
       "showItemLevel": "Tampilkan Level Item",
       "itemLevelLine": "Level Item {level}",
       "itemScoreLine": "Skor {score}",
@@ -3692,6 +3693,26 @@ export const id_ID: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Hantaman Api",
+        "description": "Memanggil ledakan api di area sasaran, memberikan {damage} kerusakan Api kepada musuh yang terkena ledakan."
+      },
+      "rain_of_fire": {
+        "name": "Hujan Api",
+        "description": "Menurunkan hujan api di area sasaran, membakar musuh sebesar {damage} kerusakan Api."
+      },
+      "volley": {
+        "name": "Hujan Panah",
+        "description": "Menghujani area sasaran dengan panah, memberi {damage} kerusakan kepada musuh di dalamnya."
+      },
+      "hurricane": {
+        "name": "Badai",
+        "description": "Mendatangkan badai di area sasaran, menghantam musuh sebesar {damage} kerusakan Alam."
+      },
+      "earthquake": {
+        "name": "Gempa Bumi",
+        "description": "Mengguncang area sasaran, menghantam musuh sebesar {damage} kerusakan Alam."
+      },
       "heroic_strike": {
         "name": "Serangan Heroik",
         "description": "Serangan kuat yang meningkatkan kerusakan jarak dekat sebesar {damage}. Aktif pada ayunan berikutnya."

@@ -54,6 +54,7 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
     'Buitinstellingen: Buitmeester-buit, Buitmeester {name}, drempel {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Buitdrempel ingesteld op {threshold}.',
   'hudChrome.options.showDevBadges': 'Ontwikkelaarsinsignes tonen',
+  'hudChrome.options.groundReticle': 'Grondrichtkruis',
   'hudChrome.options.startAttackOnAbility': 'Auto-aanval bij gebruik van vaardigheid',
   'hudChrome.party.promoteLeader': 'Bevorderen tot leider',
   'hudChrome.plurals.playersMatching.few':
@@ -574,6 +575,21 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Werpt een vurige bal die {damage} Vuurschade toebrengt plus extra schade over tijd.',
   'entities.abilities.fireball.name': 'Vuurbal',
+  'entities.abilities.rain_of_fire.name': 'Vuurregen',
+  'entities.abilities.rain_of_fire.description':
+    'Laat een vuurregen neerdalen op het doelgebied en verbrandt vijanden voor {damage} Vuurschade.',
+  'entities.abilities.volley.name': 'Pijlenregen',
+  'entities.abilities.volley.description':
+    'Laat een pijlenregen neerdalen op het doelgebied en richt {damage} schade aan bij vijanden erin.',
+  'entities.abilities.hurricane.name': 'Orkaan',
+  'entities.abilities.hurricane.description':
+    'Ontketent een orkaan boven het doelgebied en treft vijanden voor {damage} Natuurschade.',
+  'entities.abilities.earthquake.name': 'Aardbeving',
+  'entities.abilities.earthquake.description':
+    'Laat het doelgebied beven, treft vijanden voor {damage} Natuurschade.',
+  'entities.abilities.flamestrike.name': 'Vlammenslag',
+  'entities.abilities.flamestrike.description':
+    'Roept een vuurexplosie op in het doelgebied die vijanden in de explosie {damage} Vuurschade toebrengt.',
   'entities.abilities.flame_shock.description':
     'Schroeit het doelwit met vuur voor 25 schade plus {damage} gedurende 12 sec.',
   'entities.abilities.flame_shock.name': 'Vlamschok',

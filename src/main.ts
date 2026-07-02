@@ -1074,6 +1074,7 @@ async function startGame(
       onAbility: (slot) => hud.castSlot(slot),
       onInputIntent: (kind) => perf.markInputIntent(kind),
       onUiKey: (key) => {
+        if (key !== 'escape') hud.cancelGroundAim();
         switch (key) {
           case 'interact':
             interactKey();
@@ -1118,6 +1119,7 @@ async function startGame(
             openChat();
             break;
           case 'escape':
+            if (hud.cancelGroundAim()) break;
             // close the topmost panel; if nothing was open, open the game menu
             if (!hud.closeAll()) hud.toggleOptionsMenu();
             break;
@@ -1177,6 +1179,7 @@ async function startGame(
   const canUseGameKeysNow = () => !hud.isModalOpen() && chatInput.style.display !== 'block';
   function dispatchGamepadAction(id: string): void {
     if (id === 'escape') {
+      if (hud.cancelGroundAim()) return;
       if (!hud.closeAll()) hud.toggleOptionsMenu();
       return;
     }
@@ -1185,6 +1188,7 @@ async function startGame(
       hud.castSlot(Number(id.slice(4)));
       return;
     }
+    hud.cancelGroundAim();
     switch (id) {
       case 'target':
         world.tabTarget();
@@ -1337,6 +1341,11 @@ async function startGame(
       // No live subsystem to update: the HUD reads this setting at ability-cast
       // time (see hud.castSlot). Persist the choice and we are done.
       settings.set('startAttackOnAbilityUse', !!value);
+      return;
+    }
+    if (key === 'groundReticle') {
+      const v = settings.set('groundReticle', !!value);
+      if (!v) hud.cancelGroundAim();
       return;
     }
     if (key === 'attackMove') {
@@ -1708,7 +1717,39 @@ async function startGame(
     return resolvePlayerDestination(world.cfg.seed, target, true);
   }
 
+  function syncGroundAimReticle(): void {
+    if (!hud.isGroundAimActive()) {
+      renderer.setGroundAimReticle(null);
+      return;
+    }
+    const cursor = input.cursorPoint();
+    const g = cursor ? renderer.groundPoint(cursor.x, cursor.y, world.player.pos.y) : null;
+    hud.updateGroundAimPoint(g);
+    const reticle = hud.groundAimReticle();
+    renderer.setGroundAimReticle(
+      reticle
+        ? {
+            x: reticle.point.x,
+            z: reticle.point.z,
+            radius: reticle.radius,
+            school: reticle.school,
+            dimmed: reticle.clamped,
+          }
+        : null,
+    );
+  }
+
   function handlePick(x: number, y: number, button: number): void {
+    if (hud.isGroundAimActive()) {
+      if (button === 2) {
+        hud.cancelGroundAim();
+        return;
+      }
+      if (button === 0) {
+        hud.commitGroundAimAt(renderer.groundPoint(x, y, world.player.pos.y));
+        return;
+      }
+    }
     const id = renderer.pick(x, y);
     // OSRS-style click feedback (its own toggle): a brief ground marker, gold for a
     // neutral click and red on a hostile. Both reference games only mark a real action,
@@ -2230,6 +2271,7 @@ async function startGame(
       renderer.camYaw = input.camYaw;
       renderer.camPitch = input.camPitch;
       renderer.camDist = input.camDist;
+      syncGroundAimReticle();
       perf.setNetwork(null);
       perf.time('renderer', () =>
         perf.trace('renderer.sync', () => renderer.sync(acc / DT, frameDt, movementFacing), {
@@ -2323,6 +2365,7 @@ async function startGame(
     renderer.camYaw = input.camYaw;
     renderer.camPitch = input.camPitch;
     renderer.camDist = input.camDist;
+    syncGroundAimReticle();
     perf.time('renderer', () =>
       perf.trace(
         'renderer.sync',

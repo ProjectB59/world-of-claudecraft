@@ -65,6 +65,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
     'Réglages de butin : Butin par maître, maître du butin {name}, seuil {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Seuil de butin réglé sur {threshold}.',
   'hudChrome.options.showDevBadges': 'Afficher les badges de développeur',
+  'hudChrome.options.groundReticle': 'Réticule de ciblage au sol',
   'hudChrome.options.startAttackOnAbility': "Attaque auto à l'utilisation d'une compétence",
   'hudChrome.party.promoteLeader': 'Promouvoir chef',
   'hudChrome.statInfo.desc.spellPower':
@@ -1713,6 +1714,21 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Provoque la cible: votre menace rejoint celle de son ennemi le plus haï et elle est forcée de vous attaquer pendant 3 s.',
   'entities.abilities.fireball.name': 'Boule de feu',
+  'entities.abilities.rain_of_fire.name': 'Pluie de feu',
+  'entities.abilities.rain_of_fire.description':
+    'Fait pleuvoir du feu sur la zone visée, brûlant les ennemis pour {damage} points de dégâts de Feu.',
+  'entities.abilities.volley.name': 'Volée de flèches',
+  'entities.abilities.volley.description':
+    'Fait pleuvoir des flèches sur la zone visée, infligeant {damage} points de dégâts aux ennemis présents.',
+  'entities.abilities.hurricane.name': 'Ouragan',
+  'entities.abilities.hurricane.description':
+    'Déchaîne un ouragan sur la zone visée, frappant les ennemis pour {damage} points de dégâts de Nature.',
+  'entities.abilities.earthquake.name': 'Tremblement de terre',
+  'entities.abilities.earthquake.description':
+    'Fait trembler la zone visée, frappant les ennemis pour {damage} points de dégâts de Nature.',
+  'entities.abilities.flamestrike.name': 'Frappe enflammée',
+  'entities.abilities.flamestrike.description':
+    "Fait s'abattre une explosion de flammes sur la zone visée, infligeant {damage} points de dégâts de Feu aux ennemis pris dans la déflagration.",
   'entities.abilities.fireball.description':
     'Lance une boule enflammée qui inflige {damage} points de dégâts de Feu plus des dégâts supplémentaires sur la durée.',
   'entities.abilities.frost_armor.name': 'Armure de givre',

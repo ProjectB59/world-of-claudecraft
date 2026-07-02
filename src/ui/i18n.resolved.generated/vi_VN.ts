@@ -340,6 +340,7 @@ export const vi_VN: EnTranslations = {
       "uiScale": "Tỷ Lệ Giao Diện",
       "highContrastBackground": "Nền Tương Phản Cao",
       "startAttackOnAbility": "Tự Đánh Khi Dùng Kỹ Năng",
+      "groundReticle": "Vòng ngắm mục tiêu mặt đất",
       "showItemLevel": "Hiển Thị Cấp Vật Phẩm",
       "itemLevelLine": "Cấp Vật Phẩm {level}",
       "itemScoreLine": "Điểm {score}",
@@ -3692,6 +3693,26 @@ export const vi_VN: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Cú Đánh Lửa",
+        "description": "Gọi một vụ nổ lửa xuống khu vực mục tiêu, gây {damage} sát thương Lửa cho kẻ địch trong vụ nổ."
+      },
+      "rain_of_fire": {
+        "name": "Mưa Lửa",
+        "description": "Trút một cơn mưa lửa xuống khu vực mục tiêu, thiêu đốt kẻ địch gây {damage} sát thương Lửa."
+      },
+      "volley": {
+        "name": "Loạt Tên",
+        "description": "Trút mưa tên xuống khu vực mục tiêu, gây {damage} sát thương cho kẻ địch bên trong."
+      },
+      "hurricane": {
+        "name": "Cuồng Phong",
+        "description": "Triệu hồi cuồng phong xuống khu vực mục tiêu, quật ngã kẻ địch gây {damage} sát thương Thiên Nhiên."
+      },
+      "earthquake": {
+        "name": "Động Đất",
+        "description": "Làm rung chuyển khu vực mục tiêu, quật ngã kẻ địch gây {damage} sát thương Thiên Nhiên."
+      },
       "heroic_strike": {
         "name": "Đòn Anh Hùng",
         "description": "Một đòn đánh mạnh tăng sát thương cận chiến thêm {damage}. Kích hoạt ở đòn đánh tiếp theo của bạn."

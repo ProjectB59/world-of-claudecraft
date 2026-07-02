@@ -120,6 +120,7 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.theme.knob.rage': '怒氣',
   'hudChrome.theme.knob.energy': '能量',
   'hudChrome.options.interfaceMode': '介面模式',
+  'hudChrome.options.groundReticle': '地面瞄準指示圈',
   'hudChrome.options.interfaceModeAuto': '自動',
   'hudChrome.options.interfaceModeDesktop': '桌面',
   'hudChrome.options.interfaceModeTouch': '觸控',
@@ -1596,6 +1597,19 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     '嘲諷目標：你的威脅值提高到其最仇恨敵人的水平，並強迫其攻擊你 3 秒。',
   'entities.abilities.fireball.name': '火球術',
+  'entities.abilities.rain_of_fire.name': '烈火之雨',
+  'entities.abilities.rain_of_fire.description':
+    '在目標區域降下烈火之雨，灼燒敵人，造成 {damage} 點火焰傷害。',
+  'entities.abilities.volley.name': '亂射',
+  'entities.abilities.volley.description': '向目標區域射出箭雨，對其中的敵人造成 {damage} 點傷害。',
+  'entities.abilities.hurricane.name': '颶風',
+  'entities.abilities.hurricane.description':
+    '在目標區域召喚颶風，重擊敵人，造成 {damage} 點自然傷害。',
+  'entities.abilities.earthquake.name': '地震',
+  'entities.abilities.earthquake.description': '撼動目標區域，重擊敵人，造成 {damage} 點自然傷害。',
+  'entities.abilities.flamestrike.name': '烈焰風暴',
+  'entities.abilities.flamestrike.description':
+    '在目標區域召喚一次烈焰爆發，對爆炸範圍內的敵人造成 {damage} 點火焰傷害。',
   'entities.abilities.fireball.description':
     '投擲一團火球，造成 {damage} 點火焰傷害，並附加持續傷害。',
   'entities.abilities.frost_armor.name': '霜甲術',

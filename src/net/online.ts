@@ -724,6 +724,7 @@ function blankEntity(id: number): Entity {
     castingAbility: null,
     castRemaining: 0,
     castTotal: 0,
+    castAim: null,
     channeling: false,
     channelTickTimer: 0,
     channelTickEvery: 0,
@@ -1586,6 +1587,10 @@ export class ClientWorld implements IWorld {
       return;
     }
     this.cmd({ cmd: 'castSlot', slot });
+  }
+  castAbilityAt(abilityId: string, aim: { x: number; z: number }): void {
+    // Ground-targeted: no entity target involved, so no dead-target guard.
+    this.cmd({ cmd: 'castAt', ability: abilityId, x: aim.x, z: aim.z });
   }
   cancelAura(auraId: string): void {
     // Authoritative on the server; the dropped aura disappears on the next self

@@ -1083,6 +1083,10 @@ export interface AbilityDef {
   scalesWith?: 'ranged';
   requiresTarget: boolean;
   targetType?: 'enemy' | 'friendly'; // friendly = self or allied player (defaults to enemy)
+  // Ground-targeted ability: instead of an entity target, the cast is aimed at a
+  // world point (the client proposes it, the server clamps it to `range`). Its area
+  // effects (aoeDamage / groundAoE) center on that point. Implies requiresTarget:false.
+  targetMode?: 'position';
   onNextSwing?: boolean; // heroic strike style: no GCD, queues on swing
   offGcd?: boolean;
   awardsCombo?: number; // rogue builders
@@ -1367,6 +1371,10 @@ export interface Entity {
   castingAbility: string | null;
   castRemaining: number;
   castTotal: number;
+  // Ground-targeted casting: the world point a `targetMode: 'position'` ability is
+  // aimed at, captured (server-clamped to range) when the cast begins and read by
+  // its area effects when it resolves. null for normal entity/self casts.
+  castAim: Vec3 | null;
   channeling: boolean;
   channelTickTimer: number;
   channelTickEvery: number;
@@ -1681,6 +1689,19 @@ export type SimEvent = { pid?: number } & (
       targetId: number;
       school: string;
       fx: 'projectile' | 'beam' | 'tick' | 'nova';
+    }
+  // visual-only cue anchored to a WORLD POINT rather than an entity: a
+  // ground-targeted spell's impact (the burst/nova lands where it was aimed, not
+  // on the caster). The renderer drapes it onto the terrain at (x, z).
+  | {
+      type: 'spellfxAt';
+      x: number;
+      z: number;
+      school: string;
+      fx: 'burst' | 'nova';
+      // blast radius in yards; when set the renderer flashes a terrain-draped
+      // AoE ring of this size under the burst so the impact area reads clearly
+      radius?: number;
     }
   // entityId (when set) anchors the log to that entity so the server only
   // delivers it to nearby players; anchorless logs broadcast server-wide

@@ -2197,6 +2197,19 @@ export class GameServer {
       case 'castSlot':
         if (typeof msg.slot === 'number') sim.castAbilityBySlot(msg.slot | 0, pid);
         break;
+      case 'castAt':
+        // Ground-targeted cast: the client proposes a world point; the sim clamps
+        // it to the ability's range from the caster (server-authoritative).
+        if (
+          typeof msg.ability === 'string' &&
+          typeof msg.x === 'number' &&
+          typeof msg.z === 'number' &&
+          Number.isFinite(msg.x) &&
+          Number.isFinite(msg.z)
+        ) {
+          sim.castAbility(msg.ability, pid, { x: msg.x, z: msg.z });
+        }
+        break;
       case 'cast':
         if (typeof msg.ability === 'string') sim.castAbility(msg.ability, pid);
         break;

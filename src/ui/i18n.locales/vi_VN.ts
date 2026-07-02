@@ -54,6 +54,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
     'Cài Đặt Chiến Lợi Phẩm: Chia Chủ Trì, Người Chia {name}, ngưỡng {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Ngưỡng chiến lợi phẩm được đặt thành {threshold}.',
   'hudChrome.options.showDevBadges': 'Hiện Huy Hiệu Nhà Phát Triển',
+  'hudChrome.options.groundReticle': 'Vòng ngắm mục tiêu mặt đất',
   'hudChrome.options.startAttackOnAbility': 'Tự Đánh Khi Dùng Kỹ Năng',
   'hudChrome.party.promoteLeader': 'Thăng Làm Đội Trưởng',
   'hudChrome.plurals.playersMatching.few': 'Ai: {count} người chơi khớp "{query}" trên {realm}.',
@@ -568,6 +569,21 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Ném ra một quả cầu lửa rực cháy gây {damage} sát thương Hỏa cùng sát thương cộng dồn theo thời gian.',
   'entities.abilities.fireball.name': 'Cầu Lửa',
+  'entities.abilities.rain_of_fire.name': 'Mưa Lửa',
+  'entities.abilities.rain_of_fire.description':
+    'Trút một cơn mưa lửa xuống khu vực mục tiêu, thiêu đốt kẻ địch gây {damage} sát thương Lửa.',
+  'entities.abilities.volley.name': 'Loạt Tên',
+  'entities.abilities.volley.description':
+    'Trút mưa tên xuống khu vực mục tiêu, gây {damage} sát thương cho kẻ địch bên trong.',
+  'entities.abilities.hurricane.name': 'Cuồng Phong',
+  'entities.abilities.hurricane.description':
+    'Triệu hồi cuồng phong xuống khu vực mục tiêu, quật ngã kẻ địch gây {damage} sát thương Thiên Nhiên.',
+  'entities.abilities.earthquake.name': 'Động Đất',
+  'entities.abilities.earthquake.description':
+    'Làm rung chuyển khu vực mục tiêu, quật ngã kẻ địch gây {damage} sát thương Thiên Nhiên.',
+  'entities.abilities.flamestrike.name': 'Cú Đánh Lửa',
+  'entities.abilities.flamestrike.description':
+    'Gọi một vụ nổ lửa xuống khu vực mục tiêu, gây {damage} sát thương Lửa cho kẻ địch trong vụ nổ.',
   'entities.abilities.flame_shock.description':
     'Thiêu đốt mục tiêu bằng lửa gây 25 sát thương cộng thêm {damage} trong 12 giây.',
   'entities.abilities.flame_shock.name': 'Chấn Hỏa',

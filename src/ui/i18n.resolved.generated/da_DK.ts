@@ -340,6 +340,7 @@ export const da_DK: EnTranslations = {
       "uiScale": "UI-skala",
       "highContrastBackground": "Baggrund med høj kontrast",
       "startAttackOnAbility": "Autoangreb ved brug af evne",
+      "groundReticle": "Jordsigte-retikel",
       "showItemLevel": "Vis genstandsniveau",
       "itemLevelLine": "Genstandsniveau {level}",
       "itemScoreLine": "Score {score}",
@@ -3692,6 +3693,26 @@ export const da_DK: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Flammeslag",
+        "description": "Nedkalder en flammeeksplosion på målområdet, der giver {damage} Ildskade til fjender fanget i eksplosionen."
+      },
+      "rain_of_fire": {
+        "name": "Ildregn",
+        "description": "Nedkalder en ildregn over målområdet og brænder fjender for {damage} Ildskade."
+      },
+      "volley": {
+        "name": "Pileregn",
+        "description": "Nedkalder en regn af pile over målområdet og påfører {damage} skade på fjender i det."
+      },
+      "hurricane": {
+        "name": "Orkan",
+        "description": "Slipper en orkan løs over målområdet og rammer fjender for {damage} Naturskade."
+      },
+      "earthquake": {
+        "name": "Jordskælv",
+        "description": "Ryster målområdet og rammer fjender for {damage} Naturskade."
+      },
       "heroic_strike": {
         "name": "Heroisk Slag",
         "description": "Et stærkt angreb, der øger nærkampsskaden med {damage}. Aktiveres ved dit næste hug."

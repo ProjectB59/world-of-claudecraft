@@ -52,6 +52,7 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
     'Bytteindstillinger: Mesterbytte, bytteleder {name}, tærskel {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Byttetærskel sat til {threshold}.',
   'hudChrome.options.showDevBadges': 'Vis udviklermærker',
+  'hudChrome.options.groundReticle': 'Jordsigte-retikel',
   'hudChrome.options.startAttackOnAbility': 'Autoangreb ved brug af evne',
   'hudChrome.party.promoteLeader': 'Forfrem til leder',
   'hudChrome.plurals.playersMatching.few':
@@ -561,6 +562,21 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Slynger en flammende kugle, der volder {damage} ildskade plus yderligere skade over tid.',
   'entities.abilities.fireball.name': 'Ildkugle',
+  'entities.abilities.rain_of_fire.name': 'Ildregn',
+  'entities.abilities.rain_of_fire.description':
+    'Nedkalder en ildregn over målområdet og brænder fjender for {damage} Ildskade.',
+  'entities.abilities.volley.name': 'Pileregn',
+  'entities.abilities.volley.description':
+    'Nedkalder en regn af pile over målområdet og påfører {damage} skade på fjender i det.',
+  'entities.abilities.hurricane.name': 'Orkan',
+  'entities.abilities.hurricane.description':
+    'Slipper en orkan løs over målområdet og rammer fjender for {damage} Naturskade.',
+  'entities.abilities.earthquake.name': 'Jordskælv',
+  'entities.abilities.earthquake.description':
+    'Ryster målområdet og rammer fjender for {damage} Naturskade.',
+  'entities.abilities.flamestrike.name': 'Flammeslag',
+  'entities.abilities.flamestrike.description':
+    'Nedkalder en flammeeksplosion på målområdet, der giver {damage} Ildskade til fjender fanget i eksplosionen.',
   'entities.abilities.flame_shock.description':
     'Svider målet med ild for 25 skade plus {damage} over 12 sek.',
   'entities.abilities.flame_shock.name': 'Flammechok',

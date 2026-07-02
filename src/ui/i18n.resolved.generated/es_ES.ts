@@ -340,6 +340,7 @@ export const es_ES: EnTranslations = {
       "uiScale": "Escala de la interfaz",
       "highContrastBackground": "Fondo de alto contraste",
       "startAttackOnAbility": "Ataque automático al usar habilidad",
+      "groundReticle": "Retícula de objetivo terrestre",
       "showItemLevel": "Mostrar nivel de objeto",
       "itemLevelLine": "Nivel de objeto {level}",
       "itemScoreLine": "Puntuación {score}",
@@ -3692,6 +3693,26 @@ export const es_ES: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Llamarada",
+        "description": "Invoca un estallido de fuego en el área objetivo que inflige {damage} de daño de Fuego a los enemigos alcanzados por la explosión."
+      },
+      "rain_of_fire": {
+        "name": "Lluvia de Fuego",
+        "description": "Hace caer una lluvia de fuego sobre el área objetivo, quemando a los enemigos e infligiendo {damage} de daño de Fuego."
+      },
+      "volley": {
+        "name": "Andanada",
+        "description": "Lanza una lluvia de flechas sobre el área objetivo, infligiendo {damage} de daño a los enemigos atrapados."
+      },
+      "hurricane": {
+        "name": "Huracán",
+        "description": "Desata un huracán sobre el área objetivo, golpeando a los enemigos e infligiendo {damage} de daño de Naturaleza."
+      },
+      "earthquake": {
+        "name": "Terremoto",
+        "description": "Sacude el área objetivo, golpeando a los enemigos e infligiendo {damage} de daño de Naturaleza."
+      },
       "heroic_strike": {
         "name": "Golpe heroico",
         "description": "Un ataque poderoso que aumenta el daño cuerpo a cuerpo en {damage}. Se activa en tu siguiente golpe."

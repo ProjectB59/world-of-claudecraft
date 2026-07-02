@@ -67,6 +67,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
     'Beute-Einstellungen: Meisterbeute, Plündermeister {name}, Schwelle {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Beuteschwelle auf {threshold} gesetzt.',
   'hudChrome.options.showDevBadges': 'Entwicklerabzeichen anzeigen',
+  'hudChrome.options.groundReticle': 'Bodenziel-Fadenkreuz',
   'hudChrome.options.startAttackOnAbility': 'Auto-Angriff bei Fähigkeitseinsatz',
   'hudChrome.party.promoteLeader': 'Zum Anführer befördern',
   'hudChrome.statInfo.desc.spellPower':
@@ -1700,6 +1701,21 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Verspottet das Ziel: Eure Bedrohung steigt auf die seines meistgehassten Gegners und es wird 3 Sek. lang gezwungen, euch anzugreifen.',
   'entities.abilities.fireball.name': 'Feuerball',
+  'entities.abilities.rain_of_fire.name': 'Feuerregen',
+  'entities.abilities.rain_of_fire.description':
+    'Lässt einen Feuerregen auf den Zielbereich niedergehen, der Gegner verbrennt und {damage} Feuerschaden verursacht.',
+  'entities.abilities.volley.name': 'Pfeilhagel',
+  'entities.abilities.volley.description':
+    'Lässt einen Pfeilhagel auf den Zielbereich niedergehen und verursacht {damage} Schaden an den Gegnern darin.',
+  'entities.abilities.hurricane.name': 'Wirbelsturm',
+  'entities.abilities.hurricane.description':
+    'Entfesselt einen Wirbelsturm über dem Zielbereich, der Gegner trifft und {damage} Naturschaden verursacht.',
+  'entities.abilities.earthquake.name': 'Erdbeben',
+  'entities.abilities.earthquake.description':
+    'Lässt den Zielbereich erbeben, trifft Gegner und verursacht {damage} Naturschaden.',
+  'entities.abilities.flamestrike.name': 'Flammenschlag',
+  'entities.abilities.flamestrike.description':
+    'Lässt am Zielort eine Feuerexplosion niedergehen, die allen Gegnern im Wirkungsbereich {damage} Feuerschaden zufügt.',
   'entities.abilities.fireball.description':
     'Schleudert einen feurigen Ball, der {damage} Feuerschaden sowie zusätzlichen Schaden über Zeit verursacht.',
   'entities.abilities.frost_armor.name': 'Frostrüstung',

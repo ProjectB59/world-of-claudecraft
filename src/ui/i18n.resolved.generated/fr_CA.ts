@@ -340,6 +340,7 @@ export const fr_CA: EnTranslations = {
       "uiScale": "Échelle de l’interface",
       "highContrastBackground": "Arrière-plan à contraste élevé",
       "startAttackOnAbility": "Attaque auto à l'utilisation d'une compétence",
+      "groundReticle": "Réticule de ciblage au sol",
       "showItemLevel": "Afficher le niveau d'objet",
       "itemLevelLine": "Niveau d'objet {level}",
       "itemScoreLine": "Score {score}",
@@ -3692,6 +3693,26 @@ export const fr_CA: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Frappe enflammée",
+        "description": "Fait s'abattre une explosion de flammes sur la zone visée, infligeant {damage} points de dégâts de Feu aux ennemis pris dans la déflagration."
+      },
+      "rain_of_fire": {
+        "name": "Pluie de feu",
+        "description": "Fait pleuvoir du feu sur la zone visée, brûlant les ennemis pour {damage} points de dégâts de Feu."
+      },
+      "volley": {
+        "name": "Volée de flèches",
+        "description": "Fait pleuvoir des flèches sur la zone visée, infligeant {damage} points de dégâts aux ennemis présents."
+      },
+      "hurricane": {
+        "name": "Ouragan",
+        "description": "Déchaîne un ouragan sur la zone visée, frappant les ennemis pour {damage} points de dégâts de Nature."
+      },
+      "earthquake": {
+        "name": "Tremblement de terre",
+        "description": "Fait trembler la zone visée, frappant les ennemis pour {damage} points de dégâts de Nature."
+      },
       "heroic_strike": {
         "name": "Frappe héroïque",
         "description": "Une attaque puissante qui augmente les dégâts de mêlée de {damage}. S'active lors de votre prochaine frappe."

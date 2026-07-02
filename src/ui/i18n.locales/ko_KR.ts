@@ -124,6 +124,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.theme.knob.rage': '분노',
   'hudChrome.theme.knob.energy': '에너지',
   'hudChrome.options.interfaceMode': '인터페이스 모드',
+  'hudChrome.options.groundReticle': '지면 조준 표시기',
   'hudChrome.options.interfaceModeAuto': '자동',
   'hudChrome.options.interfaceModeDesktop': '데스크톱',
   'hudChrome.options.interfaceModeTouch': '터치',
@@ -1655,6 +1656,21 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     '대상을 도발합니다. 자신의 위협 수준이 대상이 가장 증오하는 적과 같아지며, 3초 동안 자신을 공격하게 만듭니다.',
   'entities.abilities.fireball.name': '화염구',
+  'entities.abilities.rain_of_fire.name': '불의 비',
+  'entities.abilities.rain_of_fire.description':
+    '지정한 지역에 불의 비를 내려 적을 불태우고 {damage}의 화염 피해를 입힙니다.',
+  'entities.abilities.volley.name': '일제 사격',
+  'entities.abilities.volley.description':
+    '지정한 지역에 화살을 쏟아부어 그 안의 적에게 {damage}의 피해를 입힙니다.',
+  'entities.abilities.hurricane.name': '폭풍우',
+  'entities.abilities.hurricane.description':
+    '지정한 지역에 폭풍우를 일으켜 적을 강타하고 {damage}의 자연 피해를 입힙니다.',
+  'entities.abilities.earthquake.name': '지진',
+  'entities.abilities.earthquake.description':
+    '지정한 지역을 뒤흔들어 적을 강타하고 {damage}의 자연 피해를 입힙니다.',
+  'entities.abilities.flamestrike.name': '화염 폭발',
+  'entities.abilities.flamestrike.description':
+    '지정한 지역에 화염 폭발을 일으켜 폭발 범위 안의 적에게 {damage}의 화염 피해를 입힙니다.',
   'entities.abilities.fireball.description':
     '불덩이를 날려 {damage}의 화염 피해와 추가 지속 피해를 입힙니다.',
   'entities.abilities.frost_armor.name': '냉기 갑옷',

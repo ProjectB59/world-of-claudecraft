@@ -65,6 +65,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
     'Configurações de Saque: Saque Mestre, Saqueador Mestre {name}, limite {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Limite de saque definido como {threshold}.',
   'hudChrome.options.showDevBadges': 'Exibir Insígnias de Desenvolvedor',
+  'hudChrome.options.groundReticle': 'Retícula de mira no chão',
   'hudChrome.options.startAttackOnAbility': 'Ataque Automático ao Usar Habilidade',
   'hudChrome.party.promoteLeader': 'Promover a Líder',
   'hudChrome.statInfo.desc.spellPower':
@@ -1692,6 +1693,21 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Provoca o alvo: sua ameaça sobe para igualar a do inimigo mais odiado por ele, que é forçado a atacar você por 3 s.',
   'entities.abilities.fireball.name': 'Bola de Fogo',
+  'entities.abilities.rain_of_fire.name': 'Chuva de Fogo',
+  'entities.abilities.rain_of_fire.description':
+    'Faz cair uma chuva de fogo na área-alvo, queimando os inimigos e causando {damage} de dano de Fogo.',
+  'entities.abilities.volley.name': 'Saraivada',
+  'entities.abilities.volley.description':
+    'Dispara uma chuva de flechas na área-alvo, causando {damage} de dano aos inimigos atingidos.',
+  'entities.abilities.hurricane.name': 'Furacão',
+  'entities.abilities.hurricane.description':
+    'Desencadeia um furacão na área-alvo, atingindo os inimigos e causando {damage} de dano de Natureza.',
+  'entities.abilities.earthquake.name': 'Terremoto',
+  'entities.abilities.earthquake.description':
+    'Sacode a área-alvo, atingindo os inimigos e causando {damage} de dano de Natureza.',
+  'entities.abilities.flamestrike.name': 'Golpe Flamejante',
+  'entities.abilities.flamestrike.description':
+    'Invoca uma explosão de chamas no local-alvo, causando {damage} de dano de Fogo aos inimigos atingidos pela explosão.',
   'entities.abilities.fireball.description':
     'Arremessa uma bola flamejante que causa {damage} de dano de Fogo e dano adicional ao longo do tempo.',
   'entities.abilities.frost_armor.name': 'Armadura Gélida',

@@ -340,6 +340,7 @@ export const ru_RU: EnTranslations = {
       "uiScale": "Масштаб интерфейса",
       "highContrastBackground": "Фон высокой контрастности",
       "startAttackOnAbility": "Автоатака при использовании способности",
+      "groundReticle": "Прицел наземного наведения",
       "showItemLevel": "Показывать уровень предмета",
       "itemLevelLine": "Уровень предмета {level}",
       "itemScoreLine": "Оценка {score}",
@@ -3692,6 +3693,26 @@ export const ru_RU: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Огненный удар",
+        "description": "Обрушивает огненный взрыв на указанную область, нанося {damage} ед. урона от огня врагам в зоне взрыва."
+      },
+      "rain_of_fire": {
+        "name": "Огненный дождь",
+        "description": "Обрушивает огненный дождь на указанную область, сжигая врагов и нанося {damage} ед. урона от огня."
+      },
+      "volley": {
+        "name": "Залп",
+        "description": "Осыпает указанную область стрелами, нанося {damage} ед. урона врагам в ней."
+      },
+      "hurricane": {
+        "name": "Ураган",
+        "description": "Обрушивает ураган на указанную область, нанося врагам {damage} ед. урона силами природы."
+      },
+      "earthquake": {
+        "name": "Землетрясение",
+        "description": "Сотрясает указанную область, нанося врагам {damage} ед. урона силами природы."
+      },
       "heroic_strike": {
         "name": "Удар героя",
         "description": "Мощная атака, увеличивающая урон в ближнем бою на {damage}. Срабатывает при следующем взмахе оружием."

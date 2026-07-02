@@ -340,6 +340,7 @@ export const nl_NL: EnTranslations = {
       "uiScale": "UI-schaal",
       "highContrastBackground": "Hoog-contrastachtergrond",
       "startAttackOnAbility": "Auto-aanval bij gebruik van vaardigheid",
+      "groundReticle": "Grondrichtkruis",
       "showItemLevel": "Itemniveau tonen",
       "itemLevelLine": "Itemniveau {level}",
       "itemScoreLine": "Score {score}",
@@ -3692,6 +3693,26 @@ export const nl_NL: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Vlammenslag",
+        "description": "Roept een vuurexplosie op in het doelgebied die vijanden in de explosie {damage} Vuurschade toebrengt."
+      },
+      "rain_of_fire": {
+        "name": "Vuurregen",
+        "description": "Laat een vuurregen neerdalen op het doelgebied en verbrandt vijanden voor {damage} Vuurschade."
+      },
+      "volley": {
+        "name": "Pijlenregen",
+        "description": "Laat een pijlenregen neerdalen op het doelgebied en richt {damage} schade aan bij vijanden erin."
+      },
+      "hurricane": {
+        "name": "Orkaan",
+        "description": "Ontketent een orkaan boven het doelgebied en treft vijanden voor {damage} Natuurschade."
+      },
+      "earthquake": {
+        "name": "Aardbeving",
+        "description": "Laat het doelgebied beven, treft vijanden voor {damage} Natuurschade."
+      },
       "heroic_strike": {
         "name": "Heroïsche Slag",
         "description": "Een sterke aanval die de slagschade met {damage} verhoogt. Activeert bij je volgende slag."

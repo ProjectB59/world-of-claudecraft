@@ -55,6 +55,7 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
     'Byteinställningar: Mästarbyte, bytesmästare {name}, tröskel {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Bytest. tröskel satt till {threshold}.',
   'hudChrome.options.showDevBadges': 'Visa utvecklarmärken',
+  'hudChrome.options.groundReticle': 'Markriktmedel',
   'hudChrome.options.startAttackOnAbility': 'Automatisk attack vid förmågeanvändning',
   'hudChrome.party.promoteLeader': 'Befordra till ledare',
   'hudChrome.plurals.playersMatching.few': 'Vilka: {count} spelare matchar "{query}" på {realm}.',
@@ -563,6 +564,21 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Slungar ett brinnande klot som vållar {damage} eldskada plus ytterligare skada över tid.',
   'entities.abilities.fireball.name': 'Eldklot',
+  'entities.abilities.rain_of_fire.name': 'Eldregn',
+  'entities.abilities.rain_of_fire.description':
+    'Låter ett eldregn falla över målområdet och bränner fiender för {damage} Eldskada.',
+  'entities.abilities.volley.name': 'Pilregn',
+  'entities.abilities.volley.description':
+    'Låter pilar regna över målområdet och vållar {damage} skada på fiender i det.',
+  'entities.abilities.hurricane.name': 'Orkan',
+  'entities.abilities.hurricane.description':
+    'Släpper lös en orkan över målområdet och slår fiender för {damage} Naturskada.',
+  'entities.abilities.earthquake.name': 'Jordbävning',
+  'entities.abilities.earthquake.description':
+    'Skakar målområdet och slår fiender för {damage} Naturskada.',
+  'entities.abilities.flamestrike.name': 'Flamslag',
+  'entities.abilities.flamestrike.description':
+    'Kallar ner en eldexplosion på målområdet som ger {damage} Eldskada till fiender som fångas i explosionen.',
   'entities.abilities.flame_shock.description':
     'Sveder målet med eld för 25 skada plus {damage} över 12 sek.',
   'entities.abilities.flame_shock.name': 'Flamchock',

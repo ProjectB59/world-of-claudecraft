@@ -64,6 +64,7 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
     'Impostazioni Bottino: Bottino Distribuito, Distributore del Bottino {name}, soglia {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Soglia del bottino impostata su {threshold}.',
   'hudChrome.options.showDevBadges': 'Mostra distintivi sviluppatore',
+  'hudChrome.options.groundReticle': 'Reticolo di puntamento a terra',
   'hudChrome.options.startAttackOnAbility': "Attacco automatico all'uso dell'abilita",
   'hudChrome.party.promoteLeader': 'Promuovi a Capo',
   'hudChrome.statInfo.desc.spellPower':
@@ -1690,6 +1691,21 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Provoca il bersaglio: la tua minaccia sale fino a eguagliare quella del suo nemico più odiato e lo costringe ad attaccarti per 3 s.',
   'entities.abilities.fireball.name': 'Palla di Fuoco',
+  'entities.abilities.rain_of_fire.name': 'Pioggia di Fuoco',
+  'entities.abilities.rain_of_fire.description':
+    'Fa piovere fuoco sulla zona bersaglio, bruciando i nemici per {damage} danni da Fuoco.',
+  'entities.abilities.volley.name': 'Scarica di Frecce',
+  'entities.abilities.volley.description':
+    'Fa piovere frecce sulla zona bersaglio, infliggendo {damage} danni ai nemici colpiti.',
+  'entities.abilities.hurricane.name': 'Uragano',
+  'entities.abilities.hurricane.description':
+    'Scatena un uragano sulla zona bersaglio, colpendo i nemici per {damage} danni della Natura.',
+  'entities.abilities.earthquake.name': 'Terremoto',
+  'entities.abilities.earthquake.description':
+    'Scuote la zona bersaglio, colpendo i nemici per {damage} danni della Natura.',
+  'entities.abilities.flamestrike.name': 'Ondata di Fiamme',
+  'entities.abilities.flamestrike.description':
+    "Evoca un'esplosione di fiamme sulla zona bersaglio, infliggendo {damage} danni da Fuoco ai nemici investiti dalla deflagrazione.",
   'entities.abilities.fireball.description':
     'Scaglia una palla infuocata che infligge {damage} danni da Fuoco più danni aggiuntivi nel tempo.',
   'entities.abilities.frost_armor.name': 'Armatura Gelida',
