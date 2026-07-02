@@ -49,6 +49,8 @@ const PLAYER_ARROW_HALF_WIDTH = 5;
 const PLAYER_ARROW_BASE_Y = 6;
 // Building footprint outline width in the detail overlay.
 const BUILDING_LINE_WIDTH = 1;
+// Active-quest objective area (the translucent quest-POI blob) ring width.
+const QUEST_AREA_LINE_WIDTH = 2;
 
 // The `--color-map-*` design tokens the painter resolves once per redraw. These
 // mirror the colors the inline overworld-map render used verbatim.
@@ -58,6 +60,8 @@ const MAP_COLOR_TOKENS = {
   portalDot: '--color-map-portal-dot',
   portalLabel: '--color-map-portal-label',
   npcQuest: '--color-map-npc-quest',
+  questAreaFill: '--color-map-quest-area-fill',
+  questAreaStroke: '--color-map-quest-area-stroke',
   player: '--color-map-player',
   allyFriend: '--color-map-ally-friend',
   allyGuild: '--color-map-ally-guild',
@@ -161,6 +165,21 @@ export class MapWindowPainter {
     );
 
     if (model.detail) this.drawDetail(ctx, model.detail, colors);
+
+    // Active-quest objective areas: translucent blue blobs (classic quest-POI
+    // style) over where each objective's targets live, drawn under the title /
+    // POI / glyph layers so their text stays readable on top.
+    if (model.questAreas.length > 0) {
+      ctx.fillStyle = colors.questAreaFill;
+      ctx.strokeStyle = colors.questAreaStroke;
+      ctx.lineWidth = QUEST_AREA_LINE_WIDTH;
+      for (const area of model.questAreas) {
+        ctx.beginPath();
+        ctx.arc(area.mx, area.my, area.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
 
     // Zone title (drawn on-canvas; the world map has no DOM zone label).
     ctx.font = TITLE_FONT;

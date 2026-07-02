@@ -9,8 +9,8 @@
 // getComputedStyle and are covered by the no-magic-values source guard instead.
 
 import { describe, expect, it } from 'vitest';
-import { DUNGEON_LIST, QUESTS, WORLD_MAX_X, WORLD_MIN_X, ZONES } from '../src/sim/data';
-import { isQuestTurnInNpc } from '../src/sim/types';
+import { CAMPS, DUNGEON_LIST, QUESTS, WORLD_MAX_X, WORLD_MIN_X, ZONES } from '../src/sim/data';
+import { isQuestTurnInNpc, type QuestProgress } from '../src/sim/types';
 import type { Decoration } from '../src/sim/world';
 import { overworldDungeonPortals } from '../src/ui/map_dungeon_portals';
 import {
@@ -48,7 +48,10 @@ const READY_QUEST = requireReadyQuest();
 // stubs (a "Sim-shaped" one carrying extra sim-only fields the core must ignore,
 // and a lean "ClientWorld-mirror-shaped" one) and assert identical output
 // Iteration order of consumed collections is kept identical.
-function makeOverworldWorld(shape: 'sim' | 'client'): IWorld {
+function makeOverworldWorld(
+  shape: 'sim' | 'client',
+  questLog: Map<string, QuestProgress> = new Map(),
+): IWorld {
   const simJunk = shape === 'sim' ? { hp: 100, maxHp: 100, castingAbility: null } : {};
   const player = {
     id: 1,
@@ -88,6 +91,7 @@ function makeOverworldWorld(shape: 'sim' | 'client'): IWorld {
     cfg: { seed: 42, playerClass: 'warrior' },
     playerId: 1,
     questState: (q: string) => (q === GIVER_QUEST.id ? 'available' : 'unavailable'),
+    questLog,
   } as unknown as IWorld;
 }
 
@@ -101,6 +105,7 @@ function makeDelveWorld(shape: 'sim' | 'client'): IWorld {
     cfg: { seed: 42, playerClass: 'warrior' },
     playerId: 1,
     questState: () => 'unavailable',
+    questLog: new Map(),
   } as unknown as IWorld;
 }
 
@@ -252,5 +257,64 @@ describe('buildOverworldMapModel (pure draw model)', () => {
 
   it('exposes the zoom ceiling used by the zoom control', () => {
     expect(MAP_MAX_ZOOM).toBeGreaterThan(1);
+  });
+});
+
+describe('active-quest objective areas (the classic POI blobs)', () => {
+  // A kill quest whose target mob camps inside the committed zone band, so the
+  // quest-area branch exercises real content rather than a synthetic fixture.
+  function requireKillQuestInZone() {
+    for (const q of Object.values(QUESTS)) {
+      const obj = q.objectives.find((o) => o.type === 'kill' && o.targetMobId);
+      if (!obj) continue;
+      const camp = CAMPS.find(
+        (c) => c.mobId === obj.targetMobId && c.center.z >= ZONE.zMin && c.center.z < ZONE.zMax,
+      );
+      if (camp) return { quest: q, camp };
+    }
+    throw new Error('expected a kill quest with a camp in the first zone');
+  }
+  const { quest } = requireKillQuestInZone();
+  const activeLog = (): Map<string, QuestProgress> =>
+    new Map([
+      [
+        quest.id,
+        { questId: quest.id, counts: quest.objectives.map(() => 0), state: 'active' as const },
+      ],
+    ]);
+
+  it('plots a blob over the target camp for an active kill quest (both shapes, identical)', () => {
+    const sim = buildOverworldMapModel(input(makeOverworldWorld('sim', activeLog()), 1));
+    const client = buildOverworldMapModel(input(makeOverworldWorld('client', activeLog()), 1));
+    expect(sim.questAreas.length).toBeGreaterThan(0);
+    expect(client.questAreas).toEqual(sim.questAreas);
+    for (const a of sim.questAreas) {
+      expect(a.radius).toBeGreaterThan(0);
+      expect(Number.isFinite(a.mx)).toBe(true);
+      expect(Number.isFinite(a.my)).toBe(true);
+    }
+  });
+
+  it('plots nothing with an empty quest log or once the quest is turn-in ready', () => {
+    expect(buildOverworldMapModel(input(makeOverworldWorld('sim'), 1)).questAreas).toEqual([]);
+    const readyLog: Map<string, QuestProgress> = new Map([
+      [
+        quest.id,
+        {
+          questId: quest.id,
+          counts: quest.objectives.map((o) => o.count),
+          state: 'ready' as const,
+        },
+      ],
+    ]);
+    expect(
+      buildOverworldMapModel(input(makeOverworldWorld('sim', readyLog), 1)).questAreas,
+    ).toEqual([]);
+  });
+
+  it('scales the blob radius with the zoom level', () => {
+    const z1 = buildOverworldMapModel(input(makeOverworldWorld('sim', activeLog()), 1));
+    const z2 = buildOverworldMapModel(input(makeOverworldWorld('sim', activeLog()), 2));
+    expect(z2.questAreas[0].radius).toBeCloseTo(z1.questAreas[0].radius * 2, 5);
   });
 });

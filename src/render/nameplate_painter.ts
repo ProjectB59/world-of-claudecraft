@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { ABILITIES, MOBS, QUESTS } from '../sim/data';
 import { specialRoleColor } from '../sim/discord_roles';
+import { questTargetMobIds } from '../sim/quest_targets';
 import { type Entity, isQuestTurnInNpc } from '../sim/types';
 import {
   devTierBadgeDataUrl,
@@ -89,6 +90,11 @@ export class NameplatePainter {
   private readonly tmpV2 = new THREE.Vector3();
   // one plan, rewritten per entity by the pure core (allocation-light hot path).
   private readonly plan: NameplatePlan = newNameplatePlan();
+  // Quest-target mob ids (mobs that advance an active objective), recomputed only
+  // when the quest log actually changes: the content-table scan is not per-frame
+  // work, so it is cached behind a cheap log signature.
+  private questTargetSig = '';
+  private questTargets: ReadonlySet<string> = new Set();
 
   constructor(deps: NameplatePainterDeps) {
     this.views = deps.views;
@@ -109,6 +115,15 @@ export class NameplatePainter {
     const { width: w, height: h } = this.getViewport();
     const showNameplates = this.showNameplates();
     const showDevBadges = this.showDevBadges();
+    // Refresh the quest-target mob set only when the quest log changed (accept /
+    // progress / turn-in), so live target mobs gain/lose their '!' marker.
+    let questSig = '';
+    for (const q of world.questLog.values())
+      questSig += `${q.questId}:${q.state}:${q.counts.join(',')}|`;
+    if (questSig !== this.questTargetSig) {
+      this.questTargetSig = questSig;
+      this.questTargets = questTargetMobIds(world.questLog);
+    }
     for (const [id, v] of this.views) {
       const e = world.entities.get(id);
       if (!e) continue;
@@ -276,7 +291,12 @@ export class NameplatePainter {
               name: mobName,
             });
         const hpDisplay = e.dead ? 'none' : '';
-        const marker = e.lootable ? '$' : elite && !e.dead ? '◆' : '';
+        // A live wild mob that advances one of the player's active objectives is
+        // marked '!' (blue-tinted, distinct from the gold quest-giver glyph) so
+        // the player can tell "this one counts". Lootable '$' still wins.
+        const questTarget = !e.dead && e.ownerId === null && this.questTargets.has(e.templateId);
+        const marker = e.lootable ? '$' : questTarget ? '!' : elite && !e.dead ? '◆' : '';
+        const markerClass = marker === '!' ? 'np-marker quest' : 'np-marker loot';
         // classic "dragon frame" cue: gold bar frame for elites, red for bosses (live mobs only)
         const frame = e.dead ? '' : boss ? 'boss' : elite ? 'elite' : '';
         this.setNameplateStatic(
@@ -286,7 +306,7 @@ export class NameplatePainter {
           color,
           hpDisplay,
           marker,
-          'np-marker loot',
+          markerClass,
           '1',
           frame,
         );

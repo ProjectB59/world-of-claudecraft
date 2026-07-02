@@ -24,6 +24,7 @@ import {
   WORLD_MIN_X,
   type ZoneDef,
 } from '../sim/data';
+import { questObjectiveAreas } from '../sim/quest_targets';
 import { isQuestTurnInNpc } from '../sim/types';
 import type { Decoration } from '../sim/world';
 import type { FriendInfo, IWorld } from '../world_api';
@@ -99,6 +100,14 @@ export interface MapNpcMarker {
   ready: boolean;
 }
 
+/** A translucent active-quest objective area (the classic quest-POI blob):
+ *  canvas-pixel center + radius over where the objective's targets live. */
+export interface MapQuestAreaMarker {
+  mx: number;
+  my: number;
+  radius: number;
+}
+
 /** The local player's facing arrow (canvas rotation matches -facing). */
 export interface MapPlayerMarker {
   mx: number;
@@ -157,6 +166,7 @@ export interface OverworldMapModel {
   pois: MapPoiMarker[];
   portals: MapPortalMarker[];
   npcs: MapNpcMarker[];
+  questAreas: MapQuestAreaMarker[];
   player: MapPlayerMarker | null;
   allies: MapAllyMarker[];
   /** The zoomed-detail overlay, or null below MAP_DETAIL_ZOOM. */
@@ -187,9 +197,10 @@ export function mapWindowMode(world: IWorld): MapWindowMode {
 
 /**
  * Build the overworld map draw model. Reads only IWorld members (player /
- * entities / socialInfo / questState) plus the committed zone and shared world
- * content (ZONES bounds, dungeon portals, props, decorations), so the offline Sim
- * and the online ClientWorld mirror produce identical output. Every
+ * entities / socialInfo / questState / questLog) plus the committed zone and
+ * shared world content (ZONES bounds, dungeon portals, camps, props,
+ * decorations), so the offline Sim and the online ClientWorld mirror produce
+ * identical output. Every
  * position is projected to canvas pixels here; the painter only resolves colors +
  * localized text and strokes.
  */
@@ -243,6 +254,17 @@ export function buildOverworldMapModel(input: OverworldMapInput): OverworldMapMo
     const { mx, my } = toMap(poi.x, poi.z);
     return { mx, my, zoneId: zone.id, poiIndex };
   });
+
+  // Active-quest objective areas (the classic "your targets live here" blobs),
+  // derived from the static content tables (camps / ground objects / NPCs), so
+  // the online interest radius never hides a far-away camp. Filtered to the
+  // committed zone's band like every other marker; radius scales with the zoom.
+  const questAreas: MapQuestAreaMarker[] = [];
+  for (const area of questObjectiveAreas(world.questLog)) {
+    if (area.center.z < zone.zMin || area.center.z >= zone.zMax) continue;
+    const { mx, my } = toMap(area.center.x, area.center.z);
+    questAreas.push({ mx, my, radius: (area.radius / spanX) * S });
+  }
 
   const portals: MapPortalMarker[] = overworldDungeonPortals(
     DUNGEON_LIST,
@@ -309,6 +331,7 @@ export function buildOverworldMapModel(input: OverworldMapInput): OverworldMapMo
     pois,
     portals,
     npcs,
+    questAreas,
     player,
     allies,
     detail,

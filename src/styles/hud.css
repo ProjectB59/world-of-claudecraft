@@ -165,6 +165,15 @@
     color: var(--gold);
     font-size: 14px;
   }
+  /* active-quest target mob: blue-tinted so it never reads as the gold
+     quest-giver '!', tying it to the map's blue objective areas instead */
+  .np-marker.quest {
+    color: #9cc2ff;
+    font-size: 16px;
+    text-shadow:
+      0 0 5px #6f9fff88,
+      1px 1px 2px #000;
+  }
   /* party raid/target marker, floats above the name; display toggled in JS so
      it reserves no vertical space when absent. Drop-shadow adds a dark halo on
      top of the icon's baked outline for legibility against the bright world. */
