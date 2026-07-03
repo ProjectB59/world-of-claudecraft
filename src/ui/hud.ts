@@ -1317,12 +1317,13 @@ export class Hud {
         this.questlogWindow.openWithQuest(row.dataset.quest);
       }
     });
-    // The delve board and lockpick panel are non-modal .window.panel overlays, so
+    // The delve board, lockpick panel, and map window are non-modal overlays, so
     // canUseGameKeys() stays true and the global jump (Space) / chat (Enter) binds
-    // would otherwise hijack those keys on a focused panel button. Stop propagation
-    // (but NOT the default, so the button's native activation still fires) when a
-    // panel button has focus, mirroring the quest-tracker guard above.
-    for (const panelId of ['#delve-board', '#lockpick-panel']) {
+    // would otherwise hijack those keys on a focused panel button (the map's
+    // Quests toggle, per-quest track buttons, zoom, and close included). Stop
+    // propagation (but NOT the default, so the button's native activation still
+    // fires) when a panel button has focus, mirroring the quest-tracker guard above.
+    for (const panelId of ['#delve-board', '#lockpick-panel', '#map-window']) {
       $(panelId).addEventListener('keydown', (e) => {
         if ((e.target as HTMLElement).tagName !== 'BUTTON') return;
         if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') e.stopPropagation();
@@ -1439,7 +1440,16 @@ export class Hud {
       } catch {
         /* storage unavailable */
       }
+      // The rebuild below replaces #map-quests's children, destroying a focused
+      // track button; restore focus to the same quest's rebuilt button so keyboard
+      // toggling stays in place and the flipped aria-pressed is announced (the
+      // toggleQuestTrackerCollapsed refocus idiom).
+      const refocus = document.activeElement === btn;
       this.updateMapWindow();
+      if (refocus)
+        $('#map-quests')
+          .querySelector<HTMLElement>(`.mapq-track[data-quest="${CSS.escape(questId)}"]`)
+          ?.focus();
     });
     $('#mm-bag').addEventListener('click', () => this.toggleBags());
     // Drop an equipped piece dragged out of the paperdoll onto the bags window.
