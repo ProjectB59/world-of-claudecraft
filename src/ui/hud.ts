@@ -2150,6 +2150,13 @@ export class Hud {
     }
   }
 
+  // Public: snap both movable unit frames back to their stock CSS spots and
+  // forget the saved drags. Wired to the "Reset Frame Positions" interface option.
+  resetUnitFrames(): void {
+    this.targetFrameMover?.reset();
+    this.playerFrameMover?.reset();
+  }
+
   // The player frame docks inside #actionbar-stack, whose #bottom-bar ancestor
   // carries a centering transform, and a transformed ancestor hijacks any
   // fixed/absolute positioning (it becomes the containing block). Detaching
@@ -3086,6 +3093,7 @@ export class Hud {
     // The gold log tint stays Hud-side so the painter carries no color literal.
     log: (message) => this.log(message, '#ffd100'),
     resetChatWindow: () => this.resetChatWindow(),
+    resetUnitFrames: () => this.resetUnitFrames(),
     getChatTimestamps: () => this.chatTimestamps,
     setChatTimestamps: (on) => {
       this.chatTimestamps = on;

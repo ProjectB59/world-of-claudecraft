@@ -87,6 +87,26 @@ export class MovableFrame {
     this.refreshBtn();
   }
 
+  /** Snap the frame back to its stock CSS spot: forget the saved position,
+   *  clear the inline styles, undo any detach (onPositioned(false)), and lock
+   *  the frame. Wired to the "Reset Frame Positions" interface option. */
+  reset(): void {
+    if (this.gesture) {
+      this.gesture = null;
+      document.body.classList.remove(this.cfg.draggingBodyClass);
+    }
+    this.pos = null;
+    try {
+      localStorage.removeItem(this.cfg.storageKey);
+    } catch {
+      /* storage unavailable */
+    }
+    for (const prop of ['left', 'top', 'right', 'bottom'])
+      this.cfg.frame.style.removeProperty(prop);
+    this.cfg.onPositioned?.(false);
+    this.setUnlocked(false);
+  }
+
   // The move button's accessible name / tooltip and pressed state track whether the
   // frame is unlocked; the frame gets a class so the cursor + drag affordance show.
   private refreshBtn(): void {

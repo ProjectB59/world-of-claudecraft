@@ -856,6 +856,9 @@ export const es: EnTranslations = {
       "unlock": "Mover marco del jugador",
       "lock": "Fijar marco del jugador"
     },
+    "frameReset": {
+      "label": "Restablecer posición de los marcos"
+    },
     "itemTooltip": {
       "requiresLevel": "Requiere nivel {level}"
     },

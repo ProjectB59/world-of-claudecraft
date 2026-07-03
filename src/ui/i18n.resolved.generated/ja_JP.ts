@@ -856,6 +856,9 @@ export const ja_JP: EnTranslations = {
       "unlock": "プレイヤーフレームを移動",
       "lock": "プレイヤーフレームを固定"
     },
+    "frameReset": {
+      "label": "フレーム位置をリセット"
+    },
     "itemTooltip": {
       "requiresLevel": "必要レベル {level}"
     },

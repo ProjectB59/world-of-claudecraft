@@ -309,6 +309,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.playerFrameScale': 'Escala del marco del jugador',
   'hudChrome.playerFrame.unlock': 'Mover marco del jugador',
   'hudChrome.playerFrame.lock': 'Fijar marco del jugador',
+  'hudChrome.frameReset.label': 'Restablecer posición de los marcos',
   'hudChrome.options.highContrastBackground': 'Fondo de alto contraste',
   'hudChrome.options.showItemLevel': 'Mostrar nivel de objeto',
   'hudChrome.options.itemLevelLine': 'Nivel de objeto {level}',

@@ -856,6 +856,9 @@ export const id_ID: EnTranslations = {
       "unlock": "Move player frame",
       "lock": "Lock player frame"
     },
+    "frameReset": {
+      "label": "Reset Frame Positions"
+    },
     "itemTooltip": {
       "requiresLevel": "Membutuhkan Level {level}"
     },

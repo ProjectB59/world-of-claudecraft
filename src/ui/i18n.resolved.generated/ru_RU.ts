@@ -856,6 +856,9 @@ export const ru_RU: EnTranslations = {
       "unlock": "Переместить рамку игрока",
       "lock": "Закрепить рамку игрока"
     },
+    "frameReset": {
+      "label": "Сбросить положение рамок"
+    },
     "itemTooltip": {
       "requiresLevel": "Требуется уровень {level}"
     },

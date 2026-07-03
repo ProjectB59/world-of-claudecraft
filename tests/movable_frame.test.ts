@@ -244,6 +244,26 @@ describe('MovableFrame', () => {
     expect(positioned).toEqual([false]);
   });
 
+  it('reset() forgets the saved spot, clears inline styles, re-docks, and locks', () => {
+    const { frame, btn, mover, positioned } = makeFrame();
+    btn.dispatch('click', pointer()); // unlock
+    frame.dispatch('pointerdown', pointer({ clientX: 100, clientY: 520 }));
+    fakeDocument.body.dispatch('pointermove', pointer({ clientX: 500, clientY: 320 }));
+    fakeDocument.body.dispatch('pointerup', pointer());
+    expect(store.has(KEY)).toBe(true);
+
+    mover.reset();
+    expect(store.has(KEY)).toBe(false);
+    expect(frame.style.props.size).toBe(0); // inline left/top/right/bottom gone
+    expect(positioned.at(-1)).toBe(false); // the host re-docked the frame
+    expect(btn.getAttribute('aria-pressed')).toBe('false'); // locked again
+    expect(frame.classList.contains('tf-unlocked')).toBe(false);
+
+    // and a stale drag gesture cannot resurrect the old spot after a reset
+    fakeDocument.body.dispatch('pointermove', pointer({ clientX: 900, clientY: 700 }));
+    expect(frame.style.props.size).toBe(0);
+  });
+
   it('falls back to the CSS default on corrupt saved data', () => {
     store.set(KEY, '{not json');
     const { frame, positioned } = makeFrame();

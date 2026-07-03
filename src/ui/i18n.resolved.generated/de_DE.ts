@@ -856,6 +856,9 @@ export const de_DE: EnTranslations = {
       "unlock": "Move player frame",
       "lock": "Lock player frame"
     },
+    "frameReset": {
+      "label": "Reset Frame Positions"
+    },
     "itemTooltip": {
       "requiresLevel": "Benötigt Stufe {level}"
     },

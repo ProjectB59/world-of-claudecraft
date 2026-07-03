@@ -856,6 +856,9 @@ export const ko_KR: EnTranslations = {
       "unlock": "플레이어 프레임 이동",
       "lock": "플레이어 프레임 고정"
     },
+    "frameReset": {
+      "label": "프레임 위치 초기화"
+    },
     "itemTooltip": {
       "requiresLevel": "필요 레벨 {level}"
     },

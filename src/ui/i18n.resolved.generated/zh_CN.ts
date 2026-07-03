@@ -856,6 +856,9 @@ export const zh_CN: EnTranslations = {
       "unlock": "移动玩家框",
       "lock": "锁定玩家框"
     },
+    "frameReset": {
+      "label": "重置框体位置"
+    },
     "itemTooltip": {
       "requiresLevel": "需要等级 {level}"
     },

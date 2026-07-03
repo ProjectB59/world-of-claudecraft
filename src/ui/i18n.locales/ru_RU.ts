@@ -71,6 +71,7 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.targetFrame.lock': 'Закрепить рамку цели',
   'hudChrome.playerFrame.unlock': 'Переместить рамку игрока',
   'hudChrome.playerFrame.lock': 'Закрепить рамку игрока',
+  'hudChrome.frameReset.label': 'Сбросить положение рамок',
   'hudChrome.options.playerFrameScale': 'Размер рамки игрока',
   'hud.core.mapCanvasLabel': 'Карта',
   'hud.core.mapSummary': 'Карта зоны {zone}.',

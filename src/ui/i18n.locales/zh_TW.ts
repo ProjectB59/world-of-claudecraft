@@ -68,6 +68,7 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.targetFrame.lock': '鎖定目標框',
   'hudChrome.playerFrame.unlock': '移動玩家框',
   'hudChrome.playerFrame.lock': '鎖定玩家框',
+  'hudChrome.frameReset.label': '重置框體位置',
   'hudChrome.options.playerFrameScale': '玩家框縮放',
   'hud.core.mapCanvasLabel': '地圖',
   'hud.core.mapSummary': '{zone}的地圖。',

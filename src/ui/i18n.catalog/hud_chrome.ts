@@ -962,6 +962,12 @@ export const hudChromeStrings = {
     unlock: 'Move player frame',
     lock: 'Lock player frame',
   },
+  // Interface panel row: snap both movable unit frames back to their stock
+  // spots (the button reuses chatWindow.resetAction). Wordy (M16): the five
+  // non-Latin fills land in this same change.
+  frameReset: {
+    label: 'Reset Frame Positions',
+  },
   // Item tooltip: the minimum character level needed to equip a piece (classic
   // "Requires Level N"). Shown red when the viewer is below it. {level} runs
   // through formatNumber.

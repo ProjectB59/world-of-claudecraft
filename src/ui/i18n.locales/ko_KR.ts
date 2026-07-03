@@ -72,6 +72,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.targetFrame.lock': '대상 프레임 고정',
   'hudChrome.playerFrame.unlock': '플레이어 프레임 이동',
   'hudChrome.playerFrame.lock': '플레이어 프레임 고정',
+  'hudChrome.frameReset.label': '프레임 위치 초기화',
   'hudChrome.options.playerFrameScale': '플레이어 프레임 크기',
   'hud.core.mapCanvasLabel': '지도',
   'hud.core.mapSummary': '{zone}의 지도.',

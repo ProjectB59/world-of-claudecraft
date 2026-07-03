@@ -856,6 +856,9 @@ export const vi_VN: EnTranslations = {
       "unlock": "Move player frame",
       "lock": "Lock player frame"
     },
+    "frameReset": {
+      "label": "Reset Frame Positions"
+    },
     "itemTooltip": {
       "requiresLevel": "Yêu cầu Cấp {level}"
     },

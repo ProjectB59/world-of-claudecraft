@@ -856,6 +856,9 @@ export const en_XA: EnTranslations = {
       "unlock": "[Ɱóʋé þļáýéŕ ƒŕáɱé]",
       "lock": "[Ļóçķ þļáýéŕ ƒŕáɱé]"
     },
+    "frameReset": {
+      "label": "[Ŕéšéţ Ƒŕáɱé Þóšíţíóñš]"
+    },
     "itemTooltip": {
       "requiresLevel": "[Ŕéɋúíŕéš Ļéʋéļ {level}]"
     },
