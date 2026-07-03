@@ -79,9 +79,9 @@ export function newNameplatePlan(): NameplatePlan {
 /**
  * Compute the nameplate plan for `e` as seen by `player`, writing into `out` and
  * returning it. `viewHeight` is the rig's unscaled height (EntityView.height);
- * `showNameplates` is the player's mob-nameplate toggle. `showOwnNameplate` opts
- * the local player's own overhead plate in (off by default): when on, the self
- * plate is no longer suppressed and it anchors at the normal lift like any other
+ * `showNameplates` is the player's mob-nameplate toggle. `showOwnNameplate` is the
+ * player's own-plate toggle (the setting defaults on): when on, the self plate is
+ * no longer suppressed and it anchors at the normal lift like any other
  * player's. Pure: same inputs give the same plan, no DOM/Three/i18n, no
  * Math.random/Date.now/performance.now.
  */
