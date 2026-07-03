@@ -25,6 +25,7 @@
 import { DELVES, GROUP_XP_BONUS, MOBS } from '../data';
 import { recalcPlayerStats } from '../entity';
 import { DAMAGE_IDLE_DESPAWN_MOB_IDS, DAMAGE_IDLE_DESPAWN_SECONDS } from '../entity_roster';
+import { tunedXpAmount } from '../game_config';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
 import { addThreat, clearThreat } from '../threat';
@@ -51,7 +52,7 @@ const CORPSE_DURATION = 60;
 // Self attack-speed buff a wounded frenzyOnHit mob gains; sole user maybeFrenzyOnHit.
 const BLOOD_FRENZY_AURA_ID = 'blood_frenzy';
 
-// A handful of casts ignore vanilla spell pushback (e.g. ghost_wolf). Sole user is
+// A handful of casts ignore classic-era spell pushback (e.g. ghost_wolf). Sole user is
 // the dealDamage pushback branch, so the predicate lives here with it.
 function ignoresDamagePushback(abilityId: string): boolean {
   return abilityId === 'ghost_wolf';
@@ -352,7 +353,7 @@ export function dealDamage(
       target.drinking = null;
     }
     if (target.sitting) target.sitting = false;
-    // vanilla spell pushback: a landed hit delays the cast rather than
+    // classic-era spell pushback: a landed hit delays the cast rather than
     // cancelling it (misses and fully absorbed hits don't push back)
     if (
       target.castingAbility &&
@@ -603,11 +604,8 @@ export function handleDeath(ctx: SimContext, e: Entity, killer: Entity | null): 
 
       meta.counters.kills++;
       if (creditEntity.targetId === e.id) creditEntity.autoAttack = false;
-      if (creditEntity.comboTargetId === e.id) {
-        creditEntity.comboPoints = 0;
-        creditEntity.comboTargetId = null;
-        ctx.emit({ type: 'comboPoint', points: 0, pid: creditEntity.id });
-      }
+      // combo points are character-bound: unspent points survive the kill and
+      // carry to the next target (they fade on their own via updateComboExpiry)
       for (const member of eligible) {
         const mE = ctx.entities.get(member.entityId);
         if (!mE) continue;
@@ -638,7 +636,12 @@ export function grantXp(
 ): void {
   const p = ctx.entities.get(meta.entityId);
   if (!p || amount <= 0) return;
-  // Rested XP bonus: classic vanilla only doubles KILL xp (not quests), and
+  // Operator XP rate (game_config override layer). Identity at the default 1,
+  // so unconfigured hosts keep the exact classic-era awards. Applied before the
+  // rested draw-down so the rested bonus scales with the same knob.
+  amount = tunedXpAmount(amount);
+  if (amount <= 0) return;
+  // Rested XP bonus: the classic-era rule only doubles KILL xp (not quests), and
   // never past the cap (no level bar to advance). The bonus equals the rested
   // amount drawn down, so the effective award is up to 2x while the pool lasts.
   let restedBonus = 0;

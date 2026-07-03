@@ -724,7 +724,8 @@ export const ja_JP: EnTranslations = {
       "summaryGroup": "分配設定：グループルート。"
     },
     "party": {
-      "promoteLeader": "パーティリーダーに指定"
+      "promoteLeader": "パーティリーダーに指定",
+      "inviteUsage": "誰を招待しますか？使用法：/invite <名前>。"
     },
     "lootSettings": {
       "title": "分配設定",
@@ -751,7 +752,13 @@ export const ja_JP: EnTranslations = {
       "sortName": "名前",
       "searchPlaceholder": "アイテムを検索",
       "searchAria": "名前でバッグのアイテムを検索",
-      "noMatch": "条件に一致するアイテムはありません。"
+      "noMatch": "条件に一致するアイテムはありません。",
+      "capacity": "{used}/{total}",
+      "capacityAria": "使用中のバッグスロット: {total}個中{used}個",
+      "backpack": "バックパック",
+      "bagSocketAria": "{name}: {slots}",
+      "socketEmpty": "空のバッグスロット",
+      "unequipHint": "クリックしてこのバッグを外す"
     },
     "raidConvert": {
       "toPartyDone": "レイドがパーティに戻りました。",
@@ -1038,6 +1045,112 @@ export const ja_JP: EnTranslations = {
       },
       "linkedAs": "{login} として連携済み",
       "unlink": "GitHub の連携を解除"
+    },
+    "mailbox": {
+      "title": "メールボックス",
+      "subtitle": "レイヴンポスト",
+      "close": "メールボックスを閉じる",
+      "tabInbox": "受信箱",
+      "tabInboxWithCount": "受信箱（{count}）",
+      "tabSend": "Send",
+      "empty": "メールボックスは空です。",
+      "truncated": "全{total}通のうち最新の{shown}通を表示しています。",
+      "attachmentsBadge": "小包あり",
+      "unreadBadge": "未読",
+      "back": "Back",
+      "take": "添付品を受け取る",
+      "delete": "手紙を削除",
+      "deleteAria": "手紙「{subject}」を削除",
+      "openAria": "{name}からの手紙「{subject}」を読む",
+      "noSubject": "（件名なし）",
+      "toLabel": "To",
+      "toPlaceholder": "キャラクター名",
+      "subjectLabel": "件名",
+      "bodyLabel": "本文",
+      "coinLabel": "お金を添える",
+      "parcelsLabel": "小包",
+      "parcelsHint": "バッグ内のアイテムをクリックして添付します。",
+      "removeParcelAria": "手紙から{item}を取り除く",
+      "sendButton": "手紙を送る",
+      "postageNote": "郵送料：{amount}。ワタリガラスの飛行時間は約{seconds}秒です。",
+      "arrivedBanner": "ワタリガラスが到着：{name}からの手紙。",
+      "arrivedLog": "{name}から新しい手紙が届きました。",
+      "indicatorAria": "未読の手紙：{count}",
+      "indicatorTip": "未読の手紙が{count}通あります。メールボックスで読めます。",
+      "clickAttach": "クリックで手紙に添付します。",
+      "cannotMail": "これは郵送できません。",
+      "result": {
+        "sent": "ワタリガラスが{name}宛ての手紙を運んで飛び立ちました（郵送料{postage}）。",
+        "collected": "手紙から{amount}を受け取りました。",
+        "tooFar": "郵便を扱うにはメールボックスのそばにいる必要があります。",
+        "needRecipient": "手紙の宛先を指定してください。",
+        "noRecipient": "その名前のメールボックスの持ち主はいません。",
+        "tooManyParcels": "1通の手紙に添付できる小包は最大{count}個です。",
+        "noMailQuestItems": "クエストアイテムは郵送できません。",
+        "notEnoughItems": "送るのに十分な数を持っていません。",
+        "cantAffordPostage": "郵送料を支払えません。",
+        "recipientBoxFull": "相手のメールボックスは満杯です。",
+        "letterGone": "その手紙はもうメールボックスにありません。",
+        "takeParcelsFirst": "手紙を捨てる前に小包を取り出してください。"
+      }
+    },
+    "calendar": {
+      "title": "イベントカレンダー",
+      "close": "カレンダーを閉じる",
+      "keybindLabel": "イベントカレンダー",
+      "prevMonth": "前の月",
+      "nextMonth": "次の月",
+      "dayAria": "{date}：イベント{count}件",
+      "noEvents": "この日に予定はありません。",
+      "allDay": "終日",
+      "bookedBy": "{name}が登録",
+      "deleteAria": "イベント「{title}」を削除",
+      "bookTitle": "ギルドイベントを登録",
+      "titlePlaceholder": "イベント名",
+      "notePlaceholder": "メモ（任意）",
+      "hourLabel": "時刻（UTC）",
+      "hourAllDay": "終日",
+      "addButton": "イベント登録",
+      "guildOnlyNote": "ギルドに加入すると一緒にイベントを計画できます。",
+      "result": {
+        "created": "イベントをギルドカレンダーに登録しました。",
+        "removed": "イベントをカレンダーから外しました。",
+        "notInGuild": "ギルドに所属していません。",
+        "notOfficer": "ギルドイベントを管理できるのは幹部とギルドマスターだけです。",
+        "badInput": "イベント名と有効な日付を入力してください。",
+        "calendarFull": "ギルドカレンダーは満杯です。",
+        "eventGone": "そのイベントはもうカレンダーにありません。"
+      },
+      "events": {
+        "raidCall": {
+          "title": "レイド招集",
+          "note": "守人が角笛を鳴らす。パーティーを集め、地下墓所とレイドへ。"
+        },
+        "marketDay": {
+          "title": "市の日",
+          "note": "商人が新しい品を待っている。ワールドマーケットを見て回るのに良い日。"
+        },
+        "fiestaNight": {
+          "title": "フィエスタナイト",
+          "note": "今夜の2v2フィエスタのリングは大賑わい。"
+        },
+        "arenaClash": {
+          "title": "アリーナ激突",
+          "note": "決闘者たちが灰燼の闘技場へ。キューに並んでラダーを駆け上がろう。"
+        },
+        "fishingDerby": {
+          "title": "フィッシングダービー",
+          "note": "釣り人が湖に並ぶ。竿を持って釣り話を交わそう。"
+        },
+        "delveDay": {
+          "title": "デルヴの日",
+          "note": "ハルヴェン修道士が海図に印を。崩落した聖遺物庫に挑む好日。"
+        },
+        "moongateCommunion": {
+          "title": "月門の集い",
+          "note": "月半ばの月の下、巡礼者が神殿の月門に集う。"
+        }
+      }
     }
   },
   "guide": {
@@ -1436,13 +1549,13 @@ export const ja_JP: EnTranslations = {
       "thorns": "味方を守り、近接で攻撃してきた相手に反射ダメージを与えます。"
     },
     "petHook": {
-      "imp": "安全な距離から敵を削る、ファイアボルトを放つ遠距離のデーモンです。",
-      "voidwalker": "挑発して攻撃を受け止める頑丈なデーモンで、安心して詠唱できるようにします。",
-      "succubus": "素早い近接のデーモンで、大きなダメージを与えますが打たれ弱いです。",
-      "felhunter": "敵のキャスターに食らいつくシャドウのスカーミッシャーです。",
-      "felguard": "頑丈な近接のブルーザーで、召喚できるようになればオールラウンドにこなせます。",
-      "infernal": "強力な近接を持つ巨大なジャガーノートで、純粋な力を求めて召喚します。",
-      "doomguard": "遠くから重いシャドウを降らせるエリートのキャスターです。"
+      "emberkin": "安全な距離から敵を削る、ファイアボルトを放つ遠距離のデーモンです。",
+      "gloomshade": "挑発して攻撃を受け止める頑丈なデーモンで、安心して詠唱できるようにします。",
+      "duskborn": "素早い近接のデーモンで、大きなダメージを与えますが打たれ弱いです。",
+      "spellhound": "敵のキャスターに食らいつくシャドウのスカーミッシャーです。",
+      "warfiend": "頑丈な近接のブルーザーで、召喚できるようになればオールラウンドにこなせます。",
+      "pyre_colossus": "強力な近接を持つ巨大なジャガーノートで、純粋な力を求めて召喚します。",
+      "wraithborn": "遠くから重いシャドウを降らせるエリートのキャスターです。"
     },
     "bestiary": {
       "heading": "モンスター図鑑",
@@ -1468,11 +1581,11 @@ export const ja_JP: EnTranslations = {
         "name": "クモ",
         "desc": "暗く入り組んだ場所に巣を張る、糸を操る毒持ちの待ち伏せ屋たち。ハンターは野獣と同じように手なずけることができます。"
       },
-      "murloc": {
+      "mudfin": {
         "name": "マーロック",
         "desc": "浅瀬に群がる水陸両生の沼地の住人。騒がしく、縄張り意識の強い群れをなします。"
       },
-      "kobold": {
+      "burrower": {
         "name": "コボルド",
         "desc": "頭にろうそくを掲げた採掘者たち。鉱山や巣穴にはびこり、自らの鉱石を必死に守ります。"
       },
@@ -1864,6 +1977,430 @@ export const ja_JP: EnTranslations = {
       "title": "そのページが見つかりませんでした",
       "body": "お探しのページは存在しないか、移動した可能性があります。",
       "home": "概要に戻る"
+    }
+  },
+  "editor": {
+    "appTitle": "マップエディター",
+    "docTitle": "マップエディター - World of ClaudeCraft",
+    "untitledMap": "無題のマップ",
+    "playtestPlayerName": "マップ職人",
+    "topbar": {
+      "label": "エディター操作",
+      "mapNameLabel": "マップ名",
+      "dirty": "未保存の変更があります",
+      "dirtyDot": "このマップには未保存の変更があります",
+      "clean": "すべての変更を保存済み",
+      "savedLocal": "このブラウザーに保存済み",
+      "savedServer": "サーバーに保存済み（v{version}）",
+      "saving": "保存中...",
+      "neverSaved": "まだ保存されていません",
+      "new": "新規",
+      "newTitle": "内蔵ワールドから新しいマップを作成",
+      "open": "開く",
+      "openTitle": "保存済みマップを開く（ブラウザーまたはサーバー）",
+      "save": "保存",
+      "saveTitle": "このブラウザーに保存。ログイン中はサーバーにも保存（Ctrl+S）",
+      "saveAs": "名前を付けて保存",
+      "saveAsTitle": "新しい名前でコピーを保存",
+      "fork": "フォーク",
+      "forkTitle": "このマップの自分用コピーをサーバー上に作成",
+      "forkDisabledTitle": "フォークするには先にサーバーマップを開いてください",
+      "import": "インポート",
+      "importTitle": "JSON ファイルからマップをインポート",
+      "export": "エクスポート",
+      "exportTitle": "このマップを JSON ファイルとしてダウンロード",
+      "uploadAsset": "アセットをアップロード",
+      "uploadAssetTitle": "マップに配置できる GLB モデル（最大 8 MiB）をアップロード",
+      "uploadAssetDisabledTitle": "アセットをアップロードするにはゲームでログインしてください",
+      "playtest": "プレイテスト",
+      "playtestTitle": "このマップでゲームを起動（オフライン、現在の編集を含む）",
+      "viewLabel": "表示モード",
+      "view3d": "3D",
+      "view3dTitle": "レンダリングされたワールドで編集",
+      "view2d": "2D",
+      "view2dTitle": "俯瞰の記号マップで編集",
+      "undoCount": "元に戻す：{count}",
+      "undoCountTitle": "{count} 手戻せます（Ctrl+Z で元に戻す、Ctrl+Y でやり直し）",
+      "autosave": "自動保存",
+      "autosaveTitle": "未保存の変更がある間、マップを自動保存します。保存に失敗すると自動的にオフになります。",
+      "undo": "Undo",
+      "undoTitle": "直前の変更を元に戻す（Ctrl+Z）",
+      "redo": "Redo",
+      "redoTitle": "元に戻した変更をやり直す（Ctrl+Y）",
+      "offline": "オフライン",
+      "offlineTitle": "未ログイン：マップはこのブラウザーにのみ保存されます。オンライン保存するにはゲームでログインしてください。",
+      "signIn": "ログイン",
+      "signInTitle": "ゲームのログイン画面を新しいタブで開く",
+      "help": "ヘルプ",
+      "helpTitle": "エディターガイド：ツール、ショートカット、チュートリアル"
+    },
+    "tool": {
+      "listLabel": "エディターツール",
+      "keyHint": "{name}（{key}）",
+      "select": "選択",
+      "raise": "隆起",
+      "lower": "沈降",
+      "smooth": "なめらか",
+      "flatten": "平坦化",
+      "paint": "バイオーム塗り",
+      "water": "水面",
+      "place": "アセット配置",
+      "blocker": "ブロッカー壁",
+      "camp": "キャンプ",
+      "spawn": "スポーン地点",
+      "region": "範囲",
+      "erase": "消去"
+    },
+    "inspector": {
+      "label": "ツールオプション"
+    },
+    "brush": {
+      "title": "ブラシ",
+      "size": "ブラシサイズ",
+      "strength": "強さ",
+      "sizeHint": "キー：[ と ] でブラシサイズ、Shift+[ と Shift+] で強さを調整。",
+      "editCount": "地形編集数：{count} / {max}"
+    },
+    "biome": {
+      "title": "バイオーム",
+      "paletteLabel": "塗るバイオーム",
+      "vale": "谷",
+      "marsh": "湿地",
+      "peaks": "山岳",
+      "beach": "砂浜",
+      "desert": "砂漠",
+      "volcano": "火山",
+      "cave": "洞窟",
+      "erase": "塗りを消す",
+      "hint": "塗ったマスはゾーンのバイオームを上書きし、地形の形状と色を変えます。",
+      "clear": "バイオーム塗りをすべて消去",
+      "clearConfirm": "このマップの塗られたバイオームのマスをすべて削除しますか？"
+    },
+    "flatten": {
+      "hint": "平坦化は、ドラッグ開始時のカーソル下の高さに地面をならします。",
+      "hardEdge": "ハードエッジ"
+    },
+    "water": {
+      "title": "水面の高さ",
+      "level": "水面の高さ",
+      "hint": "マップ全体の水面の高さを設定します（{min} から {max} ヤード）。",
+      "reset": "既定の高さに戻す"
+    },
+    "place": {
+      "title": "アセット配置",
+      "scale": "スケール",
+      "collide": "移動をブロック",
+      "collideHint": "ブロックするアセットには、プレイヤーが通れない当たり判定が付きます。",
+      "randomRotation": "ランダム回転",
+      "chosen": "配置中：{name}",
+      "none": "下のブラウザーでアセットを選び、地面をクリックして配置します。"
+    },
+    "blockerTool": {
+      "title": "ブロッカー壁",
+      "hint": "地面に沿ってドラッグすると、プレイヤーが歩いても跳んでも通れない見えない壁を描けます。離すと設置されます。半ヤード未満の壁は破棄されます。",
+      "count": "ブロッカー壁：{count} / {max}"
+    },
+    "camp": {
+      "title": "モンスターキャンプ",
+      "mob": "モンスター",
+      "count": "数",
+      "radius": "半径",
+      "delete": "キャンプを削除",
+      "hint": "空き地をクリックでキャンプを追加、既存のキャンプをクリックで編集します。",
+      "playtestNote": "モンスターはプレイテストでのみ出現し、エディター画面には現れません。",
+      "selected": "キャンプ：{mob}",
+      "none": "キャンプが選択されていません。"
+    },
+    "spawn": {
+      "title": "スポーン地点",
+      "hint": "地面をクリックして、プレイテストでプレイヤーが降り立つ場所を設定します。",
+      "position": "スポーン：{x}、{z}",
+      "unset": "内蔵の開始位置を使用します。",
+      "clear": "スポーン地点をクリア"
+    },
+    "region": {
+      "title": "範囲",
+      "hint": "ボックスをドラッグして配置物と地形編集を選択。コピー後、クリックで貼り付け。",
+      "hint3d": "範囲ボックスは 2D 表示で描かれます。コピーと貼り付けはどちらの表示でも使えます。",
+      "copy": "範囲をコピー",
+      "pasteBeside": "隣に貼り付け",
+      "copied": "アセット {assets} 個と地形編集 {edits} 個をコピーしました。",
+      "pasted": "{count} 個の項目を貼り付けました。",
+      "needBox": "先に範囲ボックスをドラッグしてください。",
+      "needClipboard": "先に範囲をコピーしてください。"
+    },
+    "eraseTool": {
+      "title": "消去",
+      "hint": "配置済みアセットをクリックで削除、彫刻した地面をクリックでカーソル下の最新のスタンプを削除します。",
+      "blockerHint": "ブロッカー壁の近くをクリックすると、代わりにその壁を削除します。"
+    },
+    "selection": {
+      "title": "選択",
+      "none": "何も選択されていません。「選択」ツールで配置済みアセットをクリックしてください。",
+      "asset": "アセット：{name}",
+      "x": "X",
+      "z": "Z",
+      "rotation": "回転",
+      "scale": "スケール",
+      "collide": "移動をブロック",
+      "radius": "衝突半径",
+      "radiusAuto": "自動",
+      "radiusAutoTitle": "衝突半径をアセットのスケールに追従するようリセット",
+      "radiusHint": "「自動」はアセットのスケールから衝突半径を導きます。スライダーをドラッグすると上書きできます。",
+      "footprints": "当たり判定の範囲を表示",
+      "duplicate": "複製",
+      "delete": "削除",
+      "deleteHint": "削除は選択を取り除きます。Ctrl+Z で元に戻せます。",
+      "moveHint": "移動：3D ビューで地面に沿ってアセットをドラッグするか、矢印キーで微調整します（0.5 ヤード、Shift で 2 ヤード）。",
+      "wheelHint": "Shift+スクロールで回転、Alt+スクロールで拡大縮小、Ctrl+D で複製します。"
+    },
+    "marker": {
+      "title": "マーカー",
+      "reset": "位置をリセット",
+      "moved": "{count} 個のマーカーが内蔵レイアウトから移動しています。"
+    },
+    "layers": {
+      "title": "レイヤー",
+      "hub": "拠点",
+      "graveyard": "墓地",
+      "lake": "湖",
+      "poi": "注目ポイント",
+      "camp": "キャンプ",
+      "npc": "NPC",
+      "object": "オブジェクト",
+      "blocker": "ブロッカー壁"
+    },
+    "frame": {
+      "title": "フレーム",
+      "all": "すべて"
+    },
+    "procgen": {
+      "title": "自動生成",
+      "count": "数",
+      "scatter": "カテゴリーのアセットを散布",
+      "hills": "なだらかな丘を生成",
+      "scattered": "{category} からアセットを {count} 個散布しました。",
+      "hillsAdded": "丘を {count} 個追加しました。",
+      "noAssets": "そのカテゴリーにアセットがありません。"
+    },
+    "assets": {
+      "title": "アセットブラウザー",
+      "label": "アセットブラウザー",
+      "search": "アセットを検索",
+      "searchPlaceholder": "アセットを検索...",
+      "empty": "一致するアセットがありません。",
+      "uploadedTab": "アップロード済み",
+      "uploadedEmpty": "アップロードしたアセットはまだありません。「アセットをアップロード」で GLB モデル（最大 8 MiB）を追加してください。",
+      "uploadedSignIn": "ゲームでログインすると、自分の GLB モデルをアップロードして配置できます。",
+      "uploadedLoadFailed": "アップロード済みアセットを読み込めませんでした。",
+      "deleteAsset": "アップロード済みアセットを削除",
+      "deleteAssetConfirm": "アップロード済みアセット「{name}」を削除しますか？使用中のマップからモデルが消えます。",
+      "pick": "{name}を配置",
+      "categoryTab": "{category}（{count}）",
+      "category": {
+        "biome": "バイオーム",
+        "chars": "キャラクター",
+        "creatures": "クリーチャー",
+        "dungeon": "ダンジョン",
+        "foliage": "植生",
+        "props": "小物",
+        "quest": "クエスト",
+        "resources": "資源",
+        "tools": "ツール",
+        "weapons": "武器"
+      }
+    },
+    "upload": {
+      "notGlb": ".glb ファイルを選択してください。",
+      "tooLarge": "そのファイルは 8 MiB の上限を超えています。",
+      "uploading": "アセットをアップロード中...",
+      "uploaded": "アセットをアップロードしました：{name}",
+      "uploadedExisting": "そのモデルは既にサーバーにあるため、再利用します。",
+      "deleted": "アップロード済みアセットを削除しました。"
+    },
+    "openDrawer": {
+      "title": "マップを開く",
+      "close": "閉じる",
+      "tabLocal": "このブラウザー",
+      "tabMine": "自分のサーバーマップ",
+      "tabPublic": "公開マップ",
+      "colName": "名前",
+      "colUpdated": "更新日時",
+      "colStatus": "状態",
+      "statusPublic": "公開",
+      "statusPrivate": "非公開",
+      "open": "開く",
+      "fork": "フォーク",
+      "publish": "公開する",
+      "unpublish": "公開を停止",
+      "delete": "削除",
+      "draft": "自動保存の下書き",
+      "emptyLocal": "このブラウザーに保存されたマップはまだありません。保存するとここに表示されます。",
+      "emptyMine": "サーバー上にマップはまだありません。ログインして保存すると作成されます。",
+      "emptyPublic": "公開マップはまだありません。",
+      "loading": "マップを読み込み中...",
+      "loadFailed": "サーバーからマップを読み込めませんでした。",
+      "signInHint": "ゲームでログインすると、サーバーマップの閲覧、保存、フォークができます。",
+      "deleteLocalConfirm": "ローカルマップ「{name}」を削除しますか？",
+      "deleteServerConfirm": "サーバーマップ「{name}」を削除しますか？この操作は取り消せません。",
+      "prev": "前のページ",
+      "next": "次のページ",
+      "page": "ページ {page}"
+    },
+    "status": {
+      "savedLocal": "「{name}」をこのブラウザーに保存しました。",
+      "savedServer": "「{name}」をサーバーに保存しました（v{version}）。",
+      "savedLocalOnly": "「{name}」をこのブラウザーに保存しました。ログインするとオンライン保存できます。",
+      "saveFailedLocal": "ローカル保存に失敗しました（ストレージがブロックされています）。",
+      "opened": "「{name}」を開きました。",
+      "imported": "「{name}」をインポートしました。",
+      "importFailed": "インポートがキャンセルされたか、ファイルが有効なマップではありません。",
+      "exported": "「{name}」をダウンロードしました。",
+      "newMap": "内蔵ワールドから新しいマップを開始しました。",
+      "forked": "「{name}」としてフォークしました。今は自分のコピーを編集しています。",
+      "published": "マップを公開しました。誰でも見つけてフォークできます。",
+      "unpublished": "マップの公開を停止しました。",
+      "deleted": "マップを削除しました。",
+      "assetPlacedFirst": "先にブラウザーでアセットを選んでください。",
+      "loading3d": "ワールドを読み込み中...",
+      "playtestLaunch": "プレイテストを起動中...",
+      "playtestFailed": "プレイテストを開始できませんでした（ストレージがブロックされています）。",
+      "draftSaved": "下書きを自動保存しました。",
+      "draftRestored": "自動保存の下書きを復元しました。",
+      "autosaveFailed": "自動保存に失敗しました（ブラウザのストレージが満杯かブロックされています）。バックアップとしてマップをエクスポートしてください。",
+      "terrainCapReached": "地形編集の上限に達しました（{max}）。超過分のスカルプトは追加されませんでした。",
+      "placementCapReached": "配置数の上限に達しました（{max}）。超過分のアセットは追加されませんでした。",
+      "blockerCapReached": "ブロッカー壁の上限（{max}）に達しました。新しい壁は追加されませんでした。",
+      "autosaveOff": "自動保存をオフにしました：{reason} 手動で保存してから、再度オンにしてください。"
+    },
+    "confirm": {
+      "ok": "OK",
+      "cancel": "キャンセル",
+      "discardTitle": "変更を破棄しますか？",
+      "discardBody": "「{name}」に未保存の変更があります。破棄しますか？",
+      "discard": "破棄",
+      "conflictTitle": "保存の競合",
+      "conflictBody": "このマップは開いた後にサーバー上で変更されました（現在 v{version}）。あなたの版を新しいコピーとして保存しますか？",
+      "conflictSaveCopy": "コピーとして保存"
+    },
+    "prompt": {
+      "saveAsTitle": "名前を付けて保存",
+      "nameLabel": "新しいマップ名"
+    },
+    "serverError": {
+      "invalid_map_name": "そのマップ名は使用できません。文字、数字、スペース、アポストロフィ、ハイフンを使ってください。",
+      "map_name_not_allowed": "そのマップ名は許可されていません。",
+      "invalid_map_doc": "サーバーがマップドキュメントを拒否しました。",
+      "invalid_version": "保存リクエストが不正です。再読み込みしてやり直してください。",
+      "map_limit_reached": "サーバーのマップ数上限に達しました。保存するにはどれかを削除してください。",
+      "map_not_found": "そのマップはもうサーバーにありません。",
+      "version_conflict": "そのマップは開いた後にサーバー上で変更されました。",
+      "slug_unavailable": "その名前のリンクを作成できませんでした。別の名前を試してください。",
+      "map_too_large": "マップドキュメントが大きすぎてサーバーに保存できません。",
+      "invalid_glb": "そのファイルは有効な GLB モデルではありません。",
+      "asset_blocked": "そのアセットはモデレーションによりブロックされています。",
+      "asset_limit_reached": "アップロード数の上限に達しました。どれかを削除してからアップロードしてください。",
+      "asset_storage_limit_reached": "アセットの保存容量を使い切りました。先にどれかを削除してください。",
+      "asset_too_large": "そのモデルはアップロードサイズの上限を超えています。",
+      "asset_not_found": "そのアセットはもうサーバーにありません。",
+      "rate_limited": "少し間をおいて、もう一度お試しください。",
+      "unauthorized": "セッションの有効期限が切れました。ゲームでもう一度ログインしてください。",
+      "network": "サーバーに接続できませんでした。接続を確認してやり直してください。",
+      "timeout": "サーバーの応答がタイムアウトしました。もう一度お試しください。",
+      "unknown": "サーバーとの通信で問題が発生しました。"
+    },
+    "hints": {
+      "nav3d": "ドラッグで旋回、スクロールでズーム。ドラッグ中は WASD で飛行、Q/E で高さを変更。",
+      "nav2d": "ドラッグで移動、スクロールでズーム。"
+    },
+    "help": {
+      "title": "エディターヘルプ",
+      "toolsTitle": "ツール",
+      "shortcutsTitle": "キーボードショートカット",
+      "mouseTitle": "マウスとナビゲーション",
+      "flowTitle": "保存とプレイテスト",
+      "beginTutorial": "チュートリアルを開始",
+      "close": "閉じる",
+      "tool": {
+        "select": "配置済みアセットを選択して移動、回転、拡大縮小します。2D マーカーはクリックで編集できます。",
+        "raise": "ブラシの下の地形を盛り上げます。",
+        "lower": "ブラシの下の地形を下げます。",
+        "smooth": "起伏を周囲の平均の高さへならします。",
+        "flatten": "ドラッグ開始地点の高さに地面を平らにします。",
+        "paint": "ゾーンの既定の上にバイオームの地表を塗ります。",
+        "water": "マップ全体の水面の高さを設定します。",
+        "place": "カタログまたはアップロードしたアセットを地面に配置します。",
+        "blocker": "プレイテストで移動を妨げる見えない壁をドラッグで描きます。",
+        "camp": "プレイテストで出現するモブキャンプを追加、編集します。",
+        "spawn": "プレイテストでプレイヤーが降り立つ場所を設定します。",
+        "region": "地形とアセットをボックス選択してコピー、貼り付けします。",
+        "erase": "カーソル下の配置済みアセットや彫刻スタンプを取り除きます。"
+      },
+      "key": {
+        "tools": "すべてのツールには 1 文字のショートカットがあり、ツールレールのボタンに表示されます。",
+        "brush": "[ と ] でブラシサイズを変更、Shift+[ と Shift+] で強さを変更します。",
+        "undo": "Ctrl+Z で元に戻す、Ctrl+Y または Ctrl+Shift+Z でやり直します。",
+        "save": "Ctrl+S でマップを保存します。",
+        "duplicate": "Ctrl+D で選択中のアセットを複製します。",
+        "nudge": "矢印キーで選択中のアセットを 0.5 ヤード動かします。Shift を押しながらで 2 ヤードです。",
+        "wheel": "Shift+スクロールで選択中のアセットを回転、Alt+スクロールで拡大縮小します。",
+        "delete": "Delete で選択中のアセットまたはキャンプを削除します。",
+        "escape": "Esc はまず選択を解除し、その後選択ツールに戻ります。"
+      },
+      "mouse": {
+        "orbit3d": "3D ビュー：ドラッグで旋回、スクロールでズーム。中ボタンドラッグまたは Shift+ドラッグでパンします。",
+        "fly3d": "3D でドラッグしている間、WASD でカメラが飛行し、Q/E で高さを変えます。",
+        "move": "選択ツールが有効なとき、配置済みアセットをドラッグして地面の上を移動できます。",
+        "pan2d": "2D ビュー：ドラッグでパン、スクロールでズームします。"
+      },
+      "flow": {
+        "save": "保存はこのブラウザーにマップを保存し、サインイン中はサーバーにも保存します。",
+        "draft": "未保存の変更がある間、30 秒ごとに下書きが自動保存されます。開くから復元できます。",
+        "playtest": "プレイテストは未保存の編集も含めて、このマップで実際のゲームを起動します。"
+      }
+    },
+    "tutorial": {
+      "title": "エディターチュートリアル",
+      "back": "戻る",
+      "next": "次へ",
+      "finish": "完了",
+      "skip": "ツアーをスキップ",
+      "counter": "ステップ {current} / {total}",
+      "steps": {
+        "toolbar": {
+          "title": "ツールレール",
+          "body": "すべての編集ツールがここにあります：彫刻ブラシ、バイオームペイント、水面、アセット配置、キャンプなど。各ツールには単キーのショートカットがあり、ボタンの隅に表示されます。"
+        },
+        "stage": {
+          "title": "ワールド",
+          "body": "実際のゲームエンジンで描画されたあなたのマップです。ドラッグで旋回、スクロールでズーム、中ボタンドラッグまたは Shift+ドラッグでパン。ツールを選んで地面をクリックすると編集できます。"
+        },
+        "inspector": {
+          "title": "ツールオプション",
+          "body": "有効なツールのオプションがここに表示されます：ブラシサイズ、バイオームパレット、アセットの拡大縮小、キャンプ設定、そして選択中のもののプロパティです。"
+        },
+        "viewToggle": {
+          "title": "3D と 2D",
+          "body": "描画された 3D ワールドと記号的な俯瞰 2D マップを切り替えます。2D ビューはゾーンマーカーの移動や広い範囲の確認に最適です。"
+        },
+        "save": {
+          "title": "作品を保存",
+          "body": "保存はマップをこのブラウザーに、サインイン中はサーバーにも保存します。エクスポートで JSON バックアップをダウンロードし、開くから保存済みマップや下書きを呼び出せます。"
+        },
+        "playtest": {
+          "title": "プレイテスト",
+          "body": "現在の編集を含めて、いつでもマップ上で実際のゲームを起動できます。プレイテストのタブを閉じれば戻って編集を続けられます。"
+        },
+        "help": {
+          "title": "ヘルプはここに",
+          "body": "これで一連の流れは終わりです。完全なツール一覧とすべてのショートカットを見るには、いつでもヘルプを開いてください。このツアーももう一度実行できます。"
+        }
+      }
+    },
+    "a11y": {
+      "stage": "マップビューポート",
+      "toasts": "エディター通知",
+      "dialog": "エディターダイアログ"
     }
   },
   "skinEvent": {
@@ -3623,7 +4160,8 @@ export const ja_JP: EnTranslations = {
       "drink": "飲み物",
       "tool": "道具",
       "potion": "ポーション",
-      "elixir": "エリクサー"
+      "elixir": "エリクサー",
+      "bag": "Bag"
     },
     "stats": {
       "armor": "防御力",
@@ -3665,7 +4203,8 @@ export const ja_JP: EnTranslations = {
       "useManaPotion": "使用: 即座にマナを{amount}回復します。戦闘中に使用可能。クールダウン1分。",
       "clickUseInstant": "クリックして戦闘中に即使用",
       "clickUse": "クリックして使用",
-      "clickBuyback": "クリックして買い戻す"
+      "clickBuyback": "クリックして買い戻す",
+      "bagSlots": "{slots} Slot Bag"
     },
     "bags": {
       "title": "バッグ",
@@ -4967,6 +5506,21 @@ export const ja_JP: EnTranslations = {
       "monarch_crown_helm": {
         "name": "君主の王冠"
       },
+      "linen_pouch": {
+        "name": "亜麻のポーチ"
+      },
+      "travelers_knapsack": {
+        "name": "旅人のナップサック"
+      },
+      "wolfhide_satchel": {
+        "name": "狼皮のサッチェル"
+      },
+      "gravewoven_bag": {
+        "name": "墓織りのバッグ"
+      },
+      "mistcallers_duffel": {
+        "name": "ミストコーラーのダッフル"
+      },
       "copper_mining_pick": {
         "name": "銅の採掘ピック"
       },
@@ -5728,13 +6282,13 @@ export const ja_JP: EnTranslations = {
       "varkas_boneguard": {
         "name": "ヴァーカスの骨衛兵"
       },
-      "imp": {
+      "emberkin": {
         "name": "インプ"
       },
-      "voidwalker": {
+      "gloomshade": {
         "name": "ヴォイドウォーカー"
       },
-      "succubus": {
+      "duskborn": {
         "name": "サキュバス"
       },
       "grix_the_tunnelking": {
@@ -5758,16 +6312,16 @@ export const ja_JP: EnTranslations = {
       "wraithbinder_maldrec": {
         "name": "魂縛りマルドレク"
       },
-      "felhunter": {
+      "spellhound": {
         "name": "フェルハンター"
       },
-      "felguard": {
+      "warfiend": {
         "name": "フェルガード"
       },
-      "infernal": {
+      "pyre_colossus": {
         "name": "インファーナル"
       },
-      "doomguard": {
+      "wraithborn": {
         "name": "ドゥームガード"
       },
       "choirmother_selthe": {
@@ -6914,6 +7468,28 @@ export const ja_JP: EnTranslations = {
         "leaveText": "あなたは聖遺物庫の廃墟にいるハルヴェン修道士のもとへ登り戻る。"
       }
     },
+    "letters": {
+      "ravenpost_welcome": {
+        "sender": "レイヴンポスト",
+        "subject": "ワタリガラスはあなたのために飛ぶ",
+        "body": "旅人へ\n\nレイヴンポストは谷のあちこちに止まり木を設けました。イーストブルック、フェンブリッジ、ハイウォッチでワタリガラスの石柱を探してください。どの止まり木からでも、ほかの冒険者へ手紙やお金や品物を送れますし、ワタリガラスが運んできたものを受け取れます。\n\n最初の切手代として、ささやかな心づけを同封します。\n\n翼を高く、\nレイヴンポスト"
+      },
+      "letter_q_wolves": {
+        "sender": "レッドブルック元帥",
+        "subject": "囲いはまた静かになった",
+        "body": "牧夫たちがようやく安心して眠れるようになったのは、あなたのおかげです。見張り基金から、レイヴンポストに託してささやかな謝礼を送りました。\n\n刃の手入れを忘れずに。\n- レッドブルック元帥"
+      },
+      "letter_q_greyjaw": {
+        "sender": "レッドブルック元帥",
+        "subject": "オールド・グレイジョー、ついに",
+        "body": "小さな町では噂が早いものです。牧夫たちは昨夜あなたの健康に乾杯し、ウィルクスはあの狼が荷馬車ほどもあったと言い張っています。好きに尾ひれをつけさせておきなさい。あなたが勝ち取ったものです。\n\n見張り隊の分まで食事をどうぞ。\n- レッドブルック元帥"
+      },
+      "letter_q_hollow": {
+        "sender": "アルドリック修道士",
+        "subject": "あなたが暗闇で成したこと",
+        "body": "あの窪地に何が葬られていたのかを知る者はごくわずかで、信じる者はさらに少ないでしょう。私は知っています。そして忘れません。\n\nあなたの道に光がありますように。\n- アルドリック修道士"
+      }
+    },
     "itemSets": {
       "crownforged": {
         "name": "冠鋳の戦装束",
@@ -6959,6 +7535,7 @@ export const ja_JP: EnTranslations = {
     "dungeonInstanceBusy": "{name}のインスタンスはすべて使用中です。少し待ってから再試行してください。",
     "delveLockedChestInteract": "Fで錠を開ける",
     "delveRewardChestInteract": "Fで戦利品を受け取る",
-    "delveSurfaceExitInteract": "Fで地上へ登る"
+    "delveSurfaceExitInteract": "Fで地上へ登る",
+    "mailboxName": "メールボックス"
   }
 };

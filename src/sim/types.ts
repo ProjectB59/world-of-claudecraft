@@ -37,10 +37,10 @@ export const DUNGEON_LEASH_DISTANCE = 70;
 export const NYTHRAXIS_ADD_ID = 'nythraxis_skeleton_warrior';
 export const GCD = 1.5; // seconds
 // Shared cooldown across ALL combat potions (classic-era potion sickness): one
-// potion locks every other potion for this long (#103). 2 minutes, vanilla value.
+// potion locks every other potion for this long (#103). 2 minutes, the classic-era value.
 export const POTION_COOLDOWN = 120; // seconds
-export const CAST_PUSHBACK_SEC = 0.5; // vanilla: each hit delays a cast by 0.5s
-export const CHANNEL_PUSHBACK_FRACTION = 0.25; // vanilla: each hit shaves 25% off a channel
+export const CAST_PUSHBACK_SEC = 0.5; // classic-era: each hit delays a cast by 0.5s
+export const CHANNEL_PUSHBACK_FRACTION = 0.25; // classic-era: each hit shaves 25% off a channel
 // Tolerance for "this per-tick timer is effectively complete" comparisons (casting,
 // channels, ground-AoE pulses). Shared across sim modules (sim.ts + entity_roster.ts).
 export const CAST_COMPLETE_EPS = 1e-9;
@@ -294,7 +294,8 @@ type ItemKind =
   | 'drink'
   | 'tool'
   | 'potion'
-  | 'elixir';
+  | 'elixir'
+  | 'bag';
 
 interface BaseItemDef {
   id: string;
@@ -328,6 +329,12 @@ interface BaseItemDef {
   // `duration` the buff length in seconds. Folds through the normal aura/stat path.
   elixir?: { aura: string; kind: AuraKind; value: number; duration: number };
   quality?: 'poor' | 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'; // gray/white/green/blue/purple/orange name colors
+  // bags (kind:'bag'): extra inventory slots granted while equipped in one of
+  // the 4 bag sockets (see src/sim/bags.ts; the 16-slot backpack is implicit).
+  bagSlots?: number;
+  // Max copies per inventory slot. When omitted the default is derived from
+  // `kind` (weapon/armor/bag/tool: 1, everything else: 20); see stackSizeOf.
+  stackSize?: number;
   requiredClass?: PlayerClass[];
   // Minimum character level needed to equip this piece. When omitted, the level
   // is DERIVED from `quality` (see src/sim/item_level_req.ts); set this only to
@@ -493,9 +500,9 @@ export interface LootEntry {
 export type MobFamily =
   | 'beast'
   | 'humanoid'
-  | 'murloc'
+  | 'mudfin'
   | 'spider'
-  | 'kobold'
+  | 'burrower'
   | 'undead'
   | 'troll'
   | 'ogre'
@@ -529,7 +536,7 @@ export interface MobTemplate {
   // who damaged it (gated to once per day per boss). The spawn schedule + location
   // live in src/sim/world_boss.ts; the loot roll runs through rollWorldBossLoot.
   worldBoss?: boolean;
-  // Elite scaling, vanilla-style: ~2.3x health, ~1.5x damage, double XP.
+  // Elite scaling, classic-style: ~2.3x health, ~1.5x damage, double XP.
   elite?: boolean;
   // Rare/miniboss controls.
   canSwim?: boolean;
@@ -678,7 +685,7 @@ export interface MobTemplate {
     school?: Aura['school'];
   };
   // Melee mechanic: each landed swing also splashes onto other players near the
-  // primary target for `mult` of the (pre-armor) hit. Classic-WoW Cleave.
+  // primary target for `mult` of the (pre-armor) hit. A classic-style cleave arc.
   cleave?: { radius: number; mult: number; name?: string };
   // On-hit debuff: a chance per landed melee swing to inflict a stacking-refresh
   // damage-over-time poison on the struck target (spiders, serpents, scorpions).
@@ -957,7 +964,7 @@ export interface MobTemplate {
     name: string;
     school?: Aura['school'];
   };
-  // Pet mechanic: this creature is a ranged caster (warlock Imp) — instead of
+  // Pet mechanic: this creature is a ranged caster (warlock Emberkin) — instead of
   // closing to melee, it stays at `range` and hurls bolts of `school` damage.
   // updatePet reads this; the bolt damage comes from the mob's weapon range.
   petRanged?: { range: number; school: Aura['school'] };
@@ -1124,7 +1131,7 @@ export type AbilityEffect =
   | { type: 'tamePet' } // hunter tame beast: the targeted mob becomes the caster's pet
   | { type: 'dismissPet' } // release the caster's pet back to the wild
   | { type: 'summonPet'; templateId: string } // warlock demon summon: creates/replaces a controlled pet
-  | { type: 'summonDemon'; mobId: string }; // warlock: summon a demon pet (imp/voidwalker)
+  | { type: 'summonDemon'; mobId: string }; // warlock: summon a demon pet (emberkin/gloomshade)
 
 export interface AbilityRank {
   rank: number;
@@ -1263,7 +1270,7 @@ export interface DungeonDef {
   leaveText: string;
 }
 
-export type BiomeId = 'vale' | 'marsh' | 'peaks';
+export type BiomeId = 'vale' | 'marsh' | 'peaks' | 'beach' | 'desert' | 'volcano' | 'cave';
 
 export interface ZoneDef {
   id: string;
@@ -1467,8 +1474,8 @@ export interface Entity {
   queuedOnSwing: string | null; // heroic strike
   queuedOnSwingFree?: boolean; // next_cast_free consumed at queue time
   fiveSecondRule: number; // time since last mana spend
-  comboPoints: number;
-  comboTargetId: number | null;
+  comboPoints: number; // retail-style: character-bound, not anchored to a target
+  comboUntil: number; // sim-time until which unspent combo points persist
   overpowerUntil: number; // sim-time until which overpower is usable
   potionCooldownUntil: number; // sim-time until a combat potion can be used again (#103)
   // Same shared potion cooldown as REMAINING seconds, materialized per tick (like
@@ -1627,6 +1634,34 @@ export interface NythraxisEncounterState {
 
 export type ErrorReason = 'target_dead';
 
+// Ravenpost mail command outcomes. `sent`/`collected` are successes; the rest
+// are refusals. The client maps each code to its localized line (the sim never
+// emits mail text).
+export type MailResultCode =
+  | 'sent'
+  | 'collected'
+  | 'tooFar'
+  | 'needRecipient'
+  | 'noRecipient'
+  | 'tooManyParcels'
+  | 'noMailQuestItems'
+  | 'notEnoughItems'
+  | 'cantAffordPostage'
+  | 'recipientBoxFull'
+  | 'letterGone'
+  | 'takeParcelsFirst';
+
+// Guild calendar command outcomes (mirrors server/social.ts CalendarResultCode;
+// `created`/`removed` are successes, the rest refusals).
+export type CalendarResultCode =
+  | 'created'
+  | 'removed'
+  | 'notInGuild'
+  | 'notOfficer'
+  | 'badInput'
+  | 'calendarFull'
+  | 'eventGone';
+
 // `pid` (when present) marks a personal event that should only be delivered to
 // that player entity's owner; events without pid are world-visible.
 export type SimEvent = { pid?: number } & (
@@ -1682,6 +1717,20 @@ export type SimEvent = { pid?: number } & (
   // itemId names the single item for buy/sell/buyback; it is omitted for the
   // bulk "sell all junk" sweep, which the client treats as a plain refresh signal.
   | { type: 'vendor'; action: 'buy' | 'sell' | 'buyback'; itemId?: string }
+  // Ravenpost mail. Structured data only, the client builds every visible
+  // string (the lockpick convention). `mailbox` asks the client to open the
+  // mail window (the interact path at a mailbox object); `mailArrived` is the
+  // personal arrival cue (envelope toast + sound); `mailResult` reports a mail
+  // command's outcome (`sent` carries the recipient name + postage in copper,
+  // `collected` the coin taken, `tooManyParcels` the attachment cap). All
+  // always carry pid.
+  | { type: 'mailbox' }
+  | { type: 'mailArrived'; senderName: string; letterId?: string }
+  | { type: 'mailResult'; code: MailResultCode; value?: number; name?: string }
+  // Guild calendar outcome. Emitted only by the server's SocialService (the
+  // sim never books guild events); declared here so the one client event
+  // switch stays exhaustively typed.
+  | { type: 'calendarResult'; code: CalendarResultCode }
   // say/yell are delivered only to players in range and carry the speaker's
   // entity id so the client can hang a chat bubble over their head; whisper
   // goes to the target (and echoes to the sender with `to` set); general is
@@ -1855,6 +1904,91 @@ export interface MoveInput {
   jump: boolean;
 }
 
+// A bounded height edit (the sculpt brush stamp), applied inside terrainHeight()
+// exactly like MIREFEN_IMPACT_CRATER. Pure data, no RNG: the sim and renderer both
+// sample it so collision and the ground mesh stay in agreement. Stamps apply in
+// array order: `add` (default) adds `delta`, weighted by the falloff; `level`
+// pulls the height toward the ABSOLUTE height `delta`, weighted by the falloff
+// (the flatten/plateau brush; full weight means h becomes exactly `delta`).
+export interface HeightStamp {
+  x: number;
+  z: number;
+  radius: number;
+  delta: number; // add: +raise / -lower at the centre; level: target height
+  falloff: 'smooth' | 'flat';
+  mode?: 'add' | 'level'; // absent = 'add' (v1 documents)
+}
+
+// A freely placed GLB model the editor drops onto the world. Rendered by the
+// placed-asset instancer (never a Sim entity); when `collideRadius` is set (> 0)
+// the sim additionally derives a static circle collider from this record, so
+// what-you-see-is-what-you-collide-with holds for editor placements too.
+// Carried on WorldContent so both sides read the SAME record.
+export interface PlacedAsset {
+  path: string; // public GLB url, e.g. "/models/props/well.glb"
+  x: number;
+  z: number;
+  rotY: number; // radians
+  scale: number;
+  // Circle collider radius in yards (already scaled), or absent/0 for walk-through.
+  collideRadius?: number;
+}
+
+// An invisible blocker wall (editor-authored, custom maps only): a world-space
+// XZ segment the sim turns into a fence-width OBB collider at playtest. Pure
+// collision data; there is NO render mesh for it in the shipped game, so map
+// makers can wall off areas without visible geometry.
+export interface BlockerDef {
+  x1: number;
+  z1: number;
+  x2: number;
+  z2: number;
+}
+
+// A coarse 2D biome paint grid (editor). Each cell holds a biome id (0=vale,
+// 1=marsh, 2=peaks) or 255 for unpainted. Where painted, it overrides both the
+// terrain SHAPE (sim, in shapeAt) and the ground COLOR (render). Absent for the
+// built-in world, so terrain stays byte-identical.
+export interface BiomePaint {
+  cell: number; // cell size in yards
+  cols: number;
+  rows: number;
+  originX: number; // world x of the grid's (col 0) edge
+  originZ: number; // world z of the grid's (row 0) edge
+  ids: number[]; // length cols*rows; 0/1/2 = biome, 255 = unpainted
+}
+
+// A swappable world definition: the spatial + content data the terrain function
+// and the Sim spawn loop derive a playable world from. The built-in 3-zone world
+// is one of these (data.ts BUILTIN_WORLD); the map editor produces custom ones for
+// offline play-testing. Injected via SimConfig.world plus the data.ts active-content
+// registry (both, because terrain reaches the data by module global and the Sim
+// reaches it by config). CAMPS order is a determinism contract: append, never
+// reorder, since the Sim draws the shared Rng in array order.
+export interface WorldContent {
+  zones: ZoneDef[];
+  camps: CampDef[];
+  npcs: Record<string, NpcDef>;
+  groundObjects: GroundObjectDef[];
+  roads: { x: number; z: number }[][];
+  props: ZonePropsDef;
+  playerStart: { x: number; z: number };
+  // Heightfield edits applied inside terrainHeight(). Absent/empty for the
+  // built-in world, so its heightfield stays byte-identical.
+  terrainEdits?: HeightStamp[];
+  // Freely placed GLB models (editor). Rendered by the placed-asset instancer;
+  // records with collideRadius also feed the sim's static colliders.
+  placements?: PlacedAsset[];
+  // Invisible blocker walls (editor). Collision-only OBBs in the sim's static
+  // colliders; never rendered. Absent for the built-in world.
+  blockers?: BlockerDef[];
+  // 2D biome paint overriding terrain shape (sim) and color (render).
+  biomePaint?: BiomePaint;
+  // Water surface height for this map; absent = the built-in WATER_LEVEL (-4.5).
+  // Read through waterLevel() in src/sim/world.ts, never directly.
+  waterLevel?: number;
+}
+
 export interface SimConfig {
   seed: number;
   playerClass: PlayerClass;
@@ -1868,6 +2002,11 @@ export interface SimConfig {
   // authoritative server uses its realm-local 3 AM daily reset; offline/headless omit
   // this and fall back to a flat 24h day. Keeps the time zone out of the sim core.
   raidResetMs?: (nowMs: number) => number;
+  // Offline play-test: a custom world to run instead of the built-in one. The Sim
+  // ctor reads spawns from here; render/terrain read it via the data.ts registry,
+  // so callers that set this MUST also call setActiveWorldContent() with content
+  // whose terrain-relevant fields are identical (see the sim.ts ctor invariant).
+  world?: WorldContent;
 }
 
 export function emptyMoveInput(): MoveInput {
@@ -1902,7 +2041,7 @@ export function normAngle(a: number): number {
 // Classic progression formulas
 // ---------------------------------------------------------------------------
 
-// XP required to go from level L to L+1 (real vanilla values, levels 1..20)
+// XP required to go from level L to L+1 (classic-era curve values, levels 1..20)
 export const XP_TABLE = [
   400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600, 8800, 10100, 11400, 12900, 14400, 16000,
   17700, 19400, 21300, 23200,
@@ -1938,7 +2077,7 @@ export const MAX_VIRTUAL_LEVEL = 200; // table bound; far beyond any reachable l
 
 // VLEVEL_CUM[v] = total lifetime XP required to *reach* virtual level v.
 // VLEVEL_CUM[1] = 0; index 0 is unused padding.
-const VLEVEL_CUM: number[] = (() => {
+function buildVlevelCum(): number[] {
   const cum: number[] = [0, 0];
   let total = 0;
   // real levels: 1→2 … 19→20 come straight from XP_TABLE
@@ -1954,7 +2093,18 @@ const VLEVEL_CUM: number[] = (() => {
     step *= POSTCAP_GROWTH;
   }
   return cum;
-})();
+}
+
+const VLEVEL_CUM: number[] = buildVlevelCum();
+
+// The cumulative table above is derived from XP_TABLE at module eval. A host
+// that mutates XP_TABLE (the game-config override layer, src/sim/game_config.ts)
+// must call this afterwards so virtual levels keep matching the live curve.
+export function refreshPostcapXpTable(): void {
+  const next = buildVlevelCum();
+  VLEVEL_CUM.length = 0;
+  VLEVEL_CUM.push(...next);
+}
 
 // Total lifetime XP needed to reach a given (virtual or real) level. Used to
 // backfill `lifetimeXp` for characters saved before the counter existed.
@@ -2034,7 +2184,7 @@ export function xpUntilNextPrestige(lifetimeXp: number, prestigeRank: number): n
 }
 
 // Zero-difference band: how many levels below you a mob stops giving XP.
-// Vanilla: ZD = 5 for player level 1-7, 6 for 8-9, 7 for 10-11, ...
+// Classic-era rule: ZD = 5 for player level 1-7, 6 for 8-9, 7 for 10-11, ...
 export function zeroDiff(playerLevel: number): number {
   if (playerLevel <= 7) return 5;
   if (playerLevel <= 9) return 6;
@@ -2042,7 +2192,7 @@ export function zeroDiff(playerLevel: number): number {
   return 8;
 }
 
-// Real vanilla mob XP: base = 45 + 5 * mobLevel, scaled by level difference.
+// Classic-era mob XP: base = 45 + 5 * mobLevel, scaled by level difference.
 export function mobXpValue(mobLevel: number, playerLevel: number): number {
   const base = 45 + 5 * mobLevel;
   const diff = mobLevel - playerLevel;
@@ -2054,7 +2204,7 @@ export function mobXpValue(mobLevel: number, playerLevel: number): number {
   return Math.round(base * (1 - -diff / zd));
 }
 
-// Rage conversion constant (vanilla): c = 0.0091 L^2 + 3.23 L + 4.27
+// Rage conversion constant (classic-era): c = 0.0091 L^2 + 3.23 L + 4.27
 export function rageConversion(level: number): number {
   return 0.0091 * level * level + 3.23 * level + 4.27;
 }
@@ -2122,7 +2272,7 @@ export function armorReduction(armor: number, attackerLevel: number): number {
 }
 
 // ---------------------------------------------------------------------------
-// Spell Power: caster damage scaling (vanilla-style cast-time / DoT-duration
+// Spell Power: caster damage scaling (classic-style cast-time / DoT-duration
 // coefficient model). Casters convert Intellect into Spell Power; Spell Power
 // then adds to each spell's damage via a per-spell coefficient. Hunter "attack
 // spells" (Arcane Shot, Serpent Sting, Aimed Shot) instead scale off Ranged
@@ -2133,15 +2283,15 @@ export function armorReduction(armor: number, attackerLevel: number): number {
 // (see tests/spell_power.test.ts) so a fully-leveled caster gets a meaningful but
 // not dominant damage lift, scaling further as caster gear adds Int + Spell Power.
 export const SPELL_POWER_PER_INT = 0.5;
-// Direct nuke coefficient = clamp(castTime, MIN, MAX) / DIVISOR (vanilla 3.5). The
+// Direct nuke coefficient = clamp(castTime, MIN, MAX) / DIVISOR (classic-era 3.5). The
 // max equals the divisor so the direct coefficient caps at 1.0 (a 3.5s+ cast gets
 // full Spell Power; a 6s Pyroblast does not exceed it).
 export const SPELL_COEFF_DIVISOR = 3.5;
 export const SPELL_COEFF_MIN_CAST = 1.5; // instant / sub-1.5s casts use this floor
 export const SPELL_COEFF_MAX_CAST = 3.5; // longer casts cap at a 1.0 coefficient
-// Total DoT coefficient = duration / DURATION (vanilla 15), spread across ticks.
+// Total DoT coefficient = duration / DURATION (classic-era 15), spread across ticks.
 export const SPELL_DOT_COEFF_DURATION = 15;
-// AoE spells take a reduced coefficient (vanilla AoE penalty).
+// AoE spells take a reduced coefficient (the classic-era AoE penalty).
 export const SPELL_AOE_COEFF_MULT = 0.333;
 // Hunter ranged "attack spells" scale off Ranged Attack Power using the same
 // cast/duration shape, scaled down by this factor (RAP is far larger than SP).

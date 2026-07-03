@@ -480,7 +480,7 @@ describe('delta snapshots', () => {
     expect(row.auras).toContainEqual(
       expect.objectContaining({
         id: 'travel_form',
-        name: 'Travel Form',
+        name: 'Fleet Form',
         kind: 'form_travel',
         value: 1.4,
       }),
@@ -1254,7 +1254,7 @@ describe('client-side delta merge', () => {
     }
   });
 
-  it('reconstructs stacking-debuff stack counts from the wire (Sunder Armor)', () => {
+  it('reconstructs stacking-debuff stack counts from the wire (Armor Shear)', () => {
     const client = bareClient(1);
     (client as any).applySnapshot({
       ents: [
@@ -1273,7 +1273,7 @@ describe('client-side delta merge', () => {
           auras: [
             {
               id: 'sunder_armor',
-              name: 'Sunder Armor',
+              name: 'Armor Shear',
               kind: 'sunder',
               rem: 30,
               dur: 30,
@@ -1287,7 +1287,7 @@ describe('client-side delta merge', () => {
     expect(aura?.stacks, 'client should mirror the wire stack count').toBe(3);
   });
 
-  it('reconstructs charge-limited aura charges from the wire (Lightning Shield)', () => {
+  it('reconstructs charge-limited aura charges from the wire (Thunder Ward)', () => {
     const client = bareClient(1);
     (client as any).applySnapshot({
       ents: [
@@ -1306,7 +1306,7 @@ describe('client-side delta merge', () => {
           auras: [
             {
               id: 'lightning_shield',
-              name: 'Lightning Shield',
+              name: 'Thunder Ward',
               kind: 'thorns',
               rem: 600,
               dur: 600,
@@ -1822,15 +1822,16 @@ describe('lockpick view rebuilds from events on the online client', () => {
 // `s.X ?? e.X` form for `stats`/`weapon`). This is the single most fragile codec
 // in the workstream, so we pin: (a) the exact 26-key set against drift, (b) the
 // terse-key -> IWorld-name rename map, (c) that every dirtied value round-trips
-// onto the correct decode target, and (d) that a no-op re-broadcast omits all 26
+// onto the correct decode target, and (d) that a no-op re-broadcast omits all 28
 // while the prior decoded value is preserved.
 // ---------------------------------------------------------------------------
 
-// The pinned set of the 26 `maybe(...)` delta keys, sorted. Cross-checked below
+// The pinned set of the 28 `maybe(...)` delta keys, sorted. Cross-checked below
 // against the live `maybe(...)` calls scraped from server/game.ts source, so a
-// 26th unregistered delta key reddens this gate.
+// 29th unregistered delta key reddens this gate.
 const ALL_DELTA_KEYS = [
   'arena',
+  'bags',
   'buyback',
   'cds',
   'cosmetics',
@@ -1845,6 +1846,8 @@ const ALL_DELTA_KEYS = [
   'inv',
   'lockouts',
   'lroll',
+  'mail',
+  'mailU',
   'market',
   'marks',
   'milestones',
@@ -1867,6 +1870,7 @@ const ALL_DELTA_KEYS = [
 // keep their name; tal fans out to several members and is asserted directly).
 const TERSE_TO_IWORLD: Record<string, string> = {
   arena: 'arenaInfo',
+  bags: 'bags',
   buyback: 'vendorBuyback',
   cds: 'cooldowns',
   cosmetics: 'accountCosmetics',
@@ -1881,6 +1885,8 @@ const TERSE_TO_IWORLD: Record<string, string> = {
   lockouts: 'selfLockouts',
   lroll: 'lootRollPrompts',
   lxp: 'lifetimeXp',
+  mail: 'mailInfo',
+  mailU: 'mailUnread',
   market: 'marketInfo',
   marks: 'markers',
   milestones: 'unlockedMilestones',
@@ -1948,6 +1954,11 @@ function dirtyEveryDeltaField(): {
   (sim as any).targeting.partyMarkers.set(party.id, new Map([[mp, 3]]));
   const merchant = sim.entities.get(sim.market.merchantIds[0]);
   if (merchant) merchant.pos = { ...p.pos };
+  // `mail`: mailInfoFor is null unless near a mailbox, so relocate one onto the
+  // player. `mailU` is already non-zero: every fresh character got the one-time
+  // Ravenpost welcome letter (delay 0) at join.
+  const mailbox = sim.entities.get(sim.postOffice.mailboxIds[0]);
+  if (mailbox) mailbox.pos = { ...p.pos };
 
   // Direct PlayerMeta fields.
   meta.inventory = [{ itemId: 'baked_bread', count: 3 }];
@@ -2124,9 +2135,9 @@ describe('full self-state snapshot delta fixture', () => {
 });
 
 describe('delta-key contract pins (anti-drift)', () => {
-  it('ALL_DELTA_KEYS contains exactly 25 unique keys in sorted order', () => {
-    expect(ALL_DELTA_KEYS).toHaveLength(26);
-    expect(new Set(ALL_DELTA_KEYS).size).toBe(26);
+  it('ALL_DELTA_KEYS contains exactly 29 unique keys in sorted order', () => {
+    expect(ALL_DELTA_KEYS).toHaveLength(29);
+    expect(new Set(ALL_DELTA_KEYS).size).toBe(29);
     expect([...ALL_DELTA_KEYS]).toEqual([...ALL_DELTA_KEYS].sort());
   });
 
@@ -2138,7 +2149,7 @@ describe('delta-key contract pins (anti-drift)', () => {
     const scraped = new Set<string>();
     for (let m = re.exec(src); m !== null; m = re.exec(src)) scraped.add(m[1]);
     expect(scraped.has('lockouts')).toBe(true); // the multi-line call IS captured
-    expect(scraped.size).toBe(26);
+    expect(scraped.size).toBe(29);
     expect([...scraped].sort()).toEqual([...ALL_DELTA_KEYS].sort());
   });
 
@@ -2232,7 +2243,7 @@ describe('aura magnitude over the wire (buff/debuff tooltip parity)', () => {
   });
 
   it('sends a POSITIVE buff value so its tooltip shows the real magnitude, still a buff in both worlds', () => {
-    const buff: Aura = { ...sapInt(40), id: 'arcane_intellect', name: 'Arcane Intellect' };
+    const buff: Aura = { ...sapInt(40), id: 'arcane_intellect', name: 'Aether Insight' };
     const { wire, mirror } = roundTrip(buff);
     expect(wireAura(wire, 'arcane_intellect').value).toBe(40); // rides the wire now (was omitted)
     expect(mirror.value).toBe(40); // client mirrors the real magnitude (not the old hardcoded 0)
@@ -2243,7 +2254,7 @@ describe('aura magnitude over the wire (buff/debuff tooltip parity)', () => {
   it('sends a POSITIVE absorb value so the shield overlay and tooltip work online too', () => {
     const shield: Aura = {
       id: 'power_word_shield',
-      name: 'Power Word: Shield',
+      name: 'Psalm of Warding',
       kind: 'absorb',
       remaining: 12,
       duration: 12,
@@ -2266,7 +2277,7 @@ describe('aura magnitude over the wire (buff/debuff tooltip parity)', () => {
     // harmless. Classification stays KIND-based (DEBUFF_AURA_KINDS), identical in both worlds.
     const fear: Aura = {
       id: 'fear',
-      name: 'Fear',
+      name: 'Harrow',
       kind: 'incapacitate',
       remaining: 4,
       duration: 4,
@@ -2282,12 +2293,12 @@ describe('aura magnitude over the wire (buff/debuff tooltip parity)', () => {
     expect(isAuraDebuff(mirror)).toBe(true);
   });
 
-  it('round-trips Aspect of the Hawk so its tooltip shows the real attack power, not 0 (the bug)', () => {
-    // The reported bug: online, Aspect of the Hawk read "Increases attack power by 0" because the
+  it("round-trips Harrier's Guise so its tooltip shows the real attack power, not 0 (the bug)", () => {
+    // The reported bug: online, Harrier's Guise read "Increases attack power by 0" because the
     // positive buff_ap magnitude never rode the wire. It now does, so offline == online.
     const hawk: Aura = {
       id: 'aspect_of_the_hawk',
-      name: 'Aspect of the Hawk',
+      name: "Harrier's Guise",
       kind: 'buff_ap',
       remaining: 1800,
       duration: 1800,
@@ -2307,7 +2318,7 @@ describe('aura magnitude over the wire (buff/debuff tooltip parity)', () => {
   it('round-trips a dot magnitude, tick cadence, and non-physical school for its tooltip', () => {
     const dot: Aura = {
       id: 'corruption',
-      name: 'Corruption',
+      name: 'Blackrot',
       kind: 'dot',
       remaining: 12,
       duration: 12,
@@ -2392,7 +2403,7 @@ describe('aura decode reuses records across snapshots (allocation fast path)', (
     void pid;
     mob.auras.push({
       id: 'corruption',
-      name: 'Corruption',
+      name: 'Blackrot',
       kind: 'dot',
       remaining: 12,
       duration: 12,
@@ -2472,7 +2483,7 @@ describe('aura decode fast-path guards (composition edge cases)', () => {
     mob.auras.push(
       {
         id: 'corruption',
-        name: 'Corruption',
+        name: 'Blackrot',
         kind: 'dot',
         remaining: 12,
         duration: 12,

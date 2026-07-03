@@ -1222,6 +1222,11 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.items.widowfang_dirk.name': 'Duldişi Hançeri',
   'entities.items.windguard_leggings.name': 'Rüzgârmuhafızı Tozlukları',
   'entities.items.wolf_fang.name': 'Çatlak Kurt Dişi',
+  'entities.items.linen_pouch.name': 'Keten Kese',
+  'entities.items.travelers_knapsack.name': 'Gezginin Sırt Çantası',
+  'entities.items.wolfhide_satchel.name': 'Kurt Derisi Çanta',
+  'entities.items.gravewoven_bag.name': 'Mezar Dokuması Çanta',
+  'entities.items.mistcallers_duffel.name': 'Sis Çağıranın Denizci Çantası',
   'entities.items.worn_sword.name': 'Yıpranmış Kısa Kılıç',
   'entities.items.woven_robe.name': 'Vadidokuma Cübbesi',
   'entities.items.wyrmcult_grand_robe.name': 'Ejdertarikatı Görkemli Cübbesi',
@@ -1251,14 +1256,14 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.mobs.deathstalker_voss.name': 'Ölümavcısı Voss',
   'entities.mobs.deepfen_murloc.name': 'Derinbatak Kapanı',
   'entities.mobs.deeprock_kobold.name': 'Derinkaya Tünelcisi',
-  'entities.mobs.doomguard.name': 'Kıyamet Muhafızı',
+  'entities.mobs.wraithborn.name': 'Kıyamet Muhafızı',
   'entities.mobs.drowned_dead.name': 'Boğulmuş Ölü',
   'entities.mobs.drowned_templeguard.name': 'Boğulmuş Tapınak Muhafızı',
   'entities.mobs.drowned_thrall.name': 'Boğulmuş Köle',
   'entities.mobs.drowned_votary.name': 'Boğulmuş Mürit',
   'entities.mobs.fallen_captain_aldren.name': 'Düşmüş Kaptan Aldren',
-  'entities.mobs.felguard.name': 'İfrit Muhafızı',
-  'entities.mobs.felhunter.name': 'İfrit Avcısı',
+  'entities.mobs.warfiend.name': 'İfrit Muhafızı',
+  'entities.mobs.spellhound.name': 'İfrit Avcısı',
   'entities.mobs.fen_troll.name': 'Mirefen Trolü',
   'entities.mobs.forest_wolf.name': 'Orman Kurdu',
   'entities.mobs.glimmermere_wader.name': 'Glimmermere Yürüyücüsü',
@@ -1271,8 +1276,8 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.mobs.grix_the_tunnelking.name': 'Tünelkral Grix',
   'entities.mobs.grubjaw.name': 'Obur Grubjaw',
   'entities.mobs.hollow_acolyte.name': 'Oyuk Çömezi',
-  'entities.mobs.imp.name': 'İblisçik',
-  'entities.mobs.infernal.name': 'Cehennem Zebanisi',
+  'entities.mobs.emberkin.name': 'İblisçik',
+  'entities.mobs.pyre_colossus.name': 'Cehennem Zebanisi',
   'entities.mobs.ironvein_foreman.name': 'Demirdamar Ustabaşı',
   'entities.mobs.ironvein_sapper.name': 'Demirdamar Lağımcısı',
   'entities.mobs.knight_commander_olen.name': 'Şövalye-Komutan Olen',
@@ -1313,7 +1318,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.mobs.sister_nhalia.name': 'Rahibe Nhalia',
   'entities.mobs.sloomtooth_the_drowned.name': 'Boğulmuş Sloomtooth',
   'entities.mobs.stormcrag_elemental.name': 'Fırtınakaya Elementali',
-  'entities.mobs.succubus.name': 'Sukubus',
+  'entities.mobs.duskborn.name': 'Sukubus',
   'entities.mobs.thornpeak_ogre.name': 'Dikenzirve Ogresi',
   'entities.mobs.tidebound_acolyte.name': 'Gelgitbağlı Çömez',
   'entities.mobs.tunnel_rat.name': 'Tünel Faresi Kazıcısı',
@@ -1323,7 +1328,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.mobs.vision_aldren_warrior.name': "Kaptan Aldren'in Hayali",
   'entities.mobs.vision_deathstalker_voss.name': "Kraliyet Suikastçısı Voss'un Hayali",
   'entities.mobs.vision_malric_mage.name': "Baş Rahip Malric'in Hayali",
-  'entities.mobs.voidwalker.name': 'Boşlukgezer',
+  'entities.mobs.gloomshade.name': 'Boşlukgezer',
   'entities.mobs.voskar_emberwing.name': 'Korkanat Voskar',
   'entities.mobs.warlock_imp.name': 'Ateş İblisi',
   'entities.mobs.warlock_voidwalker.name': 'Boşluk İblisi',
@@ -2523,12 +2528,12 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'guide.family.humanoid.desc':
     'Haydutlar, tarikatçılar ve yanlış işe bulaşmış diğerleri. Sadece dişle değil, taktikle savaşırlar.',
   'guide.family.humanoid.name': 'İnsansılar',
-  'guide.family.kobold.desc':
+  'guide.family.burrower.desc':
     'Madenleri ve oyukları istila eden, cevherlerini hırsla koruyan mum başlı kazıcılar.',
-  'guide.family.kobold.name': 'Koboldlar',
-  'guide.family.murloc.desc':
+  'guide.family.burrower.name': 'Koboldlar',
+  'guide.family.mudfin.desc':
     'Sığ suları gürültülü, bölgeci sürüler hâlinde saran amfibik bataklık sakinleri.',
-  'guide.family.murloc.name': 'Murloclar',
+  'guide.family.mudfin.name': 'Murloclar',
   'guide.family.ogre.desc':
     'Devasa, kıt akıllı ve tehlikeli. Yüksek geçitlere konaklar ve bir heyelan gibi vururlar.',
   'guide.family.ogre.name': 'Devler',
@@ -2869,17 +2874,17 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'guide.notFound.body': 'Aradığın sayfa yok ya da taşınmış olabilir.',
   'guide.notFound.home': 'Genel bakışa dön',
   'guide.notFound.title': 'O sayfayı bulamadık',
-  'guide.petHook.doomguard': 'Uzaktan ağır gölge yağdıran seçkin bir büyücü.',
-  'guide.petHook.felguard':
+  'guide.petHook.wraithborn': 'Uzaktan ağır gölge yağdıran seçkin bir büyücü.',
+  'guide.petHook.warfiend':
     'Dayanıklı bir yakın dövüş kabadayısı; onu çağırabildiğin andan itibaren her işe yarayan bir yoldaş.',
-  'guide.petHook.felhunter': 'Düşman büyücülerin peşine düşen bir gölge akıncısı.',
-  'guide.petHook.imp':
+  'guide.petHook.spellhound': 'Düşman büyücülerin peşine düşen bir gölge akıncısı.',
+  'guide.petHook.emberkin':
     'Düşmanları güvenli bir mesafeden ateş oklarıyla hırpalayan menzilli bir iblis.',
-  'guide.petHook.infernal':
+  'guide.petHook.pyre_colossus':
     'Ezici yakın dövüşüyle iri yarı bir devasa güç, çiğ kuvvet için çağrılır.',
-  'guide.petHook.succubus':
+  'guide.petHook.duskborn':
     'Sert vuran ama baskı altında çabuk dağılan hızlı bir yakın dövüş iblisi.',
-  'guide.petHook.voidwalker':
+  'guide.petHook.gloomshade':
     'Kışkırtıp darbeleri üzerine çeken sağlam bir iblis, böylece rahatça büyü yapabilirsin.',
   'guide.placeholder.note': 'Rehberin bu bölümü yolda, yakında geliyor.',
   'guide.progression.bandLabel': 'Seviye {min} ile {max} arası',
@@ -5104,4 +5109,21 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.nativeUpdate.notNow': 'Şimdi Değil',
   'hudChrome.nativeUpdate.title': 'Güncelleme Mevcut',
   'hudChrome.nativeUpdate.update': 'Güncelle',
+  // Ravenpost authored letters
+  'entities.letters.ravenpost_welcome.sender': 'Kuzgun Postası',
+  'entities.letters.ravenpost_welcome.subject': 'Kuzgunlar artık senin için uçuyor',
+  'entities.letters.ravenpost_welcome.body':
+    'Yolcu,\n\nKuzgun Postası tünek direklerini vadinin dört bir yanına kurdu. Eastbrook, Fenbridge ve Highwatch’taki kuzgun sütunlarını ara: herhangi birinden diğer maceracılara mektup, para ve eşya gönderebilir, kuzgunların sana getirdiklerini alabilirsin.\n\nİlk pulun için küçük bir armağan ekledik.\n\nKanatlar yukarı,\nKuzgun Postası',
+  'entities.letters.letter_q_wolves.sender': 'Mareşal Redbrook',
+  'entities.letters.letter_q_wolves.subject': 'Ağıllar yeniden sessiz',
+  'entities.letters.letter_q_wolves.body':
+    'Çobanlar nihayet rahat uyuyabiliyor ve bu senin sayende. Kuzgun Postası’ndan nöbet kasasından sana küçük bir şey ulaştırmasını istedim.\n\nKılıcını yağlı tut.\n- Mareşal Redbrook',
+  'entities.letters.letter_q_greyjaw.sender': 'Mareşal Redbrook',
+  'entities.letters.letter_q_greyjaw.subject': 'Yaşlı Bozçene, sonunda',
+  'entities.letters.letter_q_greyjaw.body':
+    'Böyle küçük bir kasabada haber tez yayılır. Çobanlar dün gece sağlığına kadeh kaldırdı, Wilkes ise kurdun bir araba kadar iri olduğuna yemin ediyor. Bırak abartsınlar: bunu hak ettin.\n\nNöbetçilerin hesabına bir yemek ye.\n- Mareşal Redbrook',
+  'entities.letters.letter_q_hollow.sender': 'Birader Aldric',
+  'entities.letters.letter_q_hollow.subject': 'Karanlıkta yaptıkların',
+  'entities.letters.letter_q_hollow.body':
+    'O çukurda neyin gömülü olduğunu çok az kişi bilecek, inanacak olansa daha da az. Ben biliyorum ve unutmayacağım.\n\nYolun hep aydınlık olsun.\n- Birader Aldric',
 };

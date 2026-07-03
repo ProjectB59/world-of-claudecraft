@@ -571,7 +571,7 @@ export const hudChromeStrings = {
   // One-off chat-log tips shown at HUD bootstrap. The /join command tokens stay
   // literal (they are commands); the surrounding prose localizes.
   tips: {
-    joinChannels: 'Tip: type /join world or /join lfg to chat with players across the realm.',
+    joinChannels: 'Tip: type /join world or /join lfg to chat with players across the world.',
   },
   // Item-set (tier set) tooltip block. The set name and per-tier bonus text come
   // from content/item_sets.ts via entity_i18n; these two are the surrounding
@@ -640,7 +640,7 @@ export const hudChromeStrings = {
   // position/screenshot plus a free-text description and posts to the server.
   bugReport: {
     menuButton: 'Report a Bug',
-    realm: 'Realm',
+    realm: 'World',
     character: 'Character',
     position: 'Position',
     unknown: 'Unknown',
@@ -791,6 +791,9 @@ export const hudChromeStrings = {
   // itself is a sim emit re-localized through localizeSystemText (hud.logs.partyLeader).
   party: {
     promoteLeader: 'Promote to Leader',
+    // The global "/invite <name>" usage hint shown when the command is typed
+    // without a name (the invite itself has no proximity gate).
+    inviteUsage: 'Invite whom? Usage: /invite <name>.',
   },
   lootSettings: {
     title: 'Loot Settings',
@@ -820,6 +823,15 @@ export const hudChromeStrings = {
     searchPlaceholder: 'Search items',
     searchAria: 'Search bag items by name',
     noMatch: 'No items match your filters.',
+    // The bag bar (backpack + 4 equip sockets) and the used/capacity counter.
+    capacity: '{used}/{total}',
+    capacityAria: 'Bag slots used: {used} of {total}',
+    backpack: 'Backpack',
+    // Accessible name for a bag-bar socket: '{name}: {slots}' where {slots} is
+    // the already-localized 'N Slot Bag' phrase, so no code-side concatenation.
+    bagSocketAria: '{name}: {slots}',
+    socketEmpty: 'Empty bag slot',
+    unequipHint: 'Click to remove this bag',
   },
   // Raid -> party demotion (Social panel raid tab). The sim emits these in English;
   // src/ui/sim_i18n.ts re-localizes them through these keys. Mirrors the existing
@@ -894,13 +906,13 @@ export const hudChromeStrings = {
     disarm: 'Disarmed: cannot use weapon attacks',
     lockout: 'Spell school locked out',
     imbue: 'Weapon imbued with bonus effects',
-    imbueRange: 'Weapon imbued: {min} to {max} bonus damage on judgement',
+    imbueRange: 'Weapon imbued: {min} to {max} bonus damage on Verdict',
     stealth: 'Concealed; movement speed reduced by {pct}%',
-    formBear: 'Bear Form: increased health and armor',
+    formBear: 'Bruin Form: increased health and armor',
     formCat: 'Cat Form: melee damage and energy',
-    formTravel: 'Travel Form: movement speed increased by {pct}%',
-    defensiveStance: 'Defensive Stance: reduced damage taken, more threat',
-    righteousFury: 'Righteous Fury: greatly increased threat from Holy damage',
+    formTravel: 'Fleet Form: movement speed increased by {pct}%',
+    defensiveStance: 'Guarded Stance: reduced damage taken, more threat',
+    righteousFury: 'Burning Oath: greatly increased threat from Holy damage',
     scale: 'Size increased by {pct}%',
     jump: 'Jump height increased by {pct}%',
     // Localized damage-school names spliced into {school} above.
@@ -1157,5 +1169,116 @@ export const hudChromeStrings = {
     },
     linkedAs: 'Linked as {login}',
     unlink: 'Unlink GitHub',
+  },
+  // The Ravenpost mailbox window + envelope indicator. Authored letter
+  // sender/subject/body localize via entities.letters.* (world_entity_i18n),
+  // not here; these are the window chrome and the structured mailResult lines.
+  mailbox: {
+    title: 'Mailbox',
+    subtitle: 'The Ravenpost',
+    close: 'Close mailbox',
+    tabInbox: 'Inbox',
+    tabInboxWithCount: 'Inbox ({count})',
+    tabSend: 'Send',
+    empty: 'Your mailbox is empty.',
+    truncated: 'Showing the newest {shown} of {total} letters.',
+    attachmentsBadge: 'Parcel attached',
+    unreadBadge: 'Unread',
+    back: 'Back',
+    take: 'Take attachments',
+    delete: 'Delete letter',
+    deleteAria: 'Delete the letter {subject}',
+    openAria: 'Read the letter {subject} from {name}',
+    noSubject: '(no subject)',
+    toLabel: 'To',
+    toPlaceholder: 'Character name',
+    subjectLabel: 'Subject',
+    bodyLabel: 'Message',
+    coinLabel: 'Attach coin',
+    parcelsLabel: 'Parcels',
+    parcelsHint: 'Click an item in your bags to attach it.',
+    removeParcelAria: 'Remove {item} from the letter',
+    sendButton: 'Send letter',
+    postageNote: 'Postage: {amount}. The raven flies for about {seconds}s.',
+    arrivedBanner: 'The raven has landed: mail from {name}.',
+    arrivedLog: 'You have new mail from {name}.',
+    indicatorAria: 'Unread mail: {count}',
+    indicatorTip: 'You have {count} unread letters. Visit a mailbox to read them.',
+    clickAttach: 'Click to attach to your letter.',
+    cannotMail: 'This cannot be mailed.',
+    result: {
+      sent: 'A raven takes wing with your letter to {name} ({postage} postage).',
+      collected: 'You collect {amount} from the letter.',
+      tooFar: 'You must be at a mailbox to tend your post.',
+      needRecipient: 'Name a recipient for your letter.',
+      noRecipient: 'No one by that name holds a mailbox here.',
+      tooManyParcels: 'A letter carries at most {count} parcels.',
+      noMailQuestItems: 'You cannot mail quest items.',
+      notEnoughItems: 'You do not have that many to send.',
+      cantAffordPostage: 'You cannot afford the postage.',
+      recipientBoxFull: 'Their mailbox is full.',
+      letterGone: 'That letter is no longer in your box.',
+      takeParcelsFirst: 'Take the parcels out before discarding the letter.',
+    },
+  },
+  // The event calendar window: recurring system events plus the guild lane
+  // (booked by officers and the Guild Master, mirrored via socialInfo).
+  calendar: {
+    title: 'Event Calendar',
+    close: 'Close calendar',
+    keybindLabel: 'Event Calendar',
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
+    dayAria: '{date}: {count} events',
+    noEvents: 'Nothing planned for this day.',
+    allDay: 'All day',
+    bookedBy: 'Booked by {name}',
+    deleteAria: 'Remove the event {title}',
+    bookTitle: 'Book a guild event',
+    titlePlaceholder: 'Event title',
+    notePlaceholder: 'Note (optional)',
+    hourLabel: 'Hour (UTC)',
+    hourAllDay: 'All day',
+    addButton: 'Book event',
+    guildOnlyNote: 'Join a guild to plan events together.',
+    result: {
+      created: 'The event is on the guild calendar.',
+      removed: 'The event was taken off the calendar.',
+      notInGuild: 'You are not in a guild.',
+      notOfficer: 'Only officers and the Guild Master may manage guild events.',
+      badInput: 'Give the event a title and a valid day.',
+      calendarFull: 'The guild calendar is full.',
+      eventGone: 'That event is no longer on the calendar.',
+    },
+    events: {
+      raidCall: {
+        title: 'Raid Call',
+        note: 'Wardens sound the horn: gather a party for the crypts and the raid.',
+      },
+      marketDay: {
+        title: 'Market Day',
+        note: 'The Merchant expects fresh stock. A fine day to browse the World Market.',
+      },
+      fiestaNight: {
+        title: 'Fiesta Night',
+        note: 'The 2v2 Fiesta ring draws its loudest crowds tonight.',
+      },
+      arenaClash: {
+        title: 'Arena Clash',
+        note: 'Duelists flock to the Ashen Coliseum. Queue up and climb the ladder.',
+      },
+      fishingDerby: {
+        title: 'Fishing Derby',
+        note: 'Anglers line the lakes. Bring a pole and swap fishing tales.',
+      },
+      delveDay: {
+        title: 'Delve Day',
+        note: 'Brother Halven marks his charts: a fine day to brave the Collapsed Reliquary.',
+      },
+      moongateCommunion: {
+        title: 'Moongate Communion',
+        note: 'Pilgrims gather at the temple moongate under the mid-month moon.',
+      },
+    },
   },
 };
