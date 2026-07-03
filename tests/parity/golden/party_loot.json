@@ -28,7 +28,7 @@
       "tick": 3,
       "time": 0.15,
       "nextId": 392,
-      "state": "baf3144b",
+      "state": "81e6951b",
       "events": "c0e6c522",
       "rng": {
         "draws": 2,
@@ -50,6 +50,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -76,6 +77,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "talents": {
             "choices": {},
             "ranks": {}
