@@ -910,6 +910,25 @@
   body.auras-on-frame #debuff-bar {
     top: 14px;
   }
+  /* Party member mini aura strip: each row's own buffs/debuffs (the compact
+     wire summaries) as small icons under the bars. The .buff nodes reuse the
+     aura pool's styling; sized down here, with the (always empty) duration and
+     stacks labels hidden so the icons stay square. */
+  .party-frame .pfm-auras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 2px;
+    pointer-events: auto;
+  }
+  .pfm-auras .buff {
+    width: 16px;
+    height: 16px;
+  }
+  .pfm-auras .buff .dur,
+  .pfm-auras .buff .stacks {
+    display: none;
+  }
   .buff {
     width: 28px;
     height: 28px;

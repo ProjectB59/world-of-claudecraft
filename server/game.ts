@@ -28,6 +28,7 @@ import {
   type EquipSlot,
   emptyMoveInput,
   MAX_LEVEL,
+  PARTY_MEMBER_AURA_CAP,
   RUN_SPEED,
   type SimEvent,
 } from '../src/sim/types';
@@ -3234,6 +3235,15 @@ export class GameServer {
                 dead: e.dead ? 1 : 0,
                 inCombat: e.inCombat ? 1 : 0,
                 group: party.raidGroups.get(mPid) ?? 1,
+                // The mini aura strip under the member's party row (mirrors
+                // Sim.partyInfo): first N in aura order, id + kind + sap flag
+                // only, no countdown, so this payload changes only when the
+                // aura SET changes and the party delta elision keeps working.
+                auras: e.auras.slice(0, PARTY_MEMBER_AURA_CAP).map((a) => ({
+                  id: a.id,
+                  kind: a.kind,
+                  ...(a.value < 0 ? { neg: 1 } : {}),
+                })),
               }
             : null;
         })

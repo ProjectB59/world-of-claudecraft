@@ -109,7 +109,7 @@ export type {
 } from './world_api/duel_arena';
 export type { RaidLockout } from './world_api/dungeons';
 export type { MarketInfo, MarketListingView } from './world_api/market';
-export type { PartyInfo, PartyMemberInfo } from './world_api/party';
+export type { PartyInfo, PartyMemberAura, PartyMemberInfo } from './world_api/party';
 export type { PlayerProfessionsView } from './world_api/professions';
 export type {
   DevLeaderboardEntry,

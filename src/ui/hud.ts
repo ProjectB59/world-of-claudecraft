@@ -263,6 +263,7 @@ import { type MobTooltipI18n, type MobTooltipModel, mobTooltipHtml } from './mob
 import { MovableFrame } from './movable_frame';
 import { OptionsWindow } from './options_window';
 import { makeWriterFacet, type PainterHostPresentation } from './painter_host';
+import type { PartyRowAuraDeps } from './party_frame_row';
 import { partyFrameSignature, selectPartyFrameMembers } from './party_frames';
 import { PartyFramesPainter } from './party_frames_painter';
 import type { PerfOverlayHooks } from './perf_overlay_settings';
@@ -2845,6 +2846,27 @@ export class Hud {
   // castStop event (engage on success, drop on interrupt), so starting a Smite
   // never aggros the target before its damage lands.
   private pendingAutoAttackOnCastEnd = false;
+  // The party rows' mini aura strips share these deps (each row builds its own
+  // view + painter instance over them). The wire summaries carry no remaining
+  // time (Infinity reaches the core, so the duration label stays blank), which
+  // is why the tooltip here is NAME-ONLY: no seconds line, no effect summary.
+  private readonly partyAurasDeps: PartyRowAuraDeps = {
+    view: {
+      iconId: (a) => (ABILITIES[a.id] ? a.id : `aura_${a.kind}`),
+      auraName: (a) =>
+        ABILITIES[a.id] ? abilityDisplayName(ABILITIES[a.id]) : auraDisplayNameFromSource(a.name),
+      formatStacks: (n) => formatNumber(n, { maximumFractionDigits: 0 }),
+      // Units are never rendered here (Infinity remaining -> blank label), so the
+      // shared container is returned unrefreshed.
+      durationUnits: () => this.auraDurationUnits,
+      auraEffectHtml: () => '',
+    },
+    painter: {
+      resolveIconUrl: (iconKey) => `url(${iconDataUrl('aura', iconKey)})`,
+      renderTooltip: (name) => `<div class="tt-title">${esc(name)}</div>`,
+      attachTooltip: (el, html) => this.attachTooltip(el, html),
+    },
+  };
   // The party frames are N further instances of the unit_frame family, one per
   // member, behind a keyed node pool that replaces the old per-rebuild innerHTML wipe
   // + click/contextmenu re-attach. The pool owns #party-frames; updatePartyFrames
@@ -2859,6 +2881,7 @@ export class Hud {
       onContextMenu: (pid, name, x, y) => this.openContextMenu(pid, name, x, y),
       onLeave: () => this.sim.partyLeave(),
       leaveLabel: () => t('hud.social.leaveParty'),
+      partyAuras: this.partyAurasDeps,
     },
   );
   // Overworld world-map painter (the delve branch stays with delvePainter). Owns
