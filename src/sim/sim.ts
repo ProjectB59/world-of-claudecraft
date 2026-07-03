@@ -15,6 +15,7 @@ import {
   cleanseFriendlyNpcAuras,
   isRejectedFriendlyNpcAura,
   updateAuras,
+  updateComboExpiry,
   updateRegen,
   updateTimers,
 } from './combat/auras';
@@ -191,6 +192,12 @@ import {
   normalizeGatheringProficiency,
 } from './professions/gathering';
 import {
+  craftSkillsFor,
+  emptyCraftSkills,
+  gainCraftSkill,
+  normalizeCraftSkills,
+} from './professions/wheel';
+import {
   applyTalentAllocation,
   deleteTalentLoadout,
   respecTalents,
@@ -356,6 +363,10 @@ const BACKPEDAL_MULT = 0.65;
 // and runs from its attacker for FLEE_DURATION seconds at FLEE_SPEED_MULT speed,
 // rallying same-family allies it runs past (mob/social_aggro.ts). It flees only once
 // per pull, then recovers its nerve and re-engages if it survived.
+// Retail-style combo points are character-bound: unspent points survive a target
+// swap and the combo target's death, then fade this many seconds after the last
+// point was built (awardCombo restamps comboUntil on every award).
+const COMBO_POINT_DURATION = 30;
 const FLEE_HP_THRESHOLD = 0.2;
 const FLEE_DURATION = 5;
 // FLEE_SPEED_MULT / FLEE_MAX_SPEED and the cap math live in ./flee_speed.ts.
@@ -750,6 +761,10 @@ export interface PlayerMeta {
   // so the player can page through and filter the WHOLE market a window at a time.
   // Never persisted, resets on login.
   marketQuery: MarketQuery;
+  // Flat per-craft skill tracking (#1126): one independent, additive-only skill
+  // value per craft on the ten-craft ring (see professions/wheel.ts). Persisted
+  // in CharacterState.
+  craftSkills: Record<string, number>;
   // One-time Ravenpost welcome letter sent (persisted in CharacterState, so
   // existing characters get the service announcement exactly once).
   mailWelcomed: boolean;
@@ -847,6 +862,9 @@ export interface CharacterState {
   // World-boss daily loot record. Optional so saves from before world bosses load
   // cleanly (addPlayer falls back to an empty record).
   worldBossDaily?: { date: string; looted: string[] };
+  // Flat per-craft skill tracking (#1126; JSONB, additive back-compat: absent or
+  // partial on older saves loads the missing crafts as 0, see normalizeCraftSkills).
+  craftSkills?: Record<string, number>;
 }
 
 export interface PetState {
@@ -1350,6 +1368,7 @@ export class Sim {
       raidLockouts: new Map(),
       away: null,
       marketQuery: defaultMarketQuery(),
+      craftSkills: emptyCraftSkills(),
       mailWelcomed: false,
       delveMarks: 0,
       delveClears: {},
@@ -1419,6 +1438,7 @@ export class Sim {
           if (Number.isFinite(until) && until > now) meta.raidLockouts.set(dungeonId, until);
         }
       }
+      meta.craftSkills = normalizeCraftSkills(s.craftSkills);
       meta.mailWelcomed = s.mailWelcomed === true;
       meta.delveMarks = s.delveMarks ?? 0;
       meta.delveClears = { ...(s.delveClears ?? {}) };
@@ -1635,6 +1655,7 @@ export class Sim {
       pendingSkinRank: meta.pendingSkinRank,
       pendingSkinCatalog: meta.pendingSkinCatalog,
       pendingSkinItemId: meta.pendingSkinItemId,
+      craftSkills: { ...meta.craftSkills },
       delveMarks: meta.delveMarks,
       delveClears: { ...meta.delveClears },
       companionUpgrades: { ...meta.companionUpgrades },
@@ -2232,6 +2253,7 @@ export class Sim {
       removeItem: sim.removeItem.bind(sim),
       removeFungibleItem: sim.removeFungibleItem.bind(sim),
       partyOf: sim.partyOf.bind(sim),
+      partyInvite: (targetPid: number, pid?: number) => sim.party.partyInvite(targetPid, pid),
       removeFromParty: (pid: number, verb: string) => sim.party.removeFromParty(pid, verb),
       // dropPartyMarkers flips to the T1 marker store (targeting); lazy arrow since
       // sim.targeting is built after ctx. The T1 selectors consume isHostileTo/
@@ -2638,6 +2660,7 @@ export class Sim {
         drainGatheringGrants(meta);
       }
       updateTimers(p);
+      updateComboExpiry(this.ctx, p);
       updateAuras(this.ctx, p);
     }
 
@@ -3374,12 +3397,12 @@ export class Sim {
     healingThreatImpl(this.ctx, source, target, healed);
   }
 
-  private awardCombo(p: Entity, target: Entity, points: number): void {
-    if (p.comboTargetId !== target.id) {
-      p.comboPoints = 0;
-      p.comboTargetId = target.id;
-    }
+  // Combo points are character-bound (retail-style): building on any target adds
+  // to the one pool, and the pool persists across target swaps until spent, the
+  // player dies, or COMBO_POINT_DURATION passes without a new point.
+  private awardCombo(p: Entity, _target: Entity, points: number): void {
     p.comboPoints = Math.min(5, p.comboPoints + points);
+    p.comboUntil = this.time + COMBO_POINT_DURATION;
     this.emit({ type: 'comboPoint', points: p.comboPoints, pid: p.id });
   }
 
@@ -6177,6 +6200,18 @@ export class Sim {
     return runsMod.companionUpgradesFor(this.ctx, pid);
   }
 
+  craftSkillsFor(pid: number): Record<string, number> {
+    return craftSkillsFor(this.ctx, pid);
+  }
+
+  /** Additive-only skill gain for exactly one craft; never affects any other craft
+   *  (see professions/wheel.ts). No-op for an unknown pid or craft id. */
+  gainCraftSkill(pid: number, craftId: string, amount: number): void {
+    const meta = this.players.get(pid);
+    if (!meta) return;
+    gainCraftSkill(meta.craftSkills, craftId, amount);
+  }
+
   delveDailyWire(pid: number): { date: string; firstClearXp: string[]; markClears: number } {
     return runsMod.delveDailyWire(this.ctx, pid);
   }
@@ -6203,6 +6238,10 @@ export class Sim {
 
   get companionUpgrades(): Record<string, number> {
     return this.companionUpgradesFor(this.primaryId);
+  }
+
+  get craftSkills(): Record<string, number> {
+    return this.craftSkillsFor(this.primaryId);
   }
 
   delveShopOffers(delveId: string): DelveShopOffer[] {

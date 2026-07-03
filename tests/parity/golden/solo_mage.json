@@ -15,7 +15,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "e9388a1e",
+      "state": "666e3c56",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -31,6 +31,7 @@
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -52,6 +53,7 @@
           "aiState": "idle",
           "attackPower": 10,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.056,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.056,
@@ -103,7 +105,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 394,
-      "state": "ffa80998",
+      "state": "8745ffce",
       "events": "c97b03d0",
       "rng": {
         "draws": 3,
@@ -114,7 +116,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 394,
-      "state": "48e6fc4f",
+      "state": "3813f87b",
       "events": "940d13d1",
       "rng": {
         "draws": 3,
@@ -125,7 +127,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 394,
-      "state": "dc0f2e23",
+      "state": "3198d0f7",
       "events": "be3c0c43",
       "rng": {
         "draws": 73,
@@ -136,7 +138,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 394,
-      "state": "7501b977",
+      "state": "a78913eb",
       "events": "be3c0c43",
       "rng": {
         "draws": 162,
@@ -147,7 +149,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 394,
-      "state": "3b1196c3",
+      "state": "c4dbfe87",
       "events": "d17a9a9d",
       "rng": {
         "draws": 254,
@@ -158,7 +160,7 @@
       "tick": 120,
       "time": 6,
       "nextId": 394,
-      "state": "18c57dde",
+      "state": "cbf34804",
       "events": "be3c0c43",
       "rng": {
         "draws": 367,
@@ -169,7 +171,7 @@
       "tick": 128,
       "time": 6.4,
       "nextId": 394,
-      "state": "8af4ca72",
+      "state": "9c67ceb4",
       "events": "741638a5",
       "rng": {
         "draws": 411,
@@ -185,6 +187,7 @@
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -208,6 +211,7 @@
           "attackPower": 10,
           "castTotal": 2,
           "combatTimer": 105.4,
+          "comboUntil": -1,
           "critChance": 0.056,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.056,
@@ -258,6 +262,7 @@
         {
           "aiState": "idle",
           "combatTimer": 105.4,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,

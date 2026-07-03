@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "893a57f7",
+      "state": "e54bdd93",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -32,6 +32,7 @@
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -53,6 +54,7 @@
           "aiState": "idle",
           "attackPower": 42,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0625,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0625,
@@ -105,7 +107,7 @@
       "tick": 10,
       "time": 0.5,
       "nextId": 404,
-      "state": "ddc0081f",
+      "state": "eb0551ab",
       "events": "9e34e27d",
       "rng": {
         "draws": 3,
@@ -116,7 +118,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 404,
-      "state": "3f6abcef",
+      "state": "1f857d4b",
       "events": "1bd10bbf",
       "rng": {
         "draws": 3,
@@ -127,7 +129,7 @@
       "tick": 30,
       "time": 1.5,
       "nextId": 404,
-      "state": "ce33b999",
+      "state": "f93cfee9",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -138,7 +140,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 404,
-      "state": "103c0c1b",
+      "state": "f023e39b",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -149,7 +151,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 404,
-      "state": "c6f1f961",
+      "state": "f0c23595",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -160,7 +162,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 404,
-      "state": "dae5c21f",
+      "state": "0392227f",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -171,7 +173,7 @@
       "tick": 69,
       "time": 3.45,
       "nextId": 405,
-      "state": "f55f7b19",
+      "state": "193b0ce9",
       "events": "1344a4b5",
       "rng": {
         "draws": 3,
@@ -191,6 +193,7 @@
             "kills": 1,
             "xpGained": 198
           },
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -214,6 +217,7 @@
           "aiState": "idle",
           "attackPower": 66,
           "combatTimer": 3.45,
+          "comboUntil": -1,
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
@@ -262,6 +266,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -302,7 +307,7 @@
       "tick": 70,
       "time": 3.5,
       "nextId": 405,
-      "state": "bf9f0d8d",
+      "state": "934d0fd9",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -313,7 +318,7 @@
       "tick": 71,
       "time": 3.55,
       "nextId": 405,
-      "state": "0c92b909",
+      "state": "6bf15fd5",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -333,6 +338,7 @@
             "kills": 1,
             "xpGained": 198
           },
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -356,6 +362,7 @@
           "aiState": "idle",
           "attackPower": 66,
           "combatTimer": 3.55,
+          "comboUntil": -1,
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
@@ -404,6 +411,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,

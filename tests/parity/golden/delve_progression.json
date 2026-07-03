@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "e6a44c6e",
+      "state": "b58fb2fe",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -32,6 +32,7 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -53,6 +54,7 @@
           "aiState": "idle",
           "attackPower": 46,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
@@ -103,7 +105,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 414,
-      "state": "1bdd2bf4",
+      "state": "be72c36a",
       "events": "1c6b947f",
       "rng": {
         "draws": 1,
@@ -114,7 +116,7 @@
       "tick": 7,
       "time": 0.35,
       "nextId": 414,
-      "state": "fdcd989a",
+      "state": "f94160a0",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -130,6 +132,7 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -152,6 +155,7 @@
           "aiState": "idle",
           "attackPower": 70,
           "combatTimer": 99.35,
+          "comboUntil": -1,
           "critChance": 0.063,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.063,
@@ -200,7 +204,7 @@
       "tick": 7,
       "time": 0.35,
       "nextId": 414,
-      "state": "910e5be2",
+      "state": "9c7ed4de",
       "events": "6895da0f",
       "rng": {
         "draws": 3,
@@ -219,6 +223,7 @@
           },
           "copper": 100000,
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {
             "date": "2099-06-25"
@@ -245,6 +250,7 @@
           "aiState": "idle",
           "attackPower": 70,
           "combatTimer": 99.35,
+          "comboUntil": -1,
           "critChance": 0.063,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.063,
@@ -293,7 +299,7 @@
       "tick": 9,
       "time": 0.45,
       "nextId": 414,
-      "state": "af509f14",
+      "state": "1f156f84",
       "events": "741638a5",
       "rng": {
         "draws": 3,
@@ -312,6 +318,7 @@
           },
           "copper": 100000,
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {
             "date": "2099-06-25"
@@ -338,6 +345,7 @@
           "aiState": "idle",
           "attackPower": 70,
           "combatTimer": 99.45,
+          "comboUntil": -1,
           "critChance": 0.063,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.063,

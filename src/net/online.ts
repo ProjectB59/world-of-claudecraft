@@ -25,6 +25,7 @@ import { LEADERBOARD_PAGE_SIZE } from '../sim/leaderboard_page';
 import type { Ante, PickAction } from '../sim/lockpick';
 import type { MarketQuery } from '../sim/market_query';
 import { normalizeMoveFacing, sanitizeMoveInput } from '../sim/move_input';
+import { emptyCraftSkills } from '../sim/professions/wheel';
 import { computeQuestState, type ResolvedAbility } from '../sim/sim';
 import {
   type Entity,
@@ -780,7 +781,7 @@ function blankEntity(id: number): Entity {
     queuedOnSwing: null,
     fiveSecondRule: 99,
     comboPoints: 0,
-    comboTargetId: null,
+    comboUntil: -1,
     overpowerUntil: -1,
     potionCooldownUntil: -1,
     potionCdRemaining: 0,
@@ -916,6 +917,11 @@ export class ClientWorld implements IWorld {
   lockpickState: LockpickView | null = null;
   delveMarks = 0;
   companionUpgrades: Record<string, number> = {};
+  // Flat per-craft skill tracking (#1126). NOT yet mirrored over the wire: this
+  // issue lands the sim-side state + persistence only, so online play sees the
+  // all-zero default until the wheel/mass-conservation follow-up wires a self-snap
+  // field the way `dmarks`/`dcomp` do for delveMarks/companionUpgrades above.
+  craftSkills: Record<string, number> = emptyCraftSkills();
   // Per-delve clears (key `${delveId}:${tierId}`), mirrored from the self-wire so
   // delveShopOffers can resolve the shop lock badge client-side.
   delveClears: Record<string, number> = {};
@@ -1499,7 +1505,6 @@ export class ClientWorld implements IWorld {
       e.gcdRemaining = s.gcd ?? 0;
       e.potionCdRemaining = s.pcd ?? 0;
       e.comboPoints = s.combo ?? 0;
-      e.comboTargetId = s.comboTgt ?? null;
       e.targetId = s.target ?? null;
       e.autoAttack = !!s.auto;
       e.swingTimer = s.swing ?? e.swingTimer;

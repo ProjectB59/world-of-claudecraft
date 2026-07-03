@@ -34,7 +34,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 401,
-      "state": "24fd630a",
+      "state": "026b44e6",
       "events": "61cf5b0a",
       "rng": {
         "draws": 6,
@@ -49,6 +49,7 @@
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -71,6 +72,7 @@
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 393,
@@ -93,6 +95,7 @@
           "cls": "druid",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 394,
@@ -115,6 +118,7 @@
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 395,
@@ -137,6 +141,7 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 396,
@@ -158,6 +163,7 @@
           "aiState": "idle",
           "attackPower": 10,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0555,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0555,
@@ -206,6 +212,7 @@
           "aiState": "idle",
           "attackPower": 44,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0585,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0585,
@@ -267,6 +274,7 @@
             }
           ],
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0575,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0575,
@@ -316,6 +324,7 @@
           "aiState": "idle",
           "attackPower": 36,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.058,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.058,
@@ -377,6 +386,7 @@
             }
           ],
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
@@ -424,6 +434,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -464,6 +475,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -523,6 +535,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -582,6 +595,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -644,7 +658,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 401,
-      "state": "06fa1f37",
+      "state": "2f02aa31",
       "events": "750c008c",
       "rng": {
         "draws": 6,
@@ -659,6 +673,7 @@
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -681,6 +696,7 @@
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 393,
@@ -705,6 +721,7 @@
           "counters": {
             "damageDealt": 105
           },
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 394,
@@ -727,6 +744,7 @@
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 395,
@@ -749,6 +767,7 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 396,
@@ -770,6 +789,7 @@
           "aiState": "idle",
           "attackPower": 10,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0555,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0555,
@@ -818,6 +838,7 @@
           "aiState": "idle",
           "attackPower": 44,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0585,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0585,
@@ -878,6 +899,7 @@
               "value": 0.3
             }
           ],
+          "comboUntil": -1,
           "critChance": 0.0575,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0575,
@@ -928,6 +950,7 @@
           "aiState": "idle",
           "attackPower": 36,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.058,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.058,
@@ -989,6 +1012,7 @@
             }
           ],
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
@@ -1036,6 +1060,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1088,6 +1113,7 @@
               "value": 0.5
             }
           ],
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1153,6 +1179,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1212,6 +1239,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1274,7 +1302,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 401,
-      "state": "6cdcf145",
+      "state": "8132233f",
       "events": "a3f8559d",
       "rng": {
         "draws": 10,
@@ -1285,7 +1313,7 @@
       "tick": 8,
       "time": 0.4,
       "nextId": 401,
-      "state": "8903db3f",
+      "state": "76bdee01",
       "events": "a3f8559d",
       "rng": {
         "draws": 10,
@@ -1300,6 +1328,7 @@
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 392,
@@ -1322,6 +1351,7 @@
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 393,
@@ -1346,6 +1376,7 @@
           "counters": {
             "damageDealt": 105
           },
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 394,
@@ -1368,6 +1399,7 @@
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 395,
@@ -1390,6 +1422,7 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
+          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
           "entityId": 396,
@@ -1411,6 +1444,7 @@
           "aiState": "idle",
           "attackPower": 10,
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.0555,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0555,
@@ -1459,6 +1493,7 @@
           "aiState": "idle",
           "attackPower": 44,
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.0585,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0585,
@@ -1520,6 +1555,7 @@
             }
           ],
           "combatTimer": 0.4,
+          "comboUntil": -1,
           "critChance": 0.0575,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0575,
@@ -1570,6 +1606,7 @@
           "aiState": "idle",
           "attackPower": 36,
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.058,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.058,
@@ -1643,6 +1680,7 @@
             }
           ],
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
@@ -1690,6 +1728,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1745,6 +1784,7 @@
             }
           ],
           "combatTimer": 0.4,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1811,6 +1851,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -1877,6 +1918,7 @@
         {
           "aiState": "idle",
           "combatTimer": 99.4,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
