@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "4c984cec",
+      "state": "812c3f60",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -38,6 +38,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "talents": {
             "choices": {},
             "ranks": {}
@@ -100,7 +101,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "a73f9b3c",
+      "state": "d41f26f8",
       "events": "714d6ddf",
       "rng": {
         "draws": 0,
@@ -122,6 +123,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "questLog": [
             [
               "q_boars",
@@ -196,7 +198,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "315d74ed",
+      "state": "88748d29",
       "events": "f5ba3286",
       "rng": {
         "draws": 0,
@@ -220,6 +222,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 5,
@@ -300,7 +303,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "aefb3908",
+      "state": "d5e99404",
       "events": "1858db2d",
       "rng": {
         "draws": 0,
@@ -324,6 +327,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -404,7 +408,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "ea931c8e",
+      "state": "14373cd2",
       "events": "3b371ba6",
       "rng": {
         "draws": 0,
@@ -428,6 +432,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 5,
@@ -508,7 +513,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "a7689db9",
+      "state": "9fbc07fd",
       "events": "5c5c3b4e",
       "rng": {
         "draws": 0,
@@ -535,6 +540,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 350,
           "questsDone": [
             "q_boars"
@@ -602,7 +608,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 390,
-      "state": "bb451197",
+      "state": "d7ea417b",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -629,6 +635,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 350,
           "questsDone": [
             "q_boars"

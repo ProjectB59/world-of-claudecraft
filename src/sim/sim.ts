@@ -54,6 +54,7 @@ import { isSpellResisted } from './combat/spell_resist';
 // moved to social/fiesta.ts with that logic; sim.ts keeps only the type used by
 // the PlayerMeta interface + the power-up catalog the fiestaMatchInfo accessor reads.
 import { type AugmentSpecial, type AugmentTier, POWERUPS_BY_ID } from './content/augments';
+import type { GatheringProfessionId } from './content/professions';
 import {
   classHasSkin,
   EVENT_SKIN_TOKEN_ID,
@@ -181,6 +182,12 @@ import {
 } from './pathfind';
 import * as petAi from './pet/pet_ai';
 import * as petCommands from './pet/pet_commands';
+import {
+  drainGatheringGrants,
+  emptyGatheringProficiency,
+  gatheringSkillsView,
+  normalizeGatheringProficiency,
+} from './professions/gathering';
 import {
   applyTalentAllocation,
   deleteTalentLoadout,
@@ -679,6 +686,13 @@ export interface PlayerMeta {
   // Classic Rested XP pool (copper-less XP units). Accrues while resting in an
   // inn, spent to double kill XP. Persisted in CharacterState.
   restedXp: number;
+  // Gathering profession proficiency (Mining/Logging/Herbalism). Independent,
+  // additive counters, one per profession: granting one never changes another.
+  // Persisted in CharacterState. See src/sim/professions/gathering.ts.
+  gatheringProficiency: Record<GatheringProfessionId, number>;
+  // Grants queued by the `/dev gather` cheat, drained once per player per tick
+  // (see drainGatheringGrants). Session-only, never persisted.
+  pendingGatherGrants: { professionId: GatheringProfessionId; amount: number }[];
   known: ResolvedAbility[];
   questLog: Map<string, QuestProgress>;
   questsDone: Set<string>;
@@ -770,6 +784,12 @@ export interface CharacterState {
   unlockedMilestones?: string[];
   // Rested XP pool. Optional so pre-rested-XP saves load cleanly (defaults to 0).
   restedXp?: number;
+  // Gathering profession proficiency (JSONB; optional so pre-professions saves
+  // load cleanly, defaulting every profession to 0). Key is `professions`
+  // (not `gatheringProficiency`), reserved by the settled professions
+  // contract (src/sim/professions/CLAUDE.md, #1164) parallel to the existing
+  // `delveDaily`/`companionUpgrades` persisted fields.
+  professions?: Partial<Record<string, number>>;
   copper: number;
   hp: number;
   resource: number;
@@ -1274,6 +1294,8 @@ export class Sim {
       prestigeRank: 0,
       unlockedMilestones: new Set(),
       restedXp: 0,
+      gatheringProficiency: emptyGatheringProficiency(),
+      pendingGatherGrants: [],
       known: [],
       questLog: new Map(),
       questsDone: new Set(),
@@ -1322,6 +1344,7 @@ export class Sim {
       meta.lifetimeXp = s.lifetimeXp ?? xpToReachLevel(player.level) + Math.max(0, s.xp);
       meta.prestigeRank = s.prestigeRank ?? 0;
       meta.restedXp = Math.max(0, s.restedXp ?? 0);
+      meta.gatheringProficiency = normalizeGatheringProficiency(s.professions);
       if (s.unlockedMilestones)
         for (const id of s.unlockedMilestones) meta.unlockedMilestones.add(id);
       meta.copper = s.copper;
@@ -1524,6 +1547,7 @@ export class Sim {
       prestigeRank: meta.prestigeRank,
       unlockedMilestones: [...meta.unlockedMilestones],
       restedXp: meta.restedXp,
+      professions: { ...meta.gatheringProficiency },
       copper: meta.copper,
       hp: e.hp,
       // A druid saved while shifted runs on rage/energy with its mana parked in
@@ -2570,6 +2594,7 @@ export class Sim {
         this.updatePlayerAutoAttack(p, meta);
         updateRegen(this.ctx, p, meta);
         updateRested(p, meta);
+        drainGatheringGrants(meta);
       }
       updateTimers(p);
       updateAuras(this.ctx, p);
@@ -6068,10 +6093,17 @@ export class Sim {
     return this.delveDailyWire(this.primaryId);
   }
 
-  // Stub read surface for #1164: professions skill tracking + recipes land in
-  // later issues (#1119/#1120). Always empty until then.
+  // Gathering profession proficiency (Mining/Logging/Herbalism), the real
+  // read surface for #1119, mapped onto the settled #1164 shape. Crafting/
+  // secondary professions still contribute nothing until #1120/#1125/#1126/
+  // #1140 land.
+  professionsStateFor(pid: number): PlayerProfessionsView {
+    const proficiency = this.players.get(pid)?.gatheringProficiency ?? emptyGatheringProficiency();
+    return { skills: gatheringSkillsView(proficiency) };
+  }
+
   get professionsState(): PlayerProfessionsView {
-    return { skills: [] };
+    return this.professionsStateFor(this.primaryId);
   }
 }
 

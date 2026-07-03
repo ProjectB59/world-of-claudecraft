@@ -30,7 +30,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 391,
-      "state": "1531b4c7",
+      "state": "72ab49df",
       "events": "d8f7a12d",
       "rng": {
         "draws": 0,
@@ -53,6 +53,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 3,
@@ -80,6 +81,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 2,
@@ -196,7 +198,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 391,
-      "state": "9176c8ad",
+      "state": "6978f9fd",
       "events": "2e3c28cb",
       "rng": {
         "draws": 0,
@@ -219,6 +221,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -250,6 +253,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -370,7 +374,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 391,
-      "state": "9176c8ad",
+      "state": "6978f9fd",
       "events": "a1930032",
       "rng": {
         "draws": 0,
@@ -393,6 +397,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -424,6 +429,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -544,7 +550,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 391,
-      "state": "9176c8ad",
+      "state": "6978f9fd",
       "events": "bda3fb58",
       "rng": {
         "draws": 0,
@@ -567,6 +573,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -598,6 +605,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -718,7 +726,7 @@
       "tick": 1,
       "time": 0.05,
       "nextId": 391,
-      "state": "66c306ac",
+      "state": "e9bfe48c",
       "events": "2b21e03b",
       "rng": {
         "draws": 0,
@@ -741,6 +749,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -772,6 +781,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -892,7 +902,7 @@
       "tick": 1,
       "time": 0.05,
       "nextId": 391,
-      "state": "66c306ac",
+      "state": "e9bfe48c",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -915,6 +925,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,
@@ -946,6 +957,7 @@
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 1,

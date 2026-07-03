@@ -3162,6 +3162,11 @@ export class GameServer {
     maybe('dcomp', this.sim.companionUpgradesFor(anchorSession.pid));
     maybe('dclears', this.sim.delveClearsFor(anchorSession.pid));
     maybe('delveDaily', this.sim.delveDailyWire(anchorSession.pid));
+    // Gathering profession proficiency (Mining/Logging/Herbalism), a small
+    // per-player read, so kept per-tick like the other small maps above. Wire
+    // key `prof` and IWorld member `professionsState` are the settled names
+    // for the professions facet (#1164, src/sim/professions/CLAUDE.md).
+    maybe('prof', this.sim.professionsStateFor(anchorSession.pid));
     // stats + weapon stay per-tick: recalcPlayerStats re-derives them on every
     // stat-affecting aura gain/loss (Bear/Cat Form, shouts, debuffs, elixir
     // wear-off, a buff cast on you by someone else), none of which mark this
