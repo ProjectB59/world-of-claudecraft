@@ -1141,6 +1141,10 @@ export const ja_JP: EnTranslations = {
           "note": "月半ばの月の下、巡礼者が神殿の月門に集う。"
         }
       }
+    },
+    "social": {
+      "lastSeen": "最終ログイン: {when}",
+      "lastSeenNever": "なし"
     }
   },
   "guide": {

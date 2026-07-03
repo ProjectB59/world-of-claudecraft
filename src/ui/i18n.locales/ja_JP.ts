@@ -14,6 +14,9 @@
 import type { TranslationKey } from '../i18n.catalog';
 
 export const ja_JP: Partial<Record<TranslationKey, string>> = {
+  // Guild roster last-seen (M16 non-Latin fill)
+  'hudChrome.social.lastSeen': '最終ログイン: {when}',
+  'hudChrome.social.lastSeenNever': 'なし',
   // Daily rewards (M16 non-Latin fill)
   'hudChrome.dailyRewards.title': 'デイリー報酬',
   'hudChrome.dailyRewards.close': 'デイリー報酬を閉じる',

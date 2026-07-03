@@ -1263,4 +1263,11 @@ export const hudChromeStrings = {
       },
     },
   },
+  // Guild roster: a member's last world-entry time, shown on offline rows. {when}
+  // is a locale-formatted date/time, or the "never" leaf when the character has no
+  // recorded login.
+  social: {
+    lastSeen: 'Last seen: {when}',
+    lastSeenNever: 'never',
+  },
 };

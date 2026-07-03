@@ -14,6 +14,9 @@
 import type { TranslationKey } from '../i18n.catalog';
 
 export const ko_KR: Partial<Record<TranslationKey, string>> = {
+  // Guild roster last-seen (M16 non-Latin fill)
+  'hudChrome.social.lastSeen': '마지막 접속: {when}',
+  'hudChrome.social.lastSeenNever': '없음',
   // Daily rewards (M16 non-Latin fill)
   'hudChrome.dailyRewards.title': '일일 보상',
   'hudChrome.dailyRewards.close': '일일 보상 닫기',

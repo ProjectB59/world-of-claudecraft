@@ -14,6 +14,9 @@
 import type { TranslationKey } from '../i18n.catalog';
 
 export const zh_CN: Partial<Record<TranslationKey, string>> = {
+  // Guild roster last-seen (M16 non-Latin fill)
+  'hudChrome.social.lastSeen': '最后在线: {when}',
+  'hudChrome.social.lastSeenNever': '从未',
   // Daily rewards (M16 non-Latin fill)
   'hudChrome.dailyRewards.title': '每日奖励',
   'hudChrome.dailyRewards.close': '关闭每日奖励',

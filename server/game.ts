@@ -64,6 +64,7 @@ import {
   saveCharacterState,
   saveMailState,
   saveMarketState,
+  touchCharacterLogin,
   walletForAccount,
 } from './db';
 import { enqueueActivity } from './discord_activity';
@@ -1536,6 +1537,11 @@ export class GameServer {
     this.sessionsByCharacterId.set(characterId, session);
     this.peakOnline = Math.max(this.peakOnline, this.clients.size);
     void this.recordOnlineSnapshot();
+    // Stamp this character's last world-entry time for the guild-roster "last
+    // seen" readout. Best-effort: a failed write must never block joining.
+    void touchCharacterLogin(characterId).catch((err) =>
+      console.error('failed to stamp character last_login:', err),
+    );
     openPlaySession(accountId, characterId, name, meta)
       .then((id) => {
         session.dbSessionId = id;

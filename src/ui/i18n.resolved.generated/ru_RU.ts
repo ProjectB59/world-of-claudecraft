@@ -1141,6 +1141,10 @@ export const ru_RU: EnTranslations = {
           "note": "Паломники собираются у лунных врат храма под срединной луной."
         }
       }
+    },
+    "social": {
+      "lastSeen": "Последний вход: {when}",
+      "lastSeenNever": "никогда"
     }
   },
   "guide": {

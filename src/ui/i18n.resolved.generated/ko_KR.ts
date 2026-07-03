@@ -1141,6 +1141,10 @@ export const ko_KR: EnTranslations = {
           "note": "보름의 달 아래 순례자들이 사원의 달문에 모입니다."
         }
       }
+    },
+    "social": {
+      "lastSeen": "마지막 접속: {when}",
+      "lastSeenNever": "없음"
     }
   },
   "guide": {

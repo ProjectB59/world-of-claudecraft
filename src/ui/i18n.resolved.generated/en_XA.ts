@@ -1141,6 +1141,10 @@ export const en_XA: EnTranslations = {
           "note": "[Þíļĝŕíɱš ĝáţĥéŕ áţ ţĥé ţéɱþļé ɱóóñĝáţé úñðéŕ ţĥé ɱíð-ɱóñţĥ ɱóóñ.]"
         }
       }
+    },
+    "social": {
+      "lastSeen": "[Ļášţ šééñ: {when}]",
+      "lastSeenNever": "[ñéʋéŕ]"
     }
   },
   "guide": {
