@@ -1,4 +1,5 @@
 import { audio } from '../game/audio';
+import type { GamepadKind } from '../game/gamepad_map';
 import type { Keybinds } from '../game/keybinds';
 import { music, musicZoneForLocation, shouldResetMusicForDungeonEntry } from '../game/music';
 import type { GameSettings, Settings } from '../game/settings';
@@ -380,6 +381,9 @@ export interface GamepadBindingsHooks {
   entries(): { button: number; action: string }[];
   bind(button: number, action: string): void;
   reset(): void;
+  // Detected brand of the connected pad, so the panel labels each button with the
+  // glyph printed on that controller ('generic' combined labels when none/unknown).
+  kind(): GamepadKind;
 }
 
 export interface ReportHooks {
@@ -11934,6 +11938,12 @@ export class Hud {
    *  dropped normalized position to the options window's open performance panel. */
   onPerfOverlayMoved(x: number, y: number): void {
     this.optionsWindow.onPerfOverlayMoved(x, y);
+  }
+
+  /** Called by main.ts when a pad connects/disconnects: re-label the Controller
+   *  panel with the newly detected brand's glyphs if that panel is open. */
+  refreshControllerLabels(): void {
+    this.optionsWindow.refreshControllerLabels();
   }
 
   // -------------------------------------------------------------------------

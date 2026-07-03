@@ -1306,6 +1306,7 @@ async function startGame(
     onInputEdge: () => inputMeter.record(performance.now()),
     isPointerMode: () => hud.isWindowOpen(),
     getPlayerHealth: () => (world.player.dead ? 0 : world.player.hp),
+    onConnectionChange: () => hud.refreshControllerLabels(),
   });
   // The startup apply-all loop (below) calls applySetting('gamepadEnabled', ...)
   // which starts/stops the manager and pushes the saved deadzone/speed/vibration.
@@ -1658,7 +1659,14 @@ async function startGame(
       },
       setPlacement: (on) => perfOverlay.setPlacementMode(on),
     },
-    gamepad: gamepadBindings,
+    gamepad: {
+      entries: () => gamepadBindings.entries(),
+      bind: (button, action) => gamepadBindings.bind(button, action),
+      reset: () => gamepadBindings.reset(),
+      // The connected pad's brand lives on the manager, not the (hardware-agnostic)
+      // bindings, so surface it here for the Controller panel's glyph labels.
+      kind: () => gamepad.getKind(),
+    },
   });
   if (online) {
     hud.attachReporting({
