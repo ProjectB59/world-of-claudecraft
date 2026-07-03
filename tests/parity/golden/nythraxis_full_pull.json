@@ -13,8 +13,8 @@
     "Final Stand enrage at 5% + grantNythraxisLockout (raidLockouts) + onBossDeath death dialogue",
     "class:warrior"
   ],
-  "draws": 3299,
-  "drawDigest": "195346eb",
+  "draws": 3302,
+  "drawDigest": "126a6770",
   "frames": [
     {
       "tick": 0,
@@ -5465,8 +5465,8 @@
       "state": "d7f8824a",
       "events": "741638a5",
       "rng": {
-        "draws": 2906,
-        "digest": "30df916f"
+        "draws": 2905,
+        "digest": "dbe79aae"
       }
     },
     {
@@ -5476,8 +5476,8 @@
       "state": "9d4344d4",
       "events": "741638a5",
       "rng": {
-        "draws": 2957,
-        "digest": "2e220812"
+        "draws": 2956,
+        "digest": "6196f6b9"
       }
     },
     {
@@ -5487,8 +5487,8 @@
       "state": "978d8f5e",
       "events": "e77e7089",
       "rng": {
-        "draws": 2991,
-        "digest": "dfc1b570"
+        "draws": 2990,
+        "digest": "d3e2c3a7"
       },
       "label": "finalstand",
       "players": [
@@ -6246,11 +6246,11 @@
       "tick": 628,
       "time": 31.4,
       "nextId": 402,
-      "state": "bb859b9e",
+      "state": "abc31a7f",
       "events": "da1da39a",
       "rng": {
-        "draws": 3002,
-        "digest": "1aed0b18"
+        "draws": 3001,
+        "digest": "e7e41486"
       },
       "label": "death",
       "players": [
@@ -6669,7 +6669,7 @@
           },
           "level": 20,
           "loot": {
-            "copper": 148474,
+            "copper": 183782,
             "items": [
               {
                 "count": 1,
@@ -6677,15 +6677,15 @@
               },
               {
                 "count": 1,
-                "itemId": "crownforged_warspaulders"
-              },
-              {
-                "count": 1,
                 "itemId": "soulflame_mantle"
               },
               {
                 "count": 1,
-                "itemId": "nighttalon_shoulderguards"
+                "itemId": "crownforged_dreadhelm"
+              },
+              {
+                "count": 1,
+                "itemId": "nighttalon_crown"
               }
             ]
           },
@@ -7055,7 +7055,7 @@
       "tick": 630,
       "time": 31.5,
       "nextId": 402,
-      "state": "3d174cb3",
+      "state": "324893a6",
       "events": "741638a5",
       "rng": {
         "draws": 3009,
@@ -7066,7 +7066,7 @@
       "tick": 640,
       "time": 32,
       "nextId": 402,
-      "state": "613d142c",
+      "state": "f2da45dd",
       "events": "741638a5",
       "rng": {
         "draws": 3055,
@@ -7077,7 +7077,7 @@
       "tick": 650,
       "time": 32.5,
       "nextId": 402,
-      "state": "c3b7882c",
+      "state": "25cbff91",
       "events": "741638a5",
       "rng": {
         "draws": 3091,
@@ -7088,29 +7088,29 @@
       "tick": 660,
       "time": 33,
       "nextId": 402,
-      "state": "b865d36b",
+      "state": "ba9424ca",
       "events": "741638a5",
       "rng": {
-        "draws": 3146,
-        "digest": "849d5a24"
+        "draws": 3144,
+        "digest": "cf538127"
       }
     },
     {
       "tick": 670,
       "time": 33.5,
       "nextId": 402,
-      "state": "159c3a91",
+      "state": "67a7ec74",
       "events": "741638a5",
       "rng": {
-        "draws": 3209,
-        "digest": "5ab8b2ef"
+        "draws": 3207,
+        "digest": "0ff03005"
       }
     },
     {
       "tick": 680,
       "time": 34,
       "nextId": 402,
-      "state": "aebe3902",
+      "state": "2170911b",
       "events": "741638a5",
       "rng": {
         "draws": 3263,
@@ -7121,11 +7121,11 @@
       "tick": 688,
       "time": 34.4,
       "nextId": 402,
-      "state": "dca440cd",
+      "state": "79c98840",
       "events": "17666c9a",
       "rng": {
-        "draws": 3299,
-        "digest": "195346eb"
+        "draws": 3302,
+        "digest": "126a6770"
       },
       "label": "final",
       "players": [
@@ -7544,7 +7544,7 @@
           },
           "level": 20,
           "loot": {
-            "copper": 148474,
+            "copper": 183782,
             "items": [
               {
                 "count": 1,
@@ -7552,15 +7552,15 @@
               },
               {
                 "count": 1,
-                "itemId": "crownforged_warspaulders"
-              },
-              {
-                "count": 1,
                 "itemId": "soulflame_mantle"
               },
               {
                 "count": 1,
-                "itemId": "nighttalon_shoulderguards"
+                "itemId": "crownforged_dreadhelm"
+              },
+              {
+                "count": 1,
+                "itemId": "nighttalon_crown"
               }
             ]
           },

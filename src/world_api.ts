@@ -84,6 +84,7 @@ export type {
   DailyRewardEligibilityView,
   DailyRewardHistory,
   DailyRewardLeaderboardEntry,
+  DailyRewardLeaderboardPage,
   DailyRewardPayoutLogEntry,
   DailyRewardSpinResult,
   DailyRewardSpinView,

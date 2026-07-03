@@ -46,6 +46,7 @@ import {
   type CharacterSearchResult,
   type ClientCommand,
   type DailyRewardHistory,
+  type DailyRewardLeaderboardPage,
   type DailyRewardSpinResult,
   type DailyRewardStatus,
   type DelveCompanionInfo,
@@ -153,6 +154,8 @@ export interface ReleaseEntry {
 export interface AccountInfo {
   username: string;
   email: string;
+  // True when the account has no recovery email yet (mandatory-email capture).
+  emailMissing?: boolean;
   createdAt: string;
   characterCount: number;
   twoFactorEnabled: boolean;
@@ -180,6 +183,11 @@ export class Api {
   private static readonly SESSION_KEY = 'woc_session';
   token: string | null = null;
   username: string | null = null;
+  // Whether the signed-in account still needs a recovery email (mandatory-email
+  // capture). Set from the login/register response; undefined until a fresh auth
+  // reports it (a restored/Discord session leaves it undefined, so the caller
+  // confirms via getAccount()). Never persisted; it is a per-session hint only.
+  emailMissing: boolean | undefined = undefined;
   realm: string | null = null;
   // base origin for realm-scoped calls (characters, search, ws). '' = the page
   // origin; set to another realm's origin when the player picks a realm
@@ -256,6 +264,7 @@ export class Api {
   async register(
     username: string,
     password: string,
+    email: string,
     turnstileToken = '',
     ref = '',
     nativeAttestation: unknown = undefined,
@@ -263,12 +272,15 @@ export class Api {
     const data = await this.post('/api/register', {
       username,
       password,
+      email,
       turnstileToken,
       ref,
       nativeAttestation,
     });
     this.token = data.token;
     this.username = data.username;
+    // A fresh registration always has the mandatory email; trust the server flag.
+    this.emailMissing = data.emailMissing === true;
   }
 
   // Returns { twoFactorRequired: true } when the account has 2FA on and no code
@@ -293,6 +305,9 @@ export class Api {
     if (data.twoFactorRequired && !data.token) return { twoFactorRequired: true };
     this.token = data.token;
     this.username = data.username;
+    // Pre-email accounts report emailMissing:true so the client can force the
+    // mandatory recovery-email prompt on this sign-in.
+    this.emailMissing = data.emailMissing === true;
     return {};
   }
 
@@ -343,6 +358,7 @@ export class Api {
   clearSession(): void {
     this.token = null;
     this.username = null;
+    this.emailMissing = undefined;
     try {
       localStorage.removeItem(Api.SESSION_KEY);
     } catch {
@@ -381,6 +397,14 @@ export class Api {
   // address and a notice to the old one. The address only changes on verify.
   async changeEmail(password: string, newEmail: string): Promise<void> {
     await this.post('/api/account/email/change', { password, newEmail });
+  }
+
+  // Set the recovery email on an account that has none yet (the mandatory-email
+  // backfill forced on sign-in). Bearer-scoped; the server rejects it once an
+  // address exists. On success the account no longer needs an email.
+  async setInitialEmail(email: string): Promise<void> {
+    await this.post('/api/account/email/set-initial', { email });
+    this.emailMissing = false;
   }
 
   // ── Two-factor (TOTP) ──────────────────────────────────────────────────────
@@ -2208,6 +2232,38 @@ export class ClientWorld implements IWorld {
     });
     if (!res.ok) throw new Error('daily rewards unavailable');
     return (await res.json()) as DailyRewardStatus;
+  }
+
+  async dailyRewardLeaderboard(
+    page = 0,
+    pageSize = LEADERBOARD_PAGE_SIZE,
+  ): Promise<DailyRewardLeaderboardPage> {
+    const empty: DailyRewardLeaderboardPage = {
+      day: '',
+      leaders: [],
+      page: 0,
+      pageCount: 1,
+      total: 0,
+      pageSize,
+    };
+    try {
+      const res = await fetch(
+        apiUrl(`/api/daily-rewards/leaderboard?page=${page}&pageSize=${pageSize}`, this.base),
+        { headers: { Authorization: `Bearer ${this.token}` } },
+      );
+      if (!res.ok) return empty;
+      const data = await res.json();
+      return {
+        day: data.day ?? '',
+        leaders: data.leaders ?? [],
+        page: data.page ?? page,
+        pageCount: data.pageCount ?? 1,
+        total: data.total ?? data.leaders?.length ?? 0,
+        pageSize: data.pageSize ?? pageSize,
+      };
+    } catch {
+      return empty;
+    }
   }
 
   async spinDailyReward(): Promise<DailyRewardSpinResult> {
