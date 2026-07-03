@@ -390,9 +390,11 @@ export const ja_JP: EnTranslations = {
       "showWalletOnCharacterScreen": "キャラクター画面にウォレットを表示",
       "showWalletOnPlayerCard": "プレイヤーカードにウォレットを表示",
       "showDevBadges": "開発者バッジを表示",
+      "showOwnNameplate": "自分のネームプレートを表示",
       "uiScale": "UIスケール",
       "highContrastBackground": "高コントラスト背景",
       "startAttackOnAbility": "アビリティ使用時に自動攻撃",
+      "walkByAutoloot": "通りがかり自動ルート",
       "groundReticle": "地面ターゲットのレティクル",
       "showItemLevel": "アイテムレベルを表示",
       "itemLevelLine": "アイテムレベル {level}",
@@ -825,6 +827,9 @@ export const ja_JP: EnTranslations = {
         "nature": "自然"
       }
     },
+    "worldBoss": {
+      "spawn": "{name}がソーンピーク高地に立ち上がった！"
+    },
     "loot": {
       "chestTitle": "宝箱"
     },
@@ -835,6 +840,16 @@ export const ja_JP: EnTranslations = {
     "nameplate": {
       "mob": "[{level}] {name}",
       "mobElite": "[{level}+] {name}"
+    },
+    "mobTooltip": {
+      "levelFamily": "レベル{level} {family}",
+      "familyDemon": "デーモン",
+      "hostile": "敵対",
+      "friendly": "味方"
+    },
+    "targetFrame": {
+      "unlock": "ターゲットフレームを移動",
+      "lock": "ターゲットフレームを固定"
     },
     "itemTooltip": {
       "requiresLevel": "必要レベル {level}"
@@ -917,6 +932,7 @@ export const ja_JP: EnTranslations = {
       "memberSinceDays": "Discord加入{days}日",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "管理者",
         "devs": "開発者",
         "mods": "モデレーター",
         "artists": "アーティスト"
@@ -1957,6 +1973,9 @@ export const ja_JP: EnTranslations = {
     "password": "パスワード",
     "passwordError": "パスワードを入力してください。",
     "passwordPlaceholder": "パスワードを入力",
+    "email": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "emailError": "有効なメールアドレスを入力してください。",
     "showPassword": "パスワードを表示",
     "hidePassword": "パスワードを非表示",
     "logIn": "ログイン",
@@ -1982,7 +2001,15 @@ export const ja_JP: EnTranslations = {
     "create": "作成",
     "twoFactorLabel": "認証コード",
     "twoFactorPlaceholder": "6桁のコードまたはリカバリーコード",
-    "twoFactorHint": "認証アプリに表示されたコード、またはリカバリーコードのいずれかを入力してください。"
+    "twoFactorHint": "認証アプリに表示されたコード、またはリカバリーコードのいずれかを入力してください。",
+    "recovery": {
+      "title": "復旧用メールアドレスを追加",
+      "body": "メールアドレスを設定すると、アカウントを復旧できるようになります。パスワードのリセットが必要になった際に、このアカウントの所有者であることを確認するためだけに使用します。",
+      "save": "メールを保存",
+      "logOut": "Log out",
+      "invalid": "有効なメールアドレスを入力してください。",
+      "failed": "メールアドレスを保存できませんでした。もう一度お試しください。"
+    }
   },
   "wallet": {
     "label": "$WOC ウォレット",
@@ -3471,13 +3498,16 @@ export const ja_JP: EnTranslations = {
     },
     "cast": {
       "fishing": "釣り",
-      "demonHeal": "悪魔の治癒"
+      "demonHeal": "悪魔の治癒",
+      "thunzharrStormcall": "嵐の呼び声"
     }
   },
   "questUi": {
     "tracker": {
       "title": "クエスト",
-      "complete": "完了"
+      "complete": "完了",
+      "showOnMap": "{name}をマップに表示",
+      "hideFromMap": "{name}をマップから隠す"
     },
     "log": {
       "title": "クエストログ",
@@ -5406,6 +5436,30 @@ export const ja_JP: EnTranslations = {
       },
       "vanguard_chrome_armor_plate": {
         "name": "ヴァンガードクローム"
+      },
+      "crownforged_gauntlets": {
+        "name": "冠鍛えのガントレット"
+      },
+      "nighttalon_grips": {
+        "name": "夜爪の握り"
+      },
+      "soulflame_gloves": {
+        "name": "魂炎のグローブ"
+      },
+      "stormcallers_handguards": {
+        "name": "嵐呼びの手甲"
+      },
+      "crownforged_girdle": {
+        "name": "冠鍛えのベルト"
+      },
+      "nighttalon_waistband": {
+        "name": "夜爪の腰帯"
+      },
+      "soulflame_cord": {
+        "name": "魂炎の腰紐"
+      },
+      "stormcallers_waistguard": {
+        "name": "嵐呼びの腰当て"
       }
     },
     "mobs": {
@@ -5597,6 +5651,12 @@ export const ja_JP: EnTranslations = {
       },
       "acolyte_tessa": {
         "name": "侍祭テッサ"
+      },
+      "thunzharr_waking_peak": {
+        "name": "サンザール、目覚めし峰"
+      },
+      "thunzharr_stormling": {
+        "name": "目覚めた嵐の精"
       },
       "ironvein_foreman": {
         "name": "鉄脈の現場監督"
@@ -6260,6 +6320,36 @@ export const ja_JP: EnTranslations = {
           }
         }
       },
+      "q_stalkers_return": {
+        "title": "追跡者、再び",
+        "text": "十二頭倒しても、尾根の追跡者はむしろ増えています、{playerName}。獣が飢えだけで壁に挑むはずがありません。高い尾根の何かが追い下ろしているのです。正体が知れるまで、狩りは続きます。あと十四頭。",
+        "completion": "さらに十四頭。それでも朝ごとに新しい足跡が見つかります。高い尾根から戻った斥候は雪線のように蒼白でした。盾ほどの足跡と、追跡者では有り得ない獲物の残骸があったと。上を歩くものは、ただの猫ではありません。",
+        "objectives": {
+          "0": {
+            "label": "尾根の追跡者を討伐"
+          }
+        }
+      },
+      "q_stalker_cloaks": {
+        "title": "見張りの外套",
+        "text": "八枚の毛皮で士官の外套を裏打ちしたら、壁の兵がみな同じものを欲しがっています、{playerName}。当然の望みです。冬はまず指を奪い、詫びは聞きません。門の南の尾根であと十枚。それで見張り全員が暖かく眠れます。",
+        "completion": "十枚とも上等な毛皮……いや、これを見てください、{playerName}。半分は裂けています。刃や槍の傷ではありません。私の手ほど幅のある爪痕が、冬毛を貫いている。あの尾根の何かが、同族を食い荒らしているのです。",
+        "objectives": {
+          "0": {
+            "label": "尾根の追跡者の毛皮"
+          }
+        }
+      },
+      "q_old_cragmaw": {
+        "title": "老いたるクラッグモウ",
+        "text": "山の民は、斥候が見つけた足跡の主を知っていました。老いたるクラッグモウ。傷だらけの毛皮をまとい、群れの三世代を生き延びた暴君の大猫です。追跡者が街道に溢れるのはこいつのせいです、{playerName}。ねぐらは南街道を見下ろす西の尾根。仲間を連れて、あの老いた悪魔を仕留めてください。",
+        "completion": "ついに倒れましたか。山の民は、あの猫は壁より長生きすると誓っていたものです。これで追跡者は高い雪に留まるでしょう、{playerName}。巡察も血を流さずに街道を歩けます。あなたの働きで、尾根全体が静かになりました。",
+        "objectives": {
+          "0": {
+            "label": "老いたるクラッグモウを討伐"
+          }
+        }
+      },
       "q_kobold_tunnels": {
         "title": "ディープロックの問題",
         "text": "ディープロックのコボルドは、壁の下から呼ばれているように真下へ掘っています。{playerName}、坑夫を12体倒してください。",
@@ -6797,8 +6887,8 @@ export const ja_JP: EnTranslations = {
       },
       "necromancers": {
         "name": "死霊術師の法衣",
-        "bonus2": "ダメージによる詠唱押し戻しを50%軽減します。",
-        "bonus3": "詠唱中にダメージを受けても押し戻されません。"
+        "bonus2": "ノックバックされなくなります（ノックバック耐性100%）。",
+        "bonus3": "知力が10、スタミナが10上昇します。"
       },
       "nighttalon": {
         "name": "夜爪の革装束",
@@ -6807,13 +6897,13 @@ export const ja_JP: EnTranslations = {
       },
       "soulflame": {
         "name": "魂炎の法衣",
-        "bonus2": "ダメージによる詠唱押し戻しを50%軽減します。",
-        "bonus3": "詠唱中にダメージを受けても押し戻されません。"
+        "bonus2": "ノックバックされなくなります（ノックバック耐性100%）。",
+        "bonus3": "知力が15、精神力が15上昇します。"
       },
       "stormcallers": {
         "name": "嵐呼びの法衣",
-        "bonus2": "ダメージによる詠唱押し戻しを50%軽減します。",
-        "bonus3": "詠唱中にダメージを受けても押し戻されません。"
+        "bonus2": "ノックバックされなくなります（ノックバック耐性100%）。",
+        "bonus3": "知力が15、精神力が15上昇します。"
       },
       "wyrmshadow": {
         "name": "竜影の装束",

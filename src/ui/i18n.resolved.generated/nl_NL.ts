@@ -390,9 +390,11 @@ export const nl_NL: EnTranslations = {
       "showWalletOnCharacterScreen": "Portemonnee tonen op personagescherm",
       "showWalletOnPlayerCard": "Portemonnee tonen op spelerskaart",
       "showDevBadges": "Ontwikkelaarsinsignes tonen",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "UI-schaal",
       "highContrastBackground": "Hoog-contrastachtergrond",
       "startAttackOnAbility": "Auto-aanval bij gebruik van vaardigheid",
+      "walkByAutoloot": "Walk-by Autoloot",
       "groundReticle": "Grondrichtkruis",
       "showItemLevel": "Itemniveau tonen",
       "itemLevelLine": "Itemniveau {level}",
@@ -825,6 +827,9 @@ export const nl_NL: EnTranslations = {
         "nature": "Natuur"
       }
     },
+    "worldBoss": {
+      "spawn": "{name} rises over Thornpeak Heights!"
+    },
     "loot": {
       "chestTitle": "Kist"
     },
@@ -835,6 +840,16 @@ export const nl_NL: EnTranslations = {
     "nameplate": {
       "mob": "[{level}] {name}",
       "mobElite": "[{level}+] {name}"
+    },
+    "mobTooltip": {
+      "levelFamily": "Level {level} {family}",
+      "familyDemon": "Demon",
+      "hostile": "Hostile",
+      "friendly": "Friendly"
+    },
+    "targetFrame": {
+      "unlock": "Move target frame",
+      "lock": "Lock target frame"
     },
     "itemTooltip": {
       "requiresLevel": "Vereist niveau {level}"
@@ -917,6 +932,7 @@ export const nl_NL: EnTranslations = {
       "memberSinceDays": "{days}d in de Discord",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "Admin",
         "devs": "Dev",
         "mods": "Mod",
         "artists": "Artiest"
@@ -1957,6 +1973,9 @@ export const nl_NL: EnTranslations = {
     "password": "Wachtwoord",
     "passwordError": "Voer je wachtwoord in.",
     "passwordPlaceholder": "Wachtwoord invoeren",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "emailError": "Please enter a valid email address.",
     "showPassword": "Wachtwoord tonen",
     "hidePassword": "Wachtwoord verbergen",
     "logIn": "Inloggen",
@@ -1982,7 +2001,15 @@ export const nl_NL: EnTranslations = {
     "create": "Aanmaken",
     "twoFactorLabel": "Authenticatiecode",
     "twoFactorPlaceholder": "6-cijferige of herstelcode",
-    "twoFactorHint": "Voer de code uit je authenticator-app in, of een van je herstelcodes."
+    "twoFactorHint": "Voer de code uit je authenticator-app in, of een van je herstelcodes.",
+    "recovery": {
+      "title": "Add a recovery email",
+      "body": "Set an email address so you can recover your account. We only use it to confirm you own this account if you ever need to reset your password.",
+      "save": "Save email",
+      "logOut": "Log out",
+      "invalid": "Please enter a valid email address.",
+      "failed": "Could not save your email. Please try again."
+    }
   },
   "wallet": {
     "label": "$WOC-portemonnee",
@@ -3471,13 +3498,16 @@ export const nl_NL: EnTranslations = {
     },
     "cast": {
       "fishing": "Vissen",
-      "demonHeal": "Demonengenezing"
+      "demonHeal": "Demonengenezing",
+      "thunzharrStormcall": "Stormroep"
     }
   },
   "questUi": {
     "tracker": {
       "title": "Quests",
-      "complete": "Voltooid"
+      "complete": "Voltooid",
+      "showOnMap": "Show {name} on the map",
+      "hideFromMap": "Hide {name} from the map"
     },
     "log": {
       "title": "Questlogboek",
@@ -5406,6 +5436,30 @@ export const nl_NL: EnTranslations = {
       },
       "vanguard_chrome_armor_plate": {
         "name": "Voorhoede-Chroom"
+      },
+      "crownforged_gauntlets": {
+        "name": "Kroongesmede Handschoenen"
+      },
+      "nighttalon_grips": {
+        "name": "Nachtklauw-Grepen"
+      },
+      "soulflame_gloves": {
+        "name": "Zielsvlam-Handschoenen"
+      },
+      "stormcallers_handguards": {
+        "name": "Handbeschermers van de Stormroeper"
+      },
+      "crownforged_girdle": {
+        "name": "Kroongesmede Gordel"
+      },
+      "nighttalon_waistband": {
+        "name": "Nachtklauw-Lendenband"
+      },
+      "soulflame_cord": {
+        "name": "Zielsvlam-Koord"
+      },
+      "stormcallers_waistguard": {
+        "name": "Lendenbescherming van de Stormroeper"
       }
     },
     "mobs": {
@@ -5597,6 +5651,12 @@ export const nl_NL: EnTranslations = {
       },
       "acolyte_tessa": {
         "name": "Acoliet Tessa"
+      },
+      "thunzharr_waking_peak": {
+        "name": "Thunzharr, the Waking Peak"
+      },
+      "thunzharr_stormling": {
+        "name": "Roused Stormling"
       },
       "ironvein_foreman": {
         "name": "IJzerader-Voorman"
@@ -6260,6 +6320,36 @@ export const nl_NL: EnTranslations = {
           }
         }
       },
+      "q_stalkers_return": {
+        "title": "The Stalkers Return",
+        "text": "Twelve dead, and the ridge crawls thicker than the day you started, {playerName}. Beasts do not throw themselves at a wall out of hunger. Something on the high ridge is pushing them down, and until I know what, the culling does not stop. Fourteen more.",
+        "completion": "Fourteen more, and still my patrols count fresh tracks by morning. My scout came back from the high ridge white as the snowline: prints the size of a shield, she says, and old kills no stalker would leave. Whatever walks up there is no ordinary cat.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker slain"
+          }
+        }
+      },
+      "q_stalker_cloaks": {
+        "title": "Cloaks for the Watch",
+        "text": "Eight pelts lined the officers' cloaks, and now every soldier on the wall wants the same, {playerName}. They are right to want it: winter takes fingers first and apologies never. Ten more pelts from the ridges south of the gate, and the whole watch sleeps warm.",
+        "completion": "Ten good pelts, thick as any I have... no, look at these, {playerName}. Torn, half of them, and by no blade or spear. Claw marks wide as my hand, right through the winter coat. Something on that ridge is savaging its own kind.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker Pelt"
+          }
+        }
+      },
+      "q_old_cragmaw": {
+        "title": "Old Cragmaw",
+        "text": "The mountain folk put a name to the prints my scout found: Old Cragmaw, a scar-pelted tyrant of a cat that has outlived three generations of its own pack. It is the reason the stalkers flood my road, {playerName}. Its den sits on the western ridge above the road south. Bring a friend, and put the old devil down.",
+        "completion": "Down at last. The mountain folk swore that cat would outlive the wall itself. The stalkers will keep to their high snows now, {playerName}, and my patrols will walk the road without bleeding for it. The whole ridge is quieter for your work.",
+        "objectives": {
+          "0": {
+            "label": "Old Cragmaw slain"
+          }
+        }
+      },
       "q_kobold_tunnels": {
         "title": "Dieprots-Ellende",
         "text": "De kobolds bij de Dieprots-Holen graven dieper dan enige kaarsrat te graven heeft, recht naar beneden, alsof iets hen roept. Hun tunnels lopen onder onze muur door, {playerName}. Stop de zaak: dood twaalf Dieprots-Tunnelaars.",
@@ -6797,8 +6887,8 @@ export const nl_NL: EnTranslations = {
       },
       "necromancers": {
         "name": "Gewaden van de necromant",
-        "bonus2": "Vermindert terugslag bij spreuken door schade met 50%.",
-        "bonus3": "Opgelopen schade vertraagt je spreuken niet."
+        "bonus2": "Je kunt niet worden teruggeslagen (100% terugslagweerstand).",
+        "bonus3": "Verhoogt intellect met 10 en uithoudingsvermogen met 10."
       },
       "nighttalon": {
         "name": "Nachtklauw leren uitrusting",
@@ -6807,13 +6897,13 @@ export const nl_NL: EnTranslations = {
       },
       "soulflame": {
         "name": "Zielenvlamgewaden",
-        "bonus2": "Vermindert terugslag bij spreuken door schade met 50%.",
-        "bonus3": "Opgelopen schade vertraagt je spreuken niet."
+        "bonus2": "Je kunt niet worden teruggeslagen (100% terugslagweerstand).",
+        "bonus3": "Verhoogt intellect met 15 en geest met 15."
       },
       "stormcallers": {
         "name": "Gewaden van de Stormroeper",
-        "bonus2": "Vermindert terugslag bij spreuken door schade met 50%.",
-        "bonus3": "Opgelopen schade vertraagt je spreuken niet."
+        "bonus2": "Je kunt niet worden teruggeslagen (100% terugslagweerstand).",
+        "bonus3": "Verhoogt intellect met 15 en geest met 15."
       },
       "wyrmshadow": {
         "name": "Wurmschaduw-uitrusting",

@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 390,
-      "state": "969c1dc9",
+      "state": "41037525",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -42,7 +42,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -100,7 +101,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 392,
-      "state": "99fb614d",
+      "state": "bcc51df1",
       "events": "61b9fbea",
       "rng": {
         "draws": 4,
@@ -111,7 +112,7 @@
       "tick": 4,
       "time": 0.2,
       "nextId": 392,
-      "state": "1321ca07",
+      "state": "620e262f",
       "events": "741638a5",
       "rng": {
         "draws": 4,
@@ -122,7 +123,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 392,
-      "state": "ad07dfc3",
+      "state": "27201473",
       "events": "741638a5",
       "rng": {
         "draws": 4,
@@ -149,7 +150,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -207,7 +209,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 392,
-      "state": "db444bdb",
+      "state": "1b79832b",
       "events": "61b9fbea",
       "rng": {
         "draws": 4,
@@ -234,7 +236,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -292,7 +295,7 @@
       "tick": 6,
       "time": 0.3,
       "nextId": 392,
-      "state": "b4f1154a",
+      "state": "c4e784be",
       "events": "741638a5",
       "rng": {
         "draws": 4,
@@ -303,7 +306,7 @@
       "tick": 7,
       "time": 0.35,
       "nextId": 392,
-      "state": "b03deb5f",
+      "state": "52798407",
       "events": "741638a5",
       "rng": {
         "draws": 4,
@@ -330,7 +333,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [

@@ -390,9 +390,11 @@ export const pl_PL: EnTranslations = {
       "showWalletOnCharacterScreen": "Pokaż sakiewkę na ekranie postaci",
       "showWalletOnPlayerCard": "Pokaż sakiewkę na karcie gracza",
       "showDevBadges": "Pokaż odznaki deweloperów",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Skala interfejsu",
       "highContrastBackground": "Tło o wysokim kontraście",
       "startAttackOnAbility": "Automatyczny atak przy użyciu umiejętności",
+      "walkByAutoloot": "Walk-by Autoloot",
       "groundReticle": "Celownik naziemny",
       "showItemLevel": "Pokaż poziom przedmiotu",
       "itemLevelLine": "Poziom przedmiotu {level}",
@@ -825,6 +827,9 @@ export const pl_PL: EnTranslations = {
         "nature": "Natura"
       }
     },
+    "worldBoss": {
+      "spawn": "{name} rises over Thornpeak Heights!"
+    },
     "loot": {
       "chestTitle": "Skrzynia"
     },
@@ -835,6 +840,16 @@ export const pl_PL: EnTranslations = {
     "nameplate": {
       "mob": "[{level}] {name}",
       "mobElite": "[{level}+] {name}"
+    },
+    "mobTooltip": {
+      "levelFamily": "Level {level} {family}",
+      "familyDemon": "Demon",
+      "hostile": "Hostile",
+      "friendly": "Friendly"
+    },
+    "targetFrame": {
+      "unlock": "Move target frame",
+      "lock": "Lock target frame"
     },
     "itemTooltip": {
       "requiresLevel": "Wymaga poziomu {level}"
@@ -917,6 +932,7 @@ export const pl_PL: EnTranslations = {
       "memberSinceDays": "{days}d na Discordzie",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "Admin",
         "devs": "Dev",
         "mods": "Mod",
         "artists": "Grafik"
@@ -1957,6 +1973,9 @@ export const pl_PL: EnTranslations = {
     "password": "Hasło",
     "passwordError": "Wprowadź swoje hasło.",
     "passwordPlaceholder": "Wprowadź hasło",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "emailError": "Please enter a valid email address.",
     "showPassword": "Pokaż hasło",
     "hidePassword": "Ukryj hasło",
     "logIn": "Zaloguj się",
@@ -1982,7 +2001,15 @@ export const pl_PL: EnTranslations = {
     "create": "Utwórz",
     "twoFactorLabel": "Kod uwierzytelniający",
     "twoFactorPlaceholder": "6-cyfrowy kod lub kod odzyskiwania",
-    "twoFactorHint": "Wprowadź kod z aplikacji uwierzytelniającej lub jeden z kodów odzyskiwania."
+    "twoFactorHint": "Wprowadź kod z aplikacji uwierzytelniającej lub jeden z kodów odzyskiwania.",
+    "recovery": {
+      "title": "Add a recovery email",
+      "body": "Set an email address so you can recover your account. We only use it to confirm you own this account if you ever need to reset your password.",
+      "save": "Save email",
+      "logOut": "Log out",
+      "invalid": "Please enter a valid email address.",
+      "failed": "Could not save your email. Please try again."
+    }
   },
   "wallet": {
     "label": "Portfel $WOC",
@@ -3471,13 +3498,16 @@ export const pl_PL: EnTranslations = {
     },
     "cast": {
       "fishing": "Wędkarstwo",
-      "demonHeal": "Demoniczne leczenie"
+      "demonHeal": "Demoniczne leczenie",
+      "thunzharrStormcall": "Zew burzy"
     }
   },
   "questUi": {
     "tracker": {
       "title": "Zadania",
-      "complete": "Gotowe"
+      "complete": "Gotowe",
+      "showOnMap": "Show {name} on the map",
+      "hideFromMap": "Hide {name} from the map"
     },
     "log": {
       "title": "Dziennik zadań",
@@ -5406,6 +5436,30 @@ export const pl_PL: EnTranslations = {
       },
       "vanguard_chrome_armor_plate": {
         "name": "Chrom awangardy"
+      },
+      "crownforged_gauntlets": {
+        "name": "Koronokute rękawice"
+      },
+      "nighttalon_grips": {
+        "name": "Chwyty nocnego szpona"
+      },
+      "soulflame_gloves": {
+        "name": "Rękawice duszopłomienia"
+      },
+      "stormcallers_handguards": {
+        "name": "Karwasze przywoływacza burz"
+      },
+      "crownforged_girdle": {
+        "name": "Koronokuty pas"
+      },
+      "nighttalon_waistband": {
+        "name": "Pas nocnego szpona"
+      },
+      "soulflame_cord": {
+        "name": "Sznur duszopłomienia"
+      },
+      "stormcallers_waistguard": {
+        "name": "Ochraniacz pasa przywoływacza burz"
       }
     },
     "mobs": {
@@ -5597,6 +5651,12 @@ export const pl_PL: EnTranslations = {
       },
       "acolyte_tessa": {
         "name": "Akolitka Tessa"
+      },
+      "thunzharr_waking_peak": {
+        "name": "Thunzharr, the Waking Peak"
+      },
+      "thunzharr_stormling": {
+        "name": "Roused Stormling"
       },
       "ironvein_foreman": {
         "name": "Sztygar z Żelaznej Żyły"
@@ -6260,6 +6320,36 @@ export const pl_PL: EnTranslations = {
           }
         }
       },
+      "q_stalkers_return": {
+        "title": "The Stalkers Return",
+        "text": "Twelve dead, and the ridge crawls thicker than the day you started, {playerName}. Beasts do not throw themselves at a wall out of hunger. Something on the high ridge is pushing them down, and until I know what, the culling does not stop. Fourteen more.",
+        "completion": "Fourteen more, and still my patrols count fresh tracks by morning. My scout came back from the high ridge white as the snowline: prints the size of a shield, she says, and old kills no stalker would leave. Whatever walks up there is no ordinary cat.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker slain"
+          }
+        }
+      },
+      "q_stalker_cloaks": {
+        "title": "Cloaks for the Watch",
+        "text": "Eight pelts lined the officers' cloaks, and now every soldier on the wall wants the same, {playerName}. They are right to want it: winter takes fingers first and apologies never. Ten more pelts from the ridges south of the gate, and the whole watch sleeps warm.",
+        "completion": "Ten good pelts, thick as any I have... no, look at these, {playerName}. Torn, half of them, and by no blade or spear. Claw marks wide as my hand, right through the winter coat. Something on that ridge is savaging its own kind.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker Pelt"
+          }
+        }
+      },
+      "q_old_cragmaw": {
+        "title": "Old Cragmaw",
+        "text": "The mountain folk put a name to the prints my scout found: Old Cragmaw, a scar-pelted tyrant of a cat that has outlived three generations of its own pack. It is the reason the stalkers flood my road, {playerName}. Its den sits on the western ridge above the road south. Bring a friend, and put the old devil down.",
+        "completion": "Down at last. The mountain folk swore that cat would outlive the wall itself. The stalkers will keep to their high snows now, {playerName}, and my patrols will walk the road without bleeding for it. The whole ridge is quieter for your work.",
+        "objectives": {
+          "0": {
+            "label": "Old Cragmaw slain"
+          }
+        }
+      },
       "q_kobold_tunnels": {
         "title": "Kłopoty w Deeprock",
         "text": "Kobolty w Norach Deeprock kopią głębiej, niż jakikolwiek świecowy szczur ma prawo kopać, prosto w dół, jakby coś je wzywało. Ich tunele biegną pod naszym murem, {playerName}. Zakończ sprawę: zabij dwunastu drążycieli z Deeprock.",
@@ -6797,8 +6887,8 @@ export const pl_PL: EnTranslations = {
       },
       "necromancers": {
         "name": "Szaty nekromanty",
-        "bonus2": "Zmniejsza opóźnianie zaklęć przez obrażenia o 50%.",
-        "bonus3": "Otrzymywane obrażenia nie opóźniają rzucania zaklęć."
+        "bonus2": "Nie można cię odrzucić (100% odporności na odrzucenie).",
+        "bonus3": "Zwiększa intelekt o 10 i wytrzymałość o 10."
       },
       "nighttalon": {
         "name": "Skórzany rynsztunek Nocnego Szpona",
@@ -6807,13 +6897,13 @@ export const pl_PL: EnTranslations = {
       },
       "soulflame": {
         "name": "Szaty Płomienia Duszy",
-        "bonus2": "Zmniejsza opóźnianie zaklęć przez obrażenia o 50%.",
-        "bonus3": "Otrzymywane obrażenia nie opóźniają rzucania zaklęć."
+        "bonus2": "Nie można cię odrzucić (100% odporności na odrzucenie).",
+        "bonus3": "Zwiększa intelekt o 15 i ducha o 15."
       },
       "stormcallers": {
         "name": "Szaty Przyzywacza Burz",
-        "bonus2": "Zmniejsza opóźnianie zaklęć przez obrażenia o 50%.",
-        "bonus3": "Otrzymywane obrażenia nie opóźniają rzucania zaklęć."
+        "bonus2": "Nie można cię odrzucić (100% odporności na odrzucenie).",
+        "bonus3": "Zwiększa intelekt o 15 i ducha o 15."
       },
       "wyrmshadow": {
         "name": "Rynsztunek Cienia Żmija",

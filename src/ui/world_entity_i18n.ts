@@ -81,6 +81,9 @@ const MOB_IDS = [
   'reliquary_saintless_effigy',
   'deacon_varric',
   'acolyte_tessa',
+  // Thornpeak Heights world boss + its summoned adds
+  'thunzharr_waking_peak',
+  'thunzharr_stormling',
 ] as const;
 
 const NPC_IDS = [
@@ -151,6 +154,9 @@ const QUEST_IDS = [
   'q_highwatch_summons',
   'q_stalkers',
   'q_stalker_pelts',
+  'q_stalkers_return',
+  'q_stalker_cloaks',
+  'q_old_cragmaw',
   'q_kobold_tunnels',
   'q_glowing_wax',
   'q_ogre_edges',

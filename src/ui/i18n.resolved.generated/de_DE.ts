@@ -390,9 +390,11 @@ export const de_DE: EnTranslations = {
       "showWalletOnCharacterScreen": "Wallet auf dem Charakterbildschirm anzeigen",
       "showWalletOnPlayerCard": "Wallet auf der Spielerkarte anzeigen",
       "showDevBadges": "Entwicklerabzeichen anzeigen",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "UI-Skalierung",
       "highContrastBackground": "Hintergrund mit hohem Kontrast",
       "startAttackOnAbility": "Auto-Angriff bei Fähigkeitseinsatz",
+      "walkByAutoloot": "Walk-by Autoloot",
       "groundReticle": "Bodenziel-Fadenkreuz",
       "showItemLevel": "Gegenstandsstufe anzeigen",
       "itemLevelLine": "Gegenstandsstufe {level}",
@@ -825,6 +827,9 @@ export const de_DE: EnTranslations = {
         "nature": "Natur"
       }
     },
+    "worldBoss": {
+      "spawn": "{name} erhebt sich über den Thornpeak-Höhen!"
+    },
     "loot": {
       "chestTitle": "Truhe"
     },
@@ -835,6 +840,16 @@ export const de_DE: EnTranslations = {
     "nameplate": {
       "mob": "[{level}] {name}",
       "mobElite": "[{level}+] {name}"
+    },
+    "mobTooltip": {
+      "levelFamily": "Level {level} {family}",
+      "familyDemon": "Demon",
+      "hostile": "Hostile",
+      "friendly": "Friendly"
+    },
+    "targetFrame": {
+      "unlock": "Move target frame",
+      "lock": "Lock target frame"
     },
     "itemTooltip": {
       "requiresLevel": "Benötigt Stufe {level}"
@@ -917,6 +932,7 @@ export const de_DE: EnTranslations = {
       "memberSinceDays": "{days}T im Discord",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "Admin",
         "devs": "Entwickler",
         "mods": "Mod",
         "artists": "Künstler"
@@ -1957,6 +1973,9 @@ export const de_DE: EnTranslations = {
     "password": "Passwort",
     "passwordError": "Bitte gib dein Passwort ein.",
     "passwordPlaceholder": "Passwort eingeben",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "emailError": "Please enter a valid email address.",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort ausblenden",
     "logIn": "Einloggen",
@@ -1982,7 +2001,15 @@ export const de_DE: EnTranslations = {
     "create": "Erstellen",
     "twoFactorLabel": "Authentifizierungscode",
     "twoFactorPlaceholder": "6-stelliger Code oder Wiederherstellungscode",
-    "twoFactorHint": "Gib den Code aus deiner Authentifizierungs-App ein oder einen deiner Wiederherstellungscodes."
+    "twoFactorHint": "Gib den Code aus deiner Authentifizierungs-App ein oder einen deiner Wiederherstellungscodes.",
+    "recovery": {
+      "title": "Add a recovery email",
+      "body": "Set an email address so you can recover your account. We only use it to confirm you own this account if you ever need to reset your password.",
+      "save": "Save email",
+      "logOut": "Log out",
+      "invalid": "Please enter a valid email address.",
+      "failed": "Could not save your email. Please try again."
+    }
   },
   "wallet": {
     "label": "$WOC-Wallet",
@@ -3471,13 +3498,16 @@ export const de_DE: EnTranslations = {
     },
     "cast": {
       "fishing": "Angeln",
-      "demonHeal": "Dämonenheilung"
+      "demonHeal": "Dämonenheilung",
+      "thunzharrStormcall": "Sturmruf"
     }
   },
   "questUi": {
     "tracker": {
       "title": "Quests",
-      "complete": "Abgeschlossen"
+      "complete": "Abgeschlossen",
+      "showOnMap": "{name} auf der Karte anzeigen",
+      "hideFromMap": "{name} auf der Karte ausblenden"
     },
     "log": {
       "title": "Questlog",
@@ -5406,6 +5436,30 @@ export const de_DE: EnTranslations = {
       },
       "vanguard_chrome_armor_plate": {
         "name": "Vorhut-Chrom"
+      },
+      "crownforged_gauntlets": {
+        "name": "Kronengeschmiedete Stulpen"
+      },
+      "nighttalon_grips": {
+        "name": "Nachtklauengriffe"
+      },
+      "soulflame_gloves": {
+        "name": "Seelenflammenhandschuhe"
+      },
+      "stormcallers_handguards": {
+        "name": "Handschützer des Sturmrufers"
+      },
+      "crownforged_girdle": {
+        "name": "Kronengeschmiedeter Gürtel"
+      },
+      "nighttalon_waistband": {
+        "name": "Nachtklauengurt"
+      },
+      "soulflame_cord": {
+        "name": "Seelenflammenkordel"
+      },
+      "stormcallers_waistguard": {
+        "name": "Gürtelschutz des Sturmrufers"
       }
     },
     "mobs": {
@@ -5597,6 +5651,12 @@ export const de_DE: EnTranslations = {
       },
       "acolyte_tessa": {
         "name": "Akolythin Tessa"
+      },
+      "thunzharr_waking_peak": {
+        "name": "Thunzharr, der Erwachende Gipfel"
+      },
+      "thunzharr_stormling": {
+        "name": "Geweckter Sturmling"
       },
       "ironvein_foreman": {
         "name": "Eisenader-Vorarbeiter"
@@ -6260,6 +6320,36 @@ export const de_DE: EnTranslations = {
           }
         }
       },
+      "q_stalkers_return": {
+        "title": "The Stalkers Return",
+        "text": "Twelve dead, and the ridge crawls thicker than the day you started, {playerName}. Beasts do not throw themselves at a wall out of hunger. Something on the high ridge is pushing them down, and until I know what, the culling does not stop. Fourteen more.",
+        "completion": "Fourteen more, and still my patrols count fresh tracks by morning. My scout came back from the high ridge white as the snowline: prints the size of a shield, she says, and old kills no stalker would leave. Whatever walks up there is no ordinary cat.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker slain"
+          }
+        }
+      },
+      "q_stalker_cloaks": {
+        "title": "Cloaks for the Watch",
+        "text": "Eight pelts lined the officers' cloaks, and now every soldier on the wall wants the same, {playerName}. They are right to want it: winter takes fingers first and apologies never. Ten more pelts from the ridges south of the gate, and the whole watch sleeps warm.",
+        "completion": "Ten good pelts, thick as any I have... no, look at these, {playerName}. Torn, half of them, and by no blade or spear. Claw marks wide as my hand, right through the winter coat. Something on that ridge is savaging its own kind.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker Pelt"
+          }
+        }
+      },
+      "q_old_cragmaw": {
+        "title": "Old Cragmaw",
+        "text": "The mountain folk put a name to the prints my scout found: Old Cragmaw, a scar-pelted tyrant of a cat that has outlived three generations of its own pack. It is the reason the stalkers flood my road, {playerName}. Its den sits on the western ridge above the road south. Bring a friend, and put the old devil down.",
+        "completion": "Down at last. The mountain folk swore that cat would outlive the wall itself. The stalkers will keep to their high snows now, {playerName}, and my patrols will walk the road without bleeding for it. The whole ridge is quieter for your work.",
+        "objectives": {
+          "0": {
+            "label": "Old Cragmaw slain"
+          }
+        }
+      },
       "q_kobold_tunnels": {
         "title": "Ärger in Deeprock",
         "text": "Die Kobolde von Deeprock graben gerade nach unten, als rufe etwas unter der Mauer. Ihre Tunnel laufen unter unserer Mauer, {playerName}. Töte 12 Tunnelgräber.",
@@ -6797,8 +6887,8 @@ export const de_DE: EnTranslations = {
       },
       "necromancers": {
         "name": "Gewänder des Nekromanten",
-        "bonus2": "Verringert Zauberrückstoß durch Schaden um 50%.",
-        "bonus3": "Erlittener Schaden verzögert das Zauberwirken nicht."
+        "bonus2": "Ihr könnt nicht zurückgestoßen werden (100% Rückstoßwiderstand).",
+        "bonus3": "Erhöht Intelligenz um 10 und Ausdauer um 10."
       },
       "nighttalon": {
         "name": "Nachtkrallen-Ledertracht",
@@ -6807,13 +6897,13 @@ export const de_DE: EnTranslations = {
       },
       "soulflame": {
         "name": "Seelenflammengewänder",
-        "bonus2": "Verringert Zauberrückstoß durch Schaden um 50%.",
-        "bonus3": "Erlittener Schaden verzögert das Zauberwirken nicht."
+        "bonus2": "Ihr könnt nicht zurückgestoßen werden (100% Rückstoßwiderstand).",
+        "bonus3": "Erhöht Intelligenz um 15 und Willenskraft um 15."
       },
       "stormcallers": {
         "name": "Gewänder des Sturmrufers",
-        "bonus2": "Verringert Zauberrückstoß durch Schaden um 50%.",
-        "bonus3": "Erlittener Schaden verzögert das Zauberwirken nicht."
+        "bonus2": "Ihr könnt nicht zurückgestoßen werden (100% Rückstoßwiderstand).",
+        "bonus3": "Erhöht Intelligenz um 15 und Willenskraft um 15."
       },
       "wyrmshadow": {
         "name": "Wyrmschattentracht",

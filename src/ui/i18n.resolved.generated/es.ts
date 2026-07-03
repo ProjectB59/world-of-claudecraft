@@ -390,9 +390,11 @@ export const es: EnTranslations = {
       "showWalletOnCharacterScreen": "Mostrar cartera en la pantalla de personajes",
       "showWalletOnPlayerCard": "Mostrar cartera en la tarjeta de jugador",
       "showDevBadges": "Mostrar insignias de desarrollador",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Escala de la interfaz",
       "highContrastBackground": "Fondo de alto contraste",
       "startAttackOnAbility": "Ataque automático al usar habilidad",
+      "walkByAutoloot": "Walk-by Autoloot",
       "groundReticle": "Retícula de objetivo terrestre",
       "showItemLevel": "Mostrar nivel de objeto",
       "itemLevelLine": "Nivel de objeto {level}",
@@ -825,6 +827,9 @@ export const es: EnTranslations = {
         "nature": "Naturaleza"
       }
     },
+    "worldBoss": {
+      "spawn": "¡{name} se alza sobre las Alturas de Thornpeak!"
+    },
     "loot": {
       "chestTitle": "Cofre"
     },
@@ -835,6 +840,16 @@ export const es: EnTranslations = {
     "nameplate": {
       "mob": "[{level}] {name}",
       "mobElite": "[{level}+] {name}"
+    },
+    "mobTooltip": {
+      "levelFamily": "Nivel {level} {family}",
+      "familyDemon": "Demonio",
+      "hostile": "Hostil",
+      "friendly": "Amistoso"
+    },
+    "targetFrame": {
+      "unlock": "Move target frame",
+      "lock": "Lock target frame"
     },
     "itemTooltip": {
       "requiresLevel": "Requiere nivel {level}"
@@ -917,6 +932,7 @@ export const es: EnTranslations = {
       "memberSinceDays": "{days}d en el Discord",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "Admin",
         "devs": "Dev",
         "mods": "Mod",
         "artists": "Artista"
@@ -1957,6 +1973,9 @@ export const es: EnTranslations = {
     "password": "Contraseña",
     "passwordError": "Por favor, introduce tu contraseña.",
     "passwordPlaceholder": "Introduce tu contraseña",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "emailError": "Please enter a valid email address.",
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña",
     "logIn": "Iniciar Sesión",
@@ -1982,7 +2001,15 @@ export const es: EnTranslations = {
     "create": "Crear",
     "twoFactorLabel": "Código de autenticación",
     "twoFactorPlaceholder": "Código de 6 dígitos o de recuperación",
-    "twoFactorHint": "Introduce el código de tu app de autenticación, o uno de tus códigos de recuperación."
+    "twoFactorHint": "Introduce el código de tu app de autenticación, o uno de tus códigos de recuperación.",
+    "recovery": {
+      "title": "Add a recovery email",
+      "body": "Set an email address so you can recover your account. We only use it to confirm you own this account if you ever need to reset your password.",
+      "save": "Save email",
+      "logOut": "Log out",
+      "invalid": "Please enter a valid email address.",
+      "failed": "Could not save your email. Please try again."
+    }
   },
   "wallet": {
     "label": "Cartera $WOC",
@@ -3471,13 +3498,16 @@ export const es: EnTranslations = {
     },
     "cast": {
       "fishing": "Pesca",
-      "demonHeal": "Sanación demoníaca"
+      "demonHeal": "Sanación demoníaca",
+      "thunzharrStormcall": "Llamada de la tormenta"
     }
   },
   "questUi": {
     "tracker": {
       "title": "Misiones",
-      "complete": "Completada"
+      "complete": "Completada",
+      "showOnMap": "Mostrar {name} en el mapa",
+      "hideFromMap": "Ocultar {name} del mapa"
     },
     "log": {
       "title": "Diario de misiones",
@@ -5406,6 +5436,30 @@ export const es: EnTranslations = {
       },
       "vanguard_chrome_armor_plate": {
         "name": "Vanguardia cromada"
+      },
+      "crownforged_gauntlets": {
+        "name": "Guanteletes Forjacorona"
+      },
+      "nighttalon_grips": {
+        "name": "Agarraderas Garra Nocturna"
+      },
+      "soulflame_gloves": {
+        "name": "Guantes Llama de Alma"
+      },
+      "stormcallers_handguards": {
+        "name": "Guardamanos del Invocatormentas"
+      },
+      "crownforged_girdle": {
+        "name": "Cinturón Forjacorona"
+      },
+      "nighttalon_waistband": {
+        "name": "Faja Garra Nocturna"
+      },
+      "soulflame_cord": {
+        "name": "Cordón Llama de Alma"
+      },
+      "stormcallers_waistguard": {
+        "name": "Guardacintura del Invocatormentas"
       }
     },
     "mobs": {
@@ -5597,6 +5651,12 @@ export const es: EnTranslations = {
       },
       "acolyte_tessa": {
         "name": "Acólita Tessa"
+      },
+      "thunzharr_waking_peak": {
+        "name": "Thunzharr, el Pico Despierto"
+      },
+      "thunzharr_stormling": {
+        "name": "Elemental de tormenta despierto"
       },
       "ironvein_foreman": {
         "name": "Capataz Vena de Hierro"
@@ -6260,6 +6320,36 @@ export const es: EnTranslations = {
           }
         }
       },
+      "q_stalkers_return": {
+        "title": "The Stalkers Return",
+        "text": "Twelve dead, and the ridge crawls thicker than the day you started, {playerName}. Beasts do not throw themselves at a wall out of hunger. Something on the high ridge is pushing them down, and until I know what, the culling does not stop. Fourteen more.",
+        "completion": "Fourteen more, and still my patrols count fresh tracks by morning. My scout came back from the high ridge white as the snowline: prints the size of a shield, she says, and old kills no stalker would leave. Whatever walks up there is no ordinary cat.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker slain"
+          }
+        }
+      },
+      "q_stalker_cloaks": {
+        "title": "Cloaks for the Watch",
+        "text": "Eight pelts lined the officers' cloaks, and now every soldier on the wall wants the same, {playerName}. They are right to want it: winter takes fingers first and apologies never. Ten more pelts from the ridges south of the gate, and the whole watch sleeps warm.",
+        "completion": "Ten good pelts, thick as any I have... no, look at these, {playerName}. Torn, half of them, and by no blade or spear. Claw marks wide as my hand, right through the winter coat. Something on that ridge is savaging its own kind.",
+        "objectives": {
+          "0": {
+            "label": "Ridge Stalker Pelt"
+          }
+        }
+      },
+      "q_old_cragmaw": {
+        "title": "Old Cragmaw",
+        "text": "The mountain folk put a name to the prints my scout found: Old Cragmaw, a scar-pelted tyrant of a cat that has outlived three generations of its own pack. It is the reason the stalkers flood my road, {playerName}. Its den sits on the western ridge above the road south. Bring a friend, and put the old devil down.",
+        "completion": "Down at last. The mountain folk swore that cat would outlive the wall itself. The stalkers will keep to their high snows now, {playerName}, and my patrols will walk the road without bleeding for it. The whole ridge is quieter for your work.",
+        "objectives": {
+          "0": {
+            "label": "Old Cragmaw slain"
+          }
+        }
+      },
       "q_kobold_tunnels": {
         "title": "Problemas de Deeprock",
         "text": "Los kobolds de Deeprock cavan recto hacia abajo, como si algo los llamara bajo la muralla, {playerName}. Mata 12 tuneladores.",
@@ -6797,8 +6887,8 @@ export const es: EnTranslations = {
       },
       "necromancers": {
         "name": "Vestiduras del nigromante",
-        "bonus2": "Reduce un 50% el retroceso de lanzamiento causado por daño.",
-        "bonus3": "El daño recibido no retrasa tus lanzamientos."
+        "bonus2": "No puedes ser empujado hacia atrás (100% de resistencia al empuje).",
+        "bonus3": "Aumenta el intelecto en 10 y el aguante en 10."
       },
       "nighttalon": {
         "name": "Atuendo de cuero Garra Nocturna",
@@ -6807,13 +6897,13 @@ export const es: EnTranslations = {
       },
       "soulflame": {
         "name": "Vestiduras de Llama de Alma",
-        "bonus2": "Reduce un 50% el retroceso de lanzamiento causado por daño.",
-        "bonus3": "El daño recibido no retrasa tus lanzamientos."
+        "bonus2": "No puedes ser empujado hacia atrás (100% de resistencia al empuje).",
+        "bonus3": "Aumenta el intelecto en 15 y el espíritu en 15."
       },
       "stormcallers": {
         "name": "Vestiduras del Invocatormentas",
-        "bonus2": "Reduce un 50% el retroceso de lanzamiento causado por daño.",
-        "bonus3": "El daño recibido no retrasa tus lanzamientos."
+        "bonus2": "No puedes ser empujado hacia atrás (100% de resistencia al empuje).",
+        "bonus3": "Aumenta el intelecto en 15 y el espíritu en 15."
       },
       "wyrmshadow": {
         "name": "Atuendo de Sombra de Vermis",

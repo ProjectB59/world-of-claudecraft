@@ -28,7 +28,7 @@
       "tick": 3,
       "time": 0.15,
       "nextId": 392,
-      "state": "90a92e6b",
+      "state": "baf3144b",
       "events": "c0e6c522",
       "rng": {
         "draws": 2,
@@ -59,7 +59,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         },
         {
           "activeLoadout": -1,
@@ -78,7 +79,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
