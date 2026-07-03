@@ -3480,6 +3480,36 @@
     letter-spacing: 1px;
     white-space: nowrap;
   }
+  /* The quest-progress flash (quest_progress_banner.ts): small yellow lines
+     stacked at the top-center, above the zone banner's slot, the classic
+     "Forest Wolf slain: 3/8" cue. Lines are appended by the banner module and
+     fade out on their own timers. */
+  #quest-banner {
+    position: absolute;
+    left: 50%;
+    top: 15%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    pointer-events: none;
+    z-index: 7;
+  }
+  .quest-banner-line {
+    color: #ffd100;
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow:
+      0 0 10px #00000088,
+      1px 1px 3px #000;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+  }
+  .quest-banner-line.fade {
+    opacity: 0;
+  }
   #subzone-banner {
     position: absolute;
     left: 50%;

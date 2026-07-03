@@ -292,6 +292,7 @@ import { chatPlayerContextActions } from './player_context_menu';
 import { hydratePortraits, portraitChipHtml } from './portrait_chip';
 import { maskProfanity } from './profanity';
 import { encodeItemLink, encodeQuestLink, parseChatSegments } from './quest_link';
+import { QuestProgressBanner } from './quest_progress_banner';
 import { type QuestTrackerView, questTrackerView, type TrackedQuest } from './quest_tracker';
 import { QuestLogWindow } from './questlog_window';
 import { lockoutParts, lockoutShape } from './raid_lockout';
@@ -798,6 +799,10 @@ export class Hud {
   private activeChatTab: ChatTabId = 'all';
   private errorEl = $('#error-msg');
   private bannerEl = $('#banner');
+  // The WoW-style quest-progress flash (quest_progress_banner.ts): yellow
+  // top-center lines fed by the questProgress event, aria-hidden decoration
+  // (the chat log + live region carry the announced copy).
+  private readonly questBanner = new QuestProgressBanner($('#quest-banner'));
   private subzoneEl = $('#subzone-banner');
   private tooltipEl = $('#tooltip');
   // Distinguishes a touch long-press "peek" (inspect, no action) from a tap.
@@ -7080,10 +7085,15 @@ export class Hud {
           audio.questAccept();
           this.refreshGossip();
           break;
-        case 'questProgress':
-          this.log(this.localizeQuestProgressText(ev.questId, ev.text), '#dcd29f');
+        case 'questProgress': {
+          const progressText = this.localizeQuestProgressText(ev.questId, ev.text);
+          this.log(progressText, '#dcd29f');
+          // The classic yellow top-center flash ("Forest Wolf slain: 3/8"); the
+          // log line above stays the durable, announced copy.
+          this.questBanner.show(progressText);
           this.refreshGossip();
           break;
+        }
         case 'questReady': {
           this.showBanner(
             t('questUi.logs.ready', {
