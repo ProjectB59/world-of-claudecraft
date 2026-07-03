@@ -3320,6 +3320,7 @@ export class GameServer {
       queued: p.queuedOnSwing,
       ap: p.attackPower,
       sp: p.spellPower,
+      sh: p.spellHaste,
       crit: p.critChance,
       dodge: p.dodgeChance,
       eat: p.eating ? { remaining: round2(p.eating.remaining) } : null,
