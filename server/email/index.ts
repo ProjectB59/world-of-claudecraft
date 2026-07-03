@@ -26,7 +26,9 @@ export function getEmailService(): EmailService {
       log: (entry) =>
         void recordEmailLog(entry).catch((err) => logger.error({ err }, 'email_log write failed')),
     });
-    console.log(`[email] transport=${sender.name}`);
+    // Lazily reached on the first send, which happens INSIDE a request, so the
+    // one-time banner goes through the logger (reqId + one JSON line), not console.
+    logger.info({ transport: sender.name }, 'email transport selected');
   }
   return singleton;
 }
