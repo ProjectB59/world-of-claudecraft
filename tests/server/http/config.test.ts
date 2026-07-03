@@ -35,6 +35,8 @@ describe('loadConfig', () => {
     expect(cfg.githubToken).toBe('');
     expect(cfg.chatLogRetentionDays).toBe(90);
     expect(cfg.perfReportRetentionDays).toBe(14);
+    expect(cfg.requireWebLogin).toBe(false);
+    expect(cfg.metricsToken).toBe('');
   });
 
   it('parses API_DISPATCH=new to dispatch "new"', () => {
@@ -42,10 +44,94 @@ describe('loadConfig', () => {
     expect(loadConfig({ ...MIN_ENV, API_DISPATCH: 'legacy' }).dispatch).toBe('legacy');
   });
 
-  it('falls back to "legacy" for an invalid or empty API_DISPATCH', () => {
-    expect(loadConfig({ ...MIN_ENV, API_DISPATCH: 'bogus' }).dispatch).toBe('legacy');
-    expect(loadConfig({ ...MIN_ENV, API_DISPATCH: 'NEW' }).dispatch).toBe('legacy');
+  it('defaults an unset or empty API_DISPATCH to legacy but THROWS on a garbage value', () => {
     expect(loadConfig({ ...MIN_ENV, API_DISPATCH: '' }).dispatch).toBe('legacy');
+    expect(loadConfig({ ...MIN_ENV }).dispatch).toBe('legacy');
+    // The former silent fallback is now a fail-fast throw naming the key + allowed
+    // values (case-sensitive: 'NEW' is not 'new').
+    expect(() => loadConfig({ ...MIN_ENV, API_DISPATCH: 'bogus' })).toThrow(/API_DISPATCH/);
+    expect(() => loadConfig({ ...MIN_ENV, API_DISPATCH: 'bogus' })).toThrow(
+      /legacy.*new|new.*legacy/,
+    );
+    expect(() => loadConfig({ ...MIN_ENV, API_DISPATCH: 'NEW' })).toThrow(/API_DISPATCH/);
+  });
+
+  it('is pure: it reads its env argument, never the global process.env', () => {
+    // Poison the ambient process.env, then pass a crafted env with different values;
+    // the result must reflect the ARGUMENT, proving loadConfig has no global dependency.
+    const savedPort = process.env.PORT;
+    const savedDispatch = process.env.API_DISPATCH;
+    process.env.PORT = '1';
+    process.env.API_DISPATCH = 'new';
+    try {
+      const cfg = loadConfig({
+        DATABASE_URL: 'postgres://x',
+        PORT: '9001',
+        API_DISPATCH: 'legacy',
+      });
+      expect(cfg.port).toBe(9001);
+      expect(cfg.dispatch).toBe('legacy');
+    } finally {
+      if (savedPort === undefined) delete process.env.PORT;
+      else process.env.PORT = savedPort;
+      if (savedDispatch === undefined) delete process.env.API_DISPATCH;
+      else process.env.API_DISPATCH = savedDispatch;
+    }
+  });
+
+  it('resolves requireWebLogin from REQUIRE_WEB_LOGIN and throws on a garbage value', () => {
+    expect(loadConfig({ ...MIN_ENV, REQUIRE_WEB_LOGIN: '1' }).requireWebLogin).toBe(true);
+    expect(loadConfig({ ...MIN_ENV, REQUIRE_WEB_LOGIN: 'true' }).requireWebLogin).toBe(true);
+    expect(loadConfig({ ...MIN_ENV, REQUIRE_WEB_LOGIN: '0' }).requireWebLogin).toBe(false);
+    expect(loadConfig({ ...MIN_ENV, REQUIRE_WEB_LOGIN: 'false' }).requireWebLogin).toBe(false);
+    // Unset falls to the NODE_ENV default.
+    expect(loadConfig({ ...MIN_ENV }).requireWebLogin).toBe(false);
+    expect(loadConfig({ ...MIN_ENV, NODE_ENV: 'production' }).requireWebLogin).toBe(true);
+    expect(
+      loadConfig({ ...MIN_ENV, NODE_ENV: 'production', REQUIRE_WEB_LOGIN: '0' }).requireWebLogin,
+    ).toBe(false);
+    expect(() => loadConfig({ ...MIN_ENV, REQUIRE_WEB_LOGIN: 'yes' })).toThrow(/REQUIRE_WEB_LOGIN/);
+  });
+
+  it('validates the two API enforce flags: recognized values pass, garbage throws', () => {
+    for (const key of ['API_CONTENT_TYPE_ENFORCE', 'API_ORIGIN_CHECK_ENFORCE']) {
+      for (const ok of ['1', 'true', '0', 'false', 'TRUE']) {
+        expect(() => loadConfig({ ...MIN_ENV, [key]: ok })).not.toThrow();
+      }
+      expect(() => loadConfig({ ...MIN_ENV, [key]: 'on' })).toThrow(new RegExp(key));
+    }
+  });
+
+  it('validates PUBLIC_ORIGIN parseability: a bare origin passes, garbage throws, unset passes', () => {
+    expect(() => loadConfig({ ...MIN_ENV, PUBLIC_ORIGIN: 'https://example.com' })).not.toThrow();
+    // A trailing slash is tolerated (matches realm.resolvePublicOrigin).
+    expect(() => loadConfig({ ...MIN_ENV, PUBLIC_ORIGIN: 'https://example.com/' })).not.toThrow();
+    expect(() => loadConfig({ ...MIN_ENV })).not.toThrow();
+    expect(() => loadConfig({ ...MIN_ENV, PUBLIC_ORIGIN: 'not-a-url' })).toThrow(/PUBLIC_ORIGIN/);
+    // A path/query/credentials makes it not a bare origin.
+    expect(() => loadConfig({ ...MIN_ENV, PUBLIC_ORIGIN: 'https://example.com/path' })).toThrow(
+      /PUBLIC_ORIGIN/,
+    );
+    expect(() => loadConfig({ ...MIN_ENV, PUBLIC_ORIGIN: 'ftp://example.com' })).toThrow(
+      /PUBLIC_ORIGIN/,
+    );
+  });
+
+  it('validates REALMS: a usable entry passes, a garbage list throws, same-origin/unset pass', () => {
+    expect(() =>
+      loadConfig({ ...MIN_ENV, REALMS: 'Claudemoon=https://claudemoon.example.com=Normal' }),
+    ).not.toThrow();
+    // An empty url is the same-origin realm parseRealms keeps.
+    expect(() => loadConfig({ ...MIN_ENV, REALMS: 'Claudemoon=' })).not.toThrow();
+    expect(() => loadConfig({ ...MIN_ENV })).not.toThrow();
+    // No '=' at all, or a non-bare url, yields zero usable entries.
+    expect(() => loadConfig({ ...MIN_ENV, REALMS: 'Claudemoon' })).toThrow(/REALMS/);
+    expect(() => loadConfig({ ...MIN_ENV, REALMS: 'Claudemoon=not-a-url' })).toThrow(/REALMS/);
+  });
+
+  it('reads METRICS_TOKEN as an optional secret string, defaulting to empty', () => {
+    expect(loadConfig({ ...MIN_ENV }).metricsToken).toBe('');
+    expect(loadConfig({ ...MIN_ENV, METRICS_TOKEN: 'scrape-me' }).metricsToken).toBe('scrape-me');
   });
 
   it('parses ALLOW_DEV_COMMANDS=1 as true and anything else as false', () => {
