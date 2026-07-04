@@ -111,6 +111,10 @@ const DISPATCH_NEW = 'new' as const;
 // as loadConfig uses when API_DISPATCH is unset, rather than re-typing the literal.
 // The production default is 'new' (the new pipeline serves every surface);
 // API_DISPATCH=legacy is the one-flag rollback to the retained legacy ladder.
+// The flip's precondition on the two log-only mismatch gates is satisfied: their
+// warn sinks run ahead of the route-local rate limiters, and both are flood-bounded
+// per (method, route-template) window by mismatch_warn_throttle.ts, so a crafted
+// mismatch flood cannot amplify log volume (docs/api-pipeline/state.md, OPEN items).
 export const DEFAULT_DISPATCH: DispatchMode = DISPATCH_NEW;
 
 // The literal env value that turns the dev-command cheats on. Anything else

@@ -8,15 +8,19 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { compose } from '../../../server/http/compose';
+import { HttpError } from '../../../server/http/errors';
 import { logger } from '../../../server/http/logger';
+import { defaultContentTypeMismatchSink } from '../../../server/http/middleware/content_type';
 import {
   type CrossSiteMismatch,
+  createCrossSiteMismatchSink,
   defaultCrossSiteMismatchSink,
   ORIGIN_CHECK_ENFORCE_ENV,
   originCheckEnforced,
   withOriginCheck,
 } from '../../../server/http/middleware/origin_check';
 import { withErrors } from '../../../server/http/middleware/with_errors';
+import { createMismatchWarnThrottle } from '../../../server/http/mismatch_warn_throttle';
 import type { Ctx, Method, Middleware, RouteDef } from '../../../server/http/types';
 import { fakeCtx } from '../helpers/fake_ctx';
 import type { FakeRes } from '../helpers/fake_http';
@@ -339,6 +343,103 @@ describe('defaultCrossSiteMismatchSink', () => {
       });
       expect(ran).toBe(true);
       expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+
+describe('createCrossSiteMismatchSink: flood bound', () => {
+  /** One mismatch record on the given route template. */
+  function mismatchOn(route: string): CrossSiteMismatch {
+    return {
+      route,
+      method: 'POST',
+      origin: 'https://evil.example',
+      secFetchSite: 'cross-site',
+      enforced: false,
+    };
+  }
+
+  it('emits at most 5 warn lines per window for one template; the tally rides the next window', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      let t = 0;
+      const sink = createCrossSiteMismatchSink(createMismatchWarnThrottle({ now: () => t }));
+      for (let i = 0; i < 20; i++) sink(mismatchOn('/api/register'));
+      // 20 same-window mismatches collapse to the default cap of 5 lines.
+      expect(warn).toHaveBeenCalledTimes(5);
+      // In-window lines never carry a suppressed tally.
+      expect(warn.mock.calls[4][0]).not.toHaveProperty('suppressed');
+      t = 60000;
+      sink(mismatchOn('/api/register'));
+      // The first line of the new window surfaces the 15 suppressed lines.
+      expect(warn).toHaveBeenCalledTimes(6);
+      expect(warn.mock.calls[5][0]).toMatchObject({ route: '/api/register', suppressed: 15 });
+      // The tally rides ONLY that first line: the next admitted line omits it.
+      sink(mismatchOn('/api/register'));
+      expect(warn).toHaveBeenCalledTimes(7);
+      expect(warn.mock.calls[6][0]).not.toHaveProperty('suppressed');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('is flood-bounded AS SHIPPED, with window state separate from the sibling default', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      // Drives the exported default (real process-wide throttle, real clock), so a
+      // revert of the default wiring to an unthrottled sink fails here. Uses a route
+      // no other test sends through the default sink: its window state persists
+      // across this file's tests.
+      for (let i = 0; i < 20; i++) defaultCrossSiteMismatchSink(mismatchOn('/api/flood-probe'));
+      expect(warn).toHaveBeenCalledTimes(5);
+      // The sibling gate's default sink keeps its OWN budget on the same key: the
+      // two module defaults never share one throttle instance.
+      defaultContentTypeMismatchSink({
+        route: '/api/flood-probe',
+        method: 'POST',
+        contentType: 'text/plain',
+        enforced: false,
+      });
+      expect(warn).toHaveBeenCalledTimes(6);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('bounds two different route templates independently (per-template cardinality)', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      const sink = createCrossSiteMismatchSink(createMismatchWarnThrottle({ now: () => 0 }));
+      for (let i = 0; i < 20; i++) sink(mismatchOn('/api/register'));
+      expect(warn).toHaveBeenCalledTimes(5);
+      // A different template still has its own full budget in the same window.
+      for (let i = 0; i < 20; i++) sink(mismatchOn('/api/login'));
+      expect(warn).toHaveBeenCalledTimes(10);
+      expect(warn.mock.calls[5][0]).toMatchObject({ route: '/api/login' });
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('never touches the enforce decision: every flooded request still 403s past the bound', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      const sink = createCrossSiteMismatchSink(createMismatchWarnThrottle({ now: () => 0 }));
+      const check = withOriginCheck(makeRoute(), { env: ENFORCE_ENV, sink });
+      let rejected = 0;
+      for (let i = 0; i < 8; i++) {
+        try {
+          await check(makeCtx({ origin: 'https://evil.example' }), async () => {});
+        } catch (err) {
+          if (err instanceof HttpError && err.status === 403) rejected += 1;
+        }
+      }
+      // All 8 rejections stand; only the warn lines are bounded.
+      expect(rejected).toBe(8);
+      expect(warn).toHaveBeenCalledTimes(5);
+      expect(warn.mock.calls[0][0]).toMatchObject({ enforced: true });
     } finally {
       warn.mockRestore();
     }

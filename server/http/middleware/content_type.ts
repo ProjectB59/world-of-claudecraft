@@ -20,6 +20,7 @@
 
 import { HttpError } from '../errors';
 import { logger } from '../logger';
+import { createMismatchWarnThrottle, type MismatchWarnThrottle } from '../mismatch_warn_throttle';
 import type { Ctx, Method, Middleware, Next, RouteDef } from '../types';
 
 /** The named ops flag that flips the gate from log-only to 415 enforcement. */
@@ -66,20 +67,38 @@ export interface ContentTypeMismatch {
 export type ContentTypeMismatchSink = (mismatch: ContentTypeMismatch) => void;
 
 /**
- * The default sink: one structured dev-channel line per mismatch, through the
- * structured logger.
+ * Build the default sink: one structured dev-channel line per ADMITTED mismatch,
+ * through the structured logger. The throttle bounds warn volume per
+ * (method, route-template) window because this gate runs AHEAD of the
+ * route-local rate limiters, so a crafted wrong-Content-Type flood must not
+ * amplify log volume one line per request; the first line of each new window
+ * carries the prior window's suppressed count so a flood stays visible. The
+ * throttle never touches the enforce decision (the middleware throws after the
+ * sink returns, regardless of admission). Injectable for deterministic tests;
+ * the exported default binds a process-wide instance on the real clock.
  */
-export const defaultContentTypeMismatchSink: ContentTypeMismatchSink = (mismatch) => {
-  logger.warn(
-    {
-      route: mismatch.route,
-      method: mismatch.method,
-      contentType: mismatch.contentType,
-      enforced: mismatch.enforced,
-    },
-    'content-type mismatch',
-  );
-};
+export function createContentTypeMismatchSink(
+  throttle: MismatchWarnThrottle = createMismatchWarnThrottle(),
+): ContentTypeMismatchSink {
+  return (mismatch) => {
+    const admission = throttle.admit(`${mismatch.method} ${mismatch.route}`);
+    if (!admission.emit) return;
+    logger.warn(
+      {
+        route: mismatch.route,
+        method: mismatch.method,
+        contentType: mismatch.contentType,
+        enforced: mismatch.enforced,
+        ...(admission.suppressed > 0 ? { suppressed: admission.suppressed } : {}),
+      },
+      'content-type mismatch',
+    );
+  };
+}
+
+/** The default flood-bounded sink instance the gate uses when none is injected. */
+export const defaultContentTypeMismatchSink: ContentTypeMismatchSink =
+  createContentTypeMismatchSink();
 
 /**
  * Whether the route DECLARES a non-JSON request-body contract the JSON gate must

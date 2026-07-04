@@ -18,6 +18,7 @@ import type * as http from 'node:http';
 import { allowedCorsOrigin } from '../../web_login_guard';
 import { HttpError } from '../errors';
 import { logger } from '../logger';
+import { createMismatchWarnThrottle, type MismatchWarnThrottle } from '../mismatch_warn_throttle';
 import type { Ctx, Middleware, Next, RouteDef } from '../types';
 // The shared mutating-method set: single-sourced in the sibling gate so the two
 // gates cannot diverge on which methods they cover.
@@ -53,12 +54,37 @@ export interface CrossSiteMismatch {
 export type CrossSiteMismatchSink = (mismatch: CrossSiteMismatch) => void;
 
 /**
- * The default sink: emit ONE structured dev-channel warning via the
- * structured logger. English only: this is a dev/ops channel, not player-facing text.
+ * Build the default sink: ONE structured dev-channel warning per ADMITTED
+ * mismatch via the structured logger. English only: this is a dev/ops channel,
+ * not player-facing text. The throttle bounds warn volume per
+ * (method, route-template) window because this check runs AHEAD of the
+ * route-local rate limiters, so a crafted cross-site-Origin flood must not
+ * amplify log volume one line per request; the first line of each new window
+ * carries the prior window's suppressed count so a flood stays visible. A
+ * suppressed line can hide a DISTINCT origin value: a recurring legitimate
+ * origin re-surfaces on any (method, route-template) key not saturated by a
+ * flood, but under a sustained flood of ONE key a low-rate origin on that same
+ * key can stay suppressed, so the enforce-flip audit must not treat the warn
+ * sample as exhaustive for flooded keys. The throttle never touches the
+ * enforce decision (the middleware throws after the sink returns, regardless
+ * of admission). Injectable for deterministic tests; the exported default
+ * binds a process-wide instance on the real clock.
  */
-export const defaultCrossSiteMismatchSink: CrossSiteMismatchSink = (mismatch) => {
-  logger.warn({ ...mismatch }, 'cross-site origin on mutating /api request');
-};
+export function createCrossSiteMismatchSink(
+  throttle: MismatchWarnThrottle = createMismatchWarnThrottle(),
+): CrossSiteMismatchSink {
+  return (mismatch) => {
+    const admission = throttle.admit(`${mismatch.method} ${mismatch.route}`);
+    if (!admission.emit) return;
+    logger.warn(
+      { ...mismatch, ...(admission.suppressed > 0 ? { suppressed: admission.suppressed } : {}) },
+      'cross-site origin on mutating /api request',
+    );
+  };
+}
+
+/** The default flood-bounded sink instance the check uses when none is injected. */
+export const defaultCrossSiteMismatchSink: CrossSiteMismatchSink = createCrossSiteMismatchSink();
 
 /**
  * The default allowlist arm: an Origin is allowed when it is in the CORS
