@@ -30,6 +30,21 @@ criteria in `## Old-ladder deletion exit criteria (next release)` (end of this f
 Phase 24 (validated config + server timeouts + no-magic-values + perf gate) DONE
 (2026-07-03).
 
+PHASE-25 QA GATE (phase-25-qa.md, 2026-07-04): PASS, apply-all. Zero BLOCKING across four
+reviewers (correctness, test-coverage-auditor, dead-code/cleanup, privacy-security-review);
+all 10 acceptance criteria and all 3 stopping-rule checks verified against the real range
+9a254ee2b..4e6e60f8d. Two SHOULD-FIX fixed in f954346e5 (the retained-ladder comments across
+14 server files still claimed Phase 25 removes the ladder or that the default is 'legacy';
+reworded to the next-release ladder-deletion PR). Nits applied: the packet's dangling
+scratchpad/canonical.md pointers repointed to this file (fd472bd96) and the new:endpoint
+golden test hardened (b04df2f89: anchor-not-found UsageError pins plus a passed-count
+assertion on the child vitest). The stale until-Phase-25 prose inside
+tests/server/http/known_deviations.ts and sibling test comments is DEFERRED to the deletion
+PR (frozen ledger prose; those entries fire at the deletion anyway). Validation green at the
+final tree: tsc 0, golden 23/23, dispatch_default + config 32/32, tests/server/http 41
+files / 912 tests with zero fixture edits, PERF_GATE_WALLCLOCK=1 perf_gate 10/10,
+ci:changed 0, npm run gate PASS all 9 steps. The migration packet is COMPLETE.
+
 THIRD v0.20.0 RELEASE-MERGE SLICE (2026-07-03, after the Phase 24 QA gate): the map
 editor surface landed and was migrated IN-MERGE (9 custom-map + 4 uploaded-GLB /api
 routes on the wallet shared-*Core template in NEW server/maps_routes.ts +
@@ -52,7 +67,8 @@ loadConfig(env) is now the validated FAIL-FAST boot edge, called once as startSe
 first step (before the DB retry loop) and memoized behind main.ts activeConfig() (+
 resetActiveConfigForTests) so request-time consumers read lazily and a bare import stays
 env-free: throws name the key, never a value (DATABASE_URL, which IS the tier-2 limiter
-DSN, no separate env; API_DISPATCH set-but-invalid, unset stays 'legacy';
+DSN, no separate env; API_DISPATCH set-but-invalid, unset takes DEFAULT_DISPATCH ('new'
+since Phase 25);
 REQUIRE_WEB_LOGIN / API_CONTENT_TYPE_ENFORCE / API_ORIGIN_CHECK_ENFORCE garbage;
 non-origin PUBLIC_ORIGIN; unusable non-empty REALMS). New Config fields requireWebLogin +
 metricsToken; the six conscious read-once exceptions are documented at the top of

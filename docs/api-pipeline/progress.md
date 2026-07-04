@@ -1882,5 +1882,39 @@ the deploy-env audit (stricter validators throw at boot; METRICS_TOKEN on server
 scraper together; no empty numeric placeholders), now plus the flipped default itself
 (set API_DISPATCH=legacy only as a deliberate rollback).
 
-NEXT: the phase-25-qa.md gate (separate session), then the next-release old-ladder
-deletion PR under the exit criteria above.
+QA GATE (phase-25-qa.md, 2026-07-04): PASS, apply-all. One Explore context load, then four
+parallel reviewers over the committed range 9a254ee2b..4e6e60f8d (correctness,
+test-coverage-auditor, dead-code/cleanup, privacy-security-review). Zero BLOCKING. All 10
+acceptance criteria PASS against the real diff (the canonical example hash 14275d39e
+verified to exist and match server/auth_routes.ts, with c07d677af and 5bba9353e also
+verified; AGENTS.md and GEMINI.md confirmed untouched thin pointers; the exit-criteria link
+matches the state.md heading character for character) and all 3 stopping-rule checks held
+(zero src/ or WS files in the range; the fresh route-family sweep over all of server/ found
+every dispatched family either registry-owned across the 15 domain modules or a recorded
+state.md carve-out; knownDeviations consistent with the flip, oauthInternalOffTable405
+fires at the deletion as documented). TWO SHOULD-FIX fixed (f954346e5): retained-ladder
+comments across 14 server files still claimed Phase 25 removes the ladder, including the
+main.ts boot-site comment that still said the default is 'legacy', the dispatch.ts
+through-Phase-24 retention note, and the bearer_active_guard give-way trigger (which is the
+DELETION, not the flip); all reworded to the next-release ladder-deletion PR. Nits applied
+per apply-all: the packet's dangling scratchpad/canonical.md pointers repointed to state.md
+Locked design decisions (fd472bd96; canonical.md never existed); golden-test hardening
+(b04df2f89): the anchor-not-found UsageError paths pinned directly and the golden child
+vitest now asserts a real passed-count summary, not exit code alone; state.md's live
+cheat-sheet line saying unset API_DISPATCH stays 'legacy' corrected. Adjudicated NO-CHANGE
+with rationale: strict composite ORDER inside dispatch_default (already pinned in
+route_dispatch.test.ts, redundant there); the scaffold's SURFACE_BY_PREFIX mirror (a
+zero-dep .mjs cannot import the TS spine; commented as a mirror) and its deliberately wide
+export surface (the golden-test seam); security's two INFO notes (the opt-in --public write
+rung already prints the loud warning plus TODOs; dummy localhost test DSNs follow repo
+convention). DEFERRED to the deletion PR: the stale until-Phase-25 prose inside
+tests/server/http/known_deviations.ts and sibling test comments (frozen ledger prose; those
+entries fire at the deletion anyway). Validation GREEN at the final tree: tsc 0; golden
+23/23 (+1 hardening case); dispatch_default + config 32/32; tests/server/http 41 files /
+912 tests with ZERO fixture edits; PERF_GATE_WALLCLOCK=1 perf_gate 10/10; ci:changed 0;
+npm run gate PASS all 9 steps (re-run over the fix commits).
+
+NEXT: the next-release old-ladder deletion PR under the exit criteria above (owner
+Fernando; the deletion PR adds the bounded delegate counter FIRST). The whole-feature
+integration matrix (qa-checklist.md) remains available to run once at packet completion if
+the maintainer wants the final cross-phase pass before ship.
