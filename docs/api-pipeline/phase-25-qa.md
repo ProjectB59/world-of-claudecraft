@@ -5,7 +5,7 @@ This is the QA pass for the final implementation phase. It audits the docs sweep
 coverage, and dead code, applies BLOCKING and SHOULD-FIX findings, then performs PACKET TEARDOWN
 (this is Phase 25, the last phase). The audit stays under the 40% context bound because the diff
 is small: a handful of docs, one generator plus its test, and a one-field default change. Do not
-contradict `scratchpad/canonical.md`.
+contradict `state.md` (Locked design decisions).
 
 Paste the block below into a fresh Claude Code session. It is self-contained.
 

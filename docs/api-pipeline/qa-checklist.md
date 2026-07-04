@@ -6,7 +6,7 @@ its own diff against the per-phase acceptance criteria; this matrix is the final
 that asserts the migrated server behaves as one coherent system, the repo invariants survived the
 25-phase chain, and nothing regressed across the stacked PRs.
 
-Scope reminder (from `canonical.md`): the work is SERVER-ONLY except the Phase 22 client touch
+Scope reminder (from `state.md`): the work is SERVER-ONLY except the Phase 22 client touch
 (`userFacingApiError` in `src/main.ts` plus the `apiError.*` catalog). It is NOT a gameplay change,
 NOT a WS wire change, and NOT a concurrency-scalability fix. Anchor every check on SYMBOL NAMES,
 route strings, and test files, never on line numbers (all SPEC line anchors are stale).

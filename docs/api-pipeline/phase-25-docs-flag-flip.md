@@ -6,7 +6,7 @@ pipeline), while RETAINING the old ladder behind the flag for one more release. 
 migrate any endpoint, touch persistence, or change the wire protocol, so it stays comfortably
 under the 40% context bound: the surface is a handful of docs, one generator script plus its
 golden test, and a one-field default change with a small dispatch test. The canonical locked
-decisions live in `scratchpad/canonical.md`; do not contradict them.
+decisions live in `state.md` (Locked design decisions); do not contradict them.
 
 Paste the block below into a fresh Claude Code session. It is self-contained: you do not need to
 read this table of contents first.

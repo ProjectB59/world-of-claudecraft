@@ -3,7 +3,8 @@
 This is the front-matter for the `docs/api-pipeline/` planning packet: the vision, the
 current-state read, the seams we reuse, the new work, the web-research findings that back the
 design, and the decisions the user locked on 2026-06-30. The single source of truth for every
-phase is `canonical.md`; this document is the narrative that motivates it. The 25 numbered
+phase is `state.md` (its Locked design decisions section); this document is the narrative that
+motivates it. The 25 numbered
 phases live in `phase-NN-<slug>.md` (impl) and `phase-NN-qa.md` (QA). The originating SPEC is
 `source-spec.md` in this directory; all of its `main.ts`/`db.ts` line anchors are STALE
 (main.ts is now about 1695 lines), so we re-anchor on symbol names and route strings, never
@@ -207,7 +208,7 @@ Every load-bearing decision was checked against a primary source and against the
 ## Decisions locked 2026-06-30
 
 These five user decisions are authoritative and override the earlier SPEC and the synthesis
-recommendations where they differ. They are mirrored in `canonical.md`.
+recommendations where they differ. They are mirrored in `state.md` (Locked design decisions).
 
 1. SINGLE all-or-nothing env dispatch flag. One flag controls whether the new pipeline sits in
    front of the old `handleApi`. The new path is the DEFAULT and is the path the suite targets;

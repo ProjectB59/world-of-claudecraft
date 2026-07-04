@@ -2,7 +2,7 @@
 
 Status board for the 25-phase stacked PR chain that re-architects every JSON
 endpoint on the authoritative game server behind one in-house request pipeline.
-Canonical decisions live in the planning packet (see `canonical.md` / `README.md`);
+Canonical decisions live in the planning packet (see `state.md` / `README.md`);
 each implementation phase has a `phase-NN-<slug>.md` file and a paired `phase-NN-qa.md`.
 
 Mark a row's Status as "In progress" or "Done" and fill Started / Completed
