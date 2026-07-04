@@ -1,10 +1,10 @@
 // Account self-service portal: the exported handleAccount* domain handlers plus the
-// Phase 13 RouteDef layer that serves them (see the block above `export const routes`).
+// RouteDef layer that serves them (see the block above `export const routes`).
 //
 // The domain handlers mirror server/wallet.ts: each is an exported, account-scoped
 // function with a real http (req, res) signature, so tests/account_server.test.ts can
-// drive every branch through the mock-pg harness with no live database. Phase 13
-// (docs/api-pipeline/) appended a thin RouteDef layer of 16 routes served by the new
+// drive every branch through the mock-pg harness with no live database. A thin
+// RouteDef layer of 16 routes rides below, served by the shared
 // server/http/ pipeline under API_DISPATCH 'new'; each self-resolves its bearer via a
 // per-route guard (activeGuard/logoutGuard), except the two token-in-query link routes
 // (email/verify, email/unsubscribe) which carry no auth. main.ts resolves the bearer
@@ -472,19 +472,19 @@ export async function handleEmailUnsubscribe(
 }
 
 // ===========================================================================
-// Route layer, ported onto RouteDefs (Phase 13 of docs/api-pipeline/).
+// Route layer, ported onto RouteDefs.
 //
 // The account-portal endpoints move off the inline handleApi ladder in
-// server/main.ts onto the shared server/http/ pipeline the Phase 9 dispatcher
+// server/main.ts onto the shared server/http/ pipeline the registry dispatcher
 // serves when API_DISPATCH is 'new'. It follows the server/characters.ts +
 // server/auth_routes.ts template:
 //  - the handlers are THIN Ctx adapters that resolve the bearer, then call the
 //    existing handleAccount* domain functions above UNCHANGED. Those functions
 //    write the SAME legacy { error } / success bodies with the same http_util
 //    json() helper, so every ported response is byte-identical to today and the
-//    parity harness proves it. RFC-9457-ification of these bodies is Phase 22;
-//    until then the client prose-matcher (src/main.ts userFacingApiError) keys on
-//    them, so a migrated route MUST keep the legacy prose body, not problem+json.
+//    parity harness proves it. These bodies are deliberately NOT problem+json:
+//    the client prose-matcher (src/main.ts userFacingApiError) keys on
+//    them, so a migrated route MUST keep the legacy prose body.
 //  - the bearer + moderation gate is a per-route guard middleware (activeGuard)
 //    that mirrors the legacy bearerActiveAccount resolver and writes the legacy
 //    { error } bodies, NOT the generic requireAccount middleware (which throws a
@@ -770,7 +770,7 @@ async function unsubscribeHandler(ctx: Ctx): Promise<void> {
 
 // ---------------------------------------------------------------------------
 // The route table. registry.ts spreads this into apiRoutes. Under API_DISPATCH
-// 'new' the Phase 9 dispatcher serves these via the onion; the legacy handleApi
+// 'new' the registry dispatcher serves these via the onion; the legacy handleApi
 // arms stay in main.ts for the flag-off rollback until the ladder-deletion PR. All routes carry
 // [activeGuard] EXCEPT: logout (logoutGuard: sign-out survives moderation locks)
 // and the two token-in-query link routes email/verify + email/unsubscribe (no

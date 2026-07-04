@@ -69,7 +69,7 @@ export function desktopLoginCodeCountForTest(): number {
 // db/auth implementations; tests inject stubs so no Postgres is required).
 // Shapes are structural subsets of the real functions on purpose.
 //
-// Phase 18b scope fix: the create leg no longer resolves its own bearer (the
+// Scope fix: the create leg no longer resolves its own bearer (the
 // original deps carried the scope-blind accountForToken, which let a read-scope
 // companion/OAuth token mint a handoff code that exchange then traded for a
 // FULL session, a scope escalation). Both serving paths now authenticate with

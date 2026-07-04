@@ -1,5 +1,5 @@
 // Uploaded-GLB route layer for the map editor surface, ported onto RouteDefs in
-// the v0.20.0 release-merge reconciliation (docs/api-pipeline/). Same shape as
+// the v0.20.0 release-merge reconciliation. Same shape as
 // server/maps_routes.ts: the business rules stay in server/user_assets.ts
 // (UserAssetsService, zero HTTP); this module owns the shared per-lane cores
 // BOTH dispatch arms call, the RouteDefs the registry spreads, and the service
@@ -8,7 +8,7 @@
 // The upload copies the /api/card binary lane end to end: Content-Length
 // precheck BEFORE auth (413 + Connection: close), the fused ip+account limiter
 // after the auth guard, a self-read binary body (meta.requestBody 'binary' for
-// the Phase 21 classifier), format validation before storage. The byte GET is
+// the Content-Type gate's classifier), format validation before storage. The byte GET is
 // public and content-addressed: its bytes are immutable, cached like the hashed
 // build assets, and it is the one registered /api route with a binary RESPONSE.
 

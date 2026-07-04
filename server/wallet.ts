@@ -59,7 +59,7 @@ export async function handleWalletChallenge(
 
 // The challenge body-read + validation + issuance, WITHOUT the rate-limit gate.
 // The legacy handler above keeps its own walletLinkRateLimited check (unchanged
-// prose 429); the Phase 14 RouteDef instead gates with rateLimit(WALLET_LINK_POLICY)
+// prose 429); the RouteDef instead gates with rateLimit(WALLET_LINK_POLICY)
 // as middleware (a coded 429) and then calls this core, so the ip+account bucket is
 // recorded exactly once per request on either path (each walletLinkRateLimited call
 // consumes a token, so the two must never both run).
@@ -101,7 +101,7 @@ export async function handleWalletLink(
 }
 
 // The link verification, WITHOUT the rate-limit gate (see walletChallengeCore for
-// the split rationale: the legacy handler self-limits with a prose 429, the Phase 14
+// the split rationale: the legacy handler self-limits with a prose 429, the
 // RouteDef limits via rateLimit(WALLET_LINK_POLICY) middleware with a coded 429).
 async function walletLinkCore(
   req: http.IncomingMessage,
@@ -160,10 +160,10 @@ export async function handleWalletUnlink(
 }
 
 // ===========================================================================
-// Route layer, ported onto RouteDefs (Phase 14 of docs/api-pipeline/).
+// Route layer, ported onto RouteDefs.
 //
 // The wallet / card / referral surface moves off the inline handleApi ladder in
-// server/main.ts onto the shared server/http/ pipeline the Phase 9 dispatcher
+// server/main.ts onto the shared server/http/ pipeline the registry dispatcher
 // serves under API_DISPATCH 'new'. It follows the server/account.ts template:
 //  - the bearer + moderation gate is a per-route guard middleware (activeGuard)
 //    that mirrors the legacy bearerActiveAccount resolver and writes the legacy
@@ -182,7 +182,7 @@ export async function handleWalletUnlink(
 //    challenge, wallet link, woc balance, card) become a coded 429 on the new
 //    path: the limiter is a rateLimit(policy) middleware that throws
 //    HttpError(429, 'rate_limit.exceeded', { retryAfterSeconds }), serialized as
-//    RFC 9457 problem+json by the Phase 7/8 error boundary. The legacy arms keep
+//    RFC 9457 problem+json by the withErrors error boundary. The legacy arms keep
 //    the prose body for the flag-off rollback (the rateLimitedBodyToCode known
 //    deviation). The ip+account limiters (WALLET_LINK_POLICY / CARD_UPLOAD_POLICY)
 //    are a single fused call recording both the IP and account buckets, so they
@@ -286,8 +286,9 @@ function bearerToken(req: http.IncomingMessage): string | null {
 // server/characters.ts and server/account.ts. The clean resolution is a shared
 // db-seam-parameterized bearer-guard middleware, but extracting it here would touch two
 // already-shipped, byte-parity-pinned surfaces that also carry sibling guards (readGuard,
-// logoutGuard), so it belongs in a dedicated packet step (a natural fit alongside Phase
-// 22/25), NOT this small wallet migration. Do NOT add a 4th copy in Phase 15+.
+// logoutGuard), so it belongs in a dedicated packet step (a natural fit alongside the
+// ladder-deletion follow-up PR), NOT this small wallet migration. Do NOT add a 4th copy
+// on any future surface.
 /** Mutating + account-scoped gate (mirrors server/main.ts bearerActiveAccount). */
 const activeGuard: Middleware = async (ctx, next) => {
   const token = bearerToken(ctx.req);
@@ -386,7 +387,7 @@ async function referralsHandler(ctx: Ctx): Promise<void> {
 
 // ---------------------------------------------------------------------------
 // The route table. registry.ts spreads this into apiRoutes. Under API_DISPATCH
-// 'new' the Phase 9 dispatcher serves these via the onion; the legacy handleApi
+// 'new' the registry dispatcher serves these via the onion; the legacy handleApi
 // arms stay in main.ts for the flag-off rollback until the ladder-deletion PR. All routes carry
 // [activeGuard] EXCEPT /api/woc/balance (public, IP-limited only). The rate-limit
 // middleware sits AFTER activeGuard on the two wallet-link routes + card (the
@@ -438,7 +439,7 @@ export const routes: RouteDef[] = [
     middleware: [cardContentLengthGuard, activeGuard, rateLimit(CARD_UPLOAD_POLICY)],
     handler: cardHandler,
     // The card upload is the one registered /api route whose request body is raw
-    // bytes (image/png), not JSON: the Phase 21 Content-Type gate exempts it via
+    // bytes (image/png), not JSON: the Content-Type 415 gate exempts it via
     // this classification (the response error envelope stays the surface default).
     meta: { requestBody: 'binary' },
   },

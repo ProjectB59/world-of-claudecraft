@@ -23,9 +23,9 @@ const BACKSTOP_EVICT_BATCH = 512;
 
 // Injectable wall clock. Defaults to Date.now so every existing caller and test
 // is unaffected; tests can pin a deterministic clock via setRateLimitClock and
-// must restore the default with resetRateLimitClock. The eventual store-backed
-// rework (a later phase) reads the same seam, so the sliding-window math stays
-// testable across a window boundary without real timers.
+// must restore the default with resetRateLimitClock. The two-tier pipeline
+// middleware reads the same seam via rateLimitNow(), so the sliding-window math
+// stays testable across a window boundary without real timers.
 let clockNow: () => number = Date.now;
 
 /** Pin the rate-limiter clock to a deterministic source (test-only). */
@@ -538,7 +538,8 @@ export function resetPublicReadRateLimits(): void {
 // AND account) bucket bounds a burst without spilling into the login/register budget
 // (its own maps, decoupled from `attempts`). Keyed BY ACTION so one action's flood
 // cannot exhaust another's allowance, and generous (a real player never creates or
-// renames twenty characters a minute); the deeper two-tier rework is a later phase.
+// renames twenty characters a minute); the two-tier pipeline policies
+// (server/http/middleware/rate_limit.ts CHARACTER_*_POLICY) run this limiter as tier-1.
 export const CHARACTER_MUTATION_MAX_PER_MINUTE = 20;
 
 /** The character mutations that each carry a dedicated per-account limiter bucket. */
@@ -580,8 +581,9 @@ export function resetCharacterMutationRateLimits(): void {
 // session plus the per-target 12h duplicate-report window in moderation_db). This
 // adds a coarse per-account create limiter so a single account cannot flood the
 // moderation queue with reports against many different targets. Conservative cap;
-// the window is the shared 60s WINDOW_MS (single-sourced above), and both are
-// folded into the validated config module in Phase 24. Mirrors cardUpload: an IP
+// the window is the shared 60s WINDOW_MS (single-sourced above), and the pipeline
+// limiter policy table (server/http/middleware/rate_limit.ts) derives from these
+// same consts, so the two dispatch arms cannot drift. Mirrors cardUpload: an IP
 // flood OR an account flood limits.
 export const REPORTS_CREATE_MAX_PER_MINUTE = 10;
 const reportsCreateIpAttempts = new Map<string, number[]>();

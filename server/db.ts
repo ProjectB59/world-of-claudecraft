@@ -592,7 +592,7 @@ export async function ensureSchema(): Promise<void> {
     // Seed the chat-filter word lists + config on first boot only (idempotent).
     // Runs under the same advisory lock so concurrent realm boots don't race.
     await seedChatFilterDefaults(client);
-    // Phase 20: partitioned World Market backfill. Runs inside this same
+    // Partitioned World Market backfill. Runs inside this same
     // advisory-lock transaction (so a concurrent realm boot cannot race it) and
     // AFTER the schema modules exist. It splits any surviving pre-scoping
     // 'market' blob per seller realm, RETAINS the legacy row as a rollback
@@ -2303,7 +2303,7 @@ export async function loadWorldState<T>(key: string): Promise<T | null> {
 
 export async function saveWorldState(key: string, data: unknown): Promise<void> {
   // The pre-scoping bare 'market' row is RETAINED as the rollback artifact for
-  // the Phase 20 partitioned backfill (server/market_backfill.ts) and is never
+  // the partitioned market backfill (server/market_backfill.ts) and is never
   // written again: reject any attempt to persist it, gate open or not.
   if (key === LEGACY_MARKET_KEY) {
     throw new Error(

@@ -1,4 +1,4 @@
-// Partitioned World Market backfill (Phase 20 of the API pipeline packet).
+// Partitioned World Market backfill.
 //
 // Before realm scoping, every realm process on one DATABASE_URL persisted the
 // market to the single world_state row 'market' (last writer wins). The keys
@@ -14,9 +14,9 @@
 // so db.ts can import the constants and the runner without a cycle.
 import type { MarketSave } from '../src/sim/sim';
 
-// FROZEN CONTRACT (Phase 20): every exported name and signature in this file
-// is shared between db.ts, the backfill tests, and the isolation tests. Keep
-// the names and shapes exactly as written; implement the bodies.
+// FROZEN CONTRACT: every exported name and signature in this file is shared
+// between db.ts, the backfill tests, and the isolation tests. Keep the names
+// and shapes exactly as written.
 
 export const MARKET_KEY_PREFIX = 'market:';
 export const LEGACY_MARKET_KEY = 'market';

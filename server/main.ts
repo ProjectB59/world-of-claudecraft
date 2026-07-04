@@ -594,7 +594,7 @@ function requestMetadata(req: http.IncomingMessage): { ip: string; userAgent: st
 // Host wiring for the desktop-login route handlers (server/desktop_login.ts):
 // the real db/auth implementations here, stubs in tests. The create leg's
 // bearer resolution moved OUT of the handler and into the arm below
-// (bearerActiveAccount, the Phase 18b scope fix), so the deps carry only the
+// (bearerActiveAccount, the desktop-login create scope fix), so the deps carry only the
 // post-auth reads.
 const desktopLoginRouteDeps: DesktopLoginRouteDeps = {
   readBody,
@@ -926,10 +926,11 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
       return json(res, 200, { token, username: account.username, emailMissing });
     }
     if (req.method === 'POST' && url === '/api/desktop-login/create') {
-      // Phase 18b scope fix: the handoff code mints a FULL session via exchange,
-      // so create requires a full active session too (bearerActiveAccount: read
-      // and companion tokens answer 403 'this token is read-only'), where the
-      // pre-18b handler resolved the scope-blind accountForToken. Mirrored on
+      // Desktop-login create scope fix: the handoff code mints a FULL session
+      // via exchange, so create requires a full active session too
+      // (bearerActiveAccount: read and companion tokens answer 403 'this token
+      // is read-only'), where the pre-fix handler resolved the scope-blind
+      // accountForToken. Mirrored on
       // the RouteDef twin (server/desktop_login_routes.ts); the
       // desktopLoginCreateFullScope known deviation records the change.
       const accountId = await bearerActiveAccount(req, res);
@@ -1803,7 +1804,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse): P
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// The /api dispatch seam (Phase 9 of docs/api-pipeline/)
+// The /api dispatch seam
 // ---------------------------------------------------------------------------
 
 // Inject the main.ts runtime the ported public-read handlers (server/leaderboard.ts)
@@ -1915,7 +1916,7 @@ configureDiscordRuntime({
 // closure-based configure* calls above, which defer every liveGame() read to
 // request time and stay at module scope.
 
-// The RED /metrics exporter (Phase 23): ONE prom-client registry with the default
+// The RED /metrics exporter: ONE prom-client registry with the default
 // process/runtime metrics attached, paired with the structured access-log sink
 // into ONE composite tee. Every migrated route records through this composite, so
 // each request both increments the Prometheus counter/histogram and emits one
@@ -1939,8 +1940,8 @@ const httpMetricSink = teeMetricSink(createAccessLogSink(logger), httpMetrics.si
 setRateLimitTier2Store(createPgRateLimitStore({ pool, metrics: httpMetricSink }));
 
 // The in-house dispatcher that fronts the legacy handleApi ladder via a per-path
-// delegate. Built once; a path the registry owns (Phase 10 migrated the public
-// reads) runs the onion, every un-migrated path delegates to handleApi UNCHANGED.
+// delegate. Built once; a path the registry owns runs the onion, every
+// un-migrated path delegates to handleApi UNCHANGED.
 const apiDispatcher = createApiDispatcher({
   registry: apiRegistry,
   delegate: handleApi,
@@ -1951,7 +1952,7 @@ const apiDispatcher = createApiDispatcher({
 // mode changes (boot + tests), never per request. It starts at the config default
 // dispatch (DEFAULT_DISPATCH, 'new' today) so importing this module (e.g. in a
 // test) never depends on the environment; startServer reads the real API_DISPATCH
-// flag via loadConfig once at boot. Phase 25 flipped the production default to 'new';
+// flag via loadConfig once at boot. The production default is 'new';
 // API_DISPATCH=legacy is the one-flag rollback to the retained legacy ladder.
 let apiEntry: ApiDispatcher = selectApiEntry(DEFAULT_DISPATCH, apiDispatcher, handleApi);
 
@@ -1974,7 +1975,7 @@ let adminApiEntry: ApiDispatcher = selectApiEntry(
   adminLegacy,
 );
 
-// The /oauth surface's flag-gated dispatcher (Phase 18), over the SAME registry
+// The /oauth surface's flag-gated dispatcher, over the SAME registry
 // (oauth paths are a disjoint '/oauth' first segment). The delegate is the legacy
 // handleOAuth ladder UNCHANGED, so the GET consent/device HTML pages (off the route
 // table), HEAD, unknown /oauth paths, and wrong-method requests all keep their
@@ -1991,8 +1992,8 @@ let oauthApiEntry: ApiDispatcher = selectApiEntry(
   oauthLegacy,
 );
 
-// The /internal surface's flag-gated dispatcher (Phase 18). The delegate is the
-// EXACT legacy composite from the pre-Phase-18 ladder arm: the daily-rewards ops
+// The /internal surface's flag-gated dispatcher. The delegate is the EXACT
+// legacy composite from the pre-migration ladder arm: the daily-rewards ops
 // family (/internal/daily-rewards/*, never part of handleInternalApi) is tried
 // first and short-circuits when handled; everything else falls to the legacy
 // handleInternalApi ladder UNCHANGED (unknown endpoints, wrong methods, HEAD, and
@@ -2022,7 +2023,7 @@ function setApiDispatchMode(mode: DispatchMode): void {
 /**
  * Emit the one-line boot record of the active API dispatch path, plus a stderr
  * ALERT when the un-hardened legacy ladder is serving in production. The production
- * default is now 'new' (Phase 25), so a 'legacy' prod boot means someone set
+ * default is now 'new', so a 'legacy' prod boot means someone set
  * API_DISPATCH=legacy to roll back, a deliberate choice worth flagging loudly.
  * Logger-injected and exported so a test asserts the ALERT fires ONLY for legacy +
  * production. Dev-channel English (no t()); the fields are static, never
@@ -2090,8 +2091,9 @@ function applyCorsAndPreflight(
 // route handlers, the CORS + dispatch helpers) is module-level, so it moves cleanly.
 // The exact prefix order, the url-vs-path arm asymmetry, the CORS + OPTIONS-204
 // short-circuit position, and every fire-and-forget `void` are preserved 1:1; the
-// only change from Phase 8 is the /api, /admin/api, /oauth, and /internal arms route
-// through apiEntry / adminApiEntry / oauthApiEntry / internalApiEntry (all four
+// only change from the pre-dispatcher ladder is the /api, /admin/api, /oauth, and
+// /internal arms route through apiEntry / adminApiEntry / oauthApiEntry /
+// internalApiEntry (all four
 // flag-gated dispatchers) instead of calling handleApi / handleAdminApi / handleOAuth
 // / the daily-rewards+handleInternalApi composite directly; each dispatcher delegates
 // its own unmatched paths to the same legacy handler, so behavior is byte-identical
@@ -2121,7 +2123,7 @@ export function routeHttpRequest(req: http.IncomingMessage, res: http.ServerResp
   else if (req.method === 'GET' && path === '/metrics')
     void handleMetricsGate(req, res, httpMetrics, activeConfig().metricsToken);
   else if (url.startsWith('/internal/')) {
-    // The flag-gated internal dispatcher; its delegate is the exact pre-Phase-18
+    // The flag-gated internal dispatcher; its delegate is the exact pre-migration
     // composite (daily-rewards ops tried first, then handleInternalApi), so the
     // 'legacy' mode and every unmatched path stay byte-identical.
     void internalApiEntry(req, res);
@@ -2250,9 +2252,8 @@ export async function startServer(): Promise<http.Server> {
   console.log('database ready');
 
   // Select the /api dispatch path from the single API_DISPATCH flag on the one boot
-  // Config loaded above (never a scattered process.env read). The default is 'new'
-  // (flipped in Phase 25); API_DISPATCH=legacy is the one-flag rollback to the
-  // retained legacy ladder.
+  // Config loaded above (never a scattered process.env read). The default is 'new';
+  // API_DISPATCH=legacy is the one-flag rollback to the retained legacy ladder.
   setApiDispatchMode(config.dispatch);
   logApiDispatchSelection(logger, config.dispatch, process.env.NODE_ENV);
 

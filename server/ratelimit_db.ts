@@ -79,7 +79,10 @@ export interface PgRateLimitStoreOptions {
    * drives an injected fake so windows and resetSeconds are deterministic.
    */
   readonly now?: () => number;
-  /** Phase 8 metric seam; defaults to the no-op (Phase 23 wires a real exporter). */
+  /**
+   * The MetricSink seam (server/http/middleware/metric_sink.ts); defaults to the
+   * no-op (main.ts tees the real access-log + /metrics sinks in at boot).
+   */
   readonly metrics?: MetricSink;
 }
 
@@ -125,9 +128,9 @@ class PgRateLimitStore implements RateLimitStore {
     );
 
     // Fire the pg-write counter once per UPSERT. MetricEvent is HTTP-shaped (the
-    // Phase 8 seam): `route` carries the counter name, and `status` encodes the
-    // decision (200 under the limit, 429 tripped) so Phase 23 can split allowed
-    // from limited when it wires a real exporter. durationMs is left 0 here.
+    // shared MetricSink seam): `route` carries the counter name, and `status`
+    // encodes the decision (200 under the limit, 429 tripped) so the wired
+    // exporter can split allowed from limited. durationMs is left 0 here.
     this.metrics.record({
       route: 'ratelimit.pg.hit',
       method: 'PG',

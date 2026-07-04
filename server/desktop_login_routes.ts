@@ -1,4 +1,4 @@
-// Route layer for the desktop-login handoff pair (Phase 18b of docs/api-pipeline/):
+// Route layer for the desktop-login handoff pair:
 //   POST /api/desktop-login/create    mint the single-use IP-bound handoff code
 //   POST /api/desktop-login/exchange  trade the deep-linked code for a session
 // A SIBLING of server/desktop_login.ts (which stays db-import-free so its
@@ -15,10 +15,10 @@
 //   (auth_routes.ts ipRateLimitGuard) and the legacy fused arm consume, so all
 //   four paths stay ONE budget, and the limiter runs BEFORE auth exactly like
 //   the legacy ladder (the fused check sits ahead of the arms).
-// - Phase 18b scope fix (maintainer-resolved fork): create authenticates via
+// - Scope fix (maintainer-resolved fork): create authenticates via
 //   the shared createActiveGuard (full active session; a read-scope
 //   companion/OAuth token answers 403 'this token is read-only'), where the
-//   pre-18b handler used the scope-blind accountForToken, letting a read token
+//   original handler used the scope-blind accountForToken, letting a read token
 //   escalate to the full session exchange mints. The legacy arm carries the
 //   mirror fix (bearerActiveAccount before issueDesktopLoginCode); the
 //   desktopLoginCreateFullScope known deviation records the contract change.
@@ -53,7 +53,7 @@ const TOO_MANY_ATTEMPTS = 'too many attempts, wait a minute and try again';
 
 // The db reads the guard and the two handler cores need. Built LAZILY (a
 // function, not a module-scope object literal) so importing this module never
-// dereferences the db.ts bindings (the lazy-db-bundle rule from Phase 17: an
+// dereferences the db.ts bindings (the lazy-db-bundle rule: an
 // unrelated test that partial-mocks server/db and pulls this module in
 // transitively must not throw on a missing export).
 function makeRealDesktopLoginDb() {

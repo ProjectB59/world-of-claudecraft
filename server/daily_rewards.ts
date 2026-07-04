@@ -855,7 +855,7 @@ export async function handleDailyRewardInternalApi(
   return true;
 }
 
-// ── Route layer (Phase 18b of docs/api-pipeline/) ────────────────────────────
+// ── Route layer ────────────────────────────
 // Both daily-rewards families as RouteDefs for the shared dispatcher:
 //   GET  /api/daily-rewards                        player status (JSON)
 //   GET  /api/daily-rewards/leaderboard            paginated daily leaderboard (JSON)
@@ -892,14 +892,16 @@ export async function handleDailyRewardInternalApi(
 // internalAuthorized check (same env + header, per request), which passes
 // whenever the gate passed; keeping the core's check intact is what keeps the
 // composite delegate's legacy behavior frozen. NO rate limiter on any of the
-// eight (legacy has none; the spin throttle decision is handed to Phase 19).
+// eight (legacy has none; spin's only guards are the one-spin-per-day 409 and
+// the wallet-eligibility 403, and adding a throttle is a maintainer fork, not
+// a silent add).
 // dailyRewardService stays module-owned and importable by game.ts regardless of
 // route-table state; no boot injection is needed.
 
 // The bearer + moderation reads the player guard needs. Built LAZILY (a
 // function, not a module-scope object literal): game.ts imports this module, so
 // an eager literal would break every test that partial-mocks server/db and
-// loads the game (the lazy-db-bundle rule from Phase 17).
+// loads the game (the lazy-db-bundle rule).
 function makeRealDailyRewardDb() {
   return { accountAndScopeForToken, moderationStatusForAccount };
 }
@@ -948,8 +950,8 @@ async function dailyRewardOpsHandler(ctx: Ctx): Promise<void> {
 
 // The route table. registry.ts spreads this into apiRoutes; the ops rows carry
 // surface 'internal' + meta.envelope 'admin' (the internal fail() envelope IS
-// the admin { success, data, error } shape; EnvelopeKind is a frozen Phase 2
-// contract with no separate internal member).
+// the admin { success, data, error } shape; EnvelopeKind is a frozen
+// server/http/types.ts contract with no separate internal member).
 export const routes: RouteDef[] = [
   {
     method: 'GET',

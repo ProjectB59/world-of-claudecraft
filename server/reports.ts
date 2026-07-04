@@ -1,7 +1,7 @@
-// Reports + telemetry route layer, ported onto RouteDefs (Phase 15 of docs/api-pipeline/).
+// Reports + telemetry route layer, ported onto RouteDefs.
 //
 // The four leftover write/telemetry endpoints move off the inline handleApi
-// ladder in server/main.ts onto the shared server/http/ pipeline the Phase 9
+// ladder in server/main.ts onto the shared server/http/ pipeline the registry
 // dispatcher serves under API_DISPATCH 'new':
 //   POST /api/reports        player report submission (account-gated write)
 //   POST /api/bug-reports     in-game bug report capture (account-gated write)
@@ -12,9 +12,9 @@
 // server/account.ts template:
 //
 //  - PARITY-FIRST bodies. The migrated handlers write the SAME legacy { error }
-//    and { ok } bodies byte-for-byte (RFC 9457 is Phase 22; the client
+//    and { ok } bodies byte-for-byte (deliberately NOT problem+json; the client
 //    prose-matcher in src/main.ts userFacingApiError, plus the hud.ts / options
-//    window report/bug matchers, key on the exact legacy prose until then). So the
+//    window report/bug matchers, key on the exact legacy prose). So the
 //    auth gate is the shared legacy-body createActiveGuard (mirrors
 //    bearerActiveAccount: full-session, read-only 403, moderation 403), NOT the
 //    problem+json requireAccount middleware (which would change the 401/403 shape
@@ -28,7 +28,7 @@
 //    composed (it would double-consume the stream). The ONLY framework-error
 //    divergence is the 500 body SHAPE: an unexpected throw (a readBody reject on an
 //    over-cap/malformed body, or a non-rate-limit createBugReport throw) surfaces
-//    through the Phase 7/8 withErrors boundary as 500 application/problem+json
+//    through the withErrors boundary as 500 application/problem+json
 //    (internal.error) instead of the legacy outer-catch 500 { error: 'internal
 //    error' }. Same 500 STATUS, different body; recorded as the
 //    reportsBodyValidationRemap known deviation, leak-free.
@@ -45,7 +45,7 @@
 //
 //  - TELEMETRY 405 ownership + 200-on-throttle preserved. perf-report and
 //    site-presence are registered POST-only. A non-POST request resolves
-//    methodNotAllowed and the Phase 9 dispatcher DELEGATES it to the legacy ladder
+//    methodNotAllowed and the registry dispatcher DELEGATES it to the legacy ladder
 //    (retained for rollback), so GET /api/site-presence keeps its handler-owned 405
 //    { ok: false, error: 'method not allowed' } and GET /api/perf-report keeps its
 //    legacy 404 fall-through (its dispatch arm gates on POST, so its internal 405

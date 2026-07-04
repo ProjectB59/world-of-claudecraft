@@ -13,8 +13,9 @@ export function json(res: http.ServerResponse, status: number, body: unknown): v
 }
 
 /**
- * The legacy 403 moderation-lock body, PLUS the additive Phase 22 machine `code`
- * (and, for a timed suspension, the machine-readable `date` the client formats).
+ * The legacy 403 moderation-lock body, PLUS the additive machine `code` the client
+ * code-matcher keys on (and, for a timed suspension, the machine-readable `date`
+ * the client formats).
  * The prose `status.message` stays byte-identical; the code is derived from the
  * same status fields, mirroring the problem+json requireAccount mapping EXACTLY
  * (server/http/middleware/require_account.ts: banned -> moderation.banned;

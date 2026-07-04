@@ -272,9 +272,9 @@ function bouncePage(res: http.ServerResponse, status: number, payload: BouncePay
   res.end(html);
 }
 
-// ── Route layer (Phase 18b of docs/api-pipeline/) ──────────────────────────────
+// ── Route layer ──────────────────────────────
 // The four GitHub-link endpoints as RouteDefs for the shared dispatcher,
-// mirroring the Phase 16 Discord template:
+// mirroring the Discord family template (server/discord.ts):
 //   POST   /api/auth/github/start      OAuth start (JSON { url }; full session)
 //   GET    /api/auth/github/callback   OAuth callback (HTML bounce; NON-JSON)
 //   GET    /api/github                 link status (JSON; full session)
@@ -307,7 +307,7 @@ function bouncePage(res: http.ServerResponse, status: number, payload: BouncePay
 // not a module-scope object literal) so importing this module never dereferences
 // the db.ts bindings: an unrelated test that partial-mocks server/db and pulls
 // this module in transitively must not throw on a missing export (the
-// lazy-db-bundle rule from Phase 17).
+// lazy-db-bundle rule).
 function makeRealGithubDb() {
   return { accountAndScopeForToken, moderationStatusForAccount };
 }

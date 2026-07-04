@@ -786,7 +786,7 @@ export async function handleDiscordUnlink(
   return json(res, 200, { unlinked: true });
 }
 
-// The additive Phase 22 machine code for each swag claim-refusal reason, alongside
+// The additive machine code (REST error i18n) for each swag claim-refusal reason, alongside
 // the untouched legacy prose ('claimed' | 'tier' | 'points') the client already
 // keys on. canClaimSwag's verdict.reason widens to include 'ok' (a non-discriminated
 // union), so the emit narrows it with an explicit === 'ok' test rather than a cast:
@@ -961,10 +961,10 @@ function bouncePage(res: http.ServerResponse, status: number, payload: BouncePay
 }
 
 // ===========================================================================
-// Route layer, ported onto RouteDefs (Phase 16 of docs/api-pipeline/).
+// Route layer, ported onto RouteDefs.
 //
 // The seven Discord endpoints move off the inline handleApi ladder in
-// server/main.ts onto the shared server/http/ pipeline the Phase 9 dispatcher
+// server/main.ts onto the shared server/http/ pipeline the registry dispatcher
 // serves under API_DISPATCH 'new':
 //   POST   /api/auth/discord/start       OAuth start (JSON { url })
 //   GET    /api/auth/discord/callback    OAuth callback (HTML bounce; NON-JSON)
@@ -979,9 +979,9 @@ function bouncePage(res: http.ServerResponse, status: number, payload: BouncePay
 //
 //  - PARITY-FIRST bodies. The migrated handlers reuse the SAME handleDiscord*
 //    functions UNCHANGED, so every response is the legacy { error } / { ok } /
-//    { url } / HTML-bounce body byte-for-byte (RFC 9457 is Phase 22; the client
-//    prose-matcher in src/main.ts userFacingApiError, the choice-panel matcher,
-//    and the popup bounce handler key on the exact legacy prose until then). The
+//    { url } / HTML-bounce body byte-for-byte (deliberately NOT problem+json; the
+//    client prose-matcher in src/main.ts userFacingApiError, the choice-panel
+//    matcher, and the popup bounce handler key on the exact legacy prose). The
 //    auth gate on the mutating legs is the shared legacy-body createActiveGuard
 //    (mirrors bearerActiveAccount: full session, read-only 403, moderation 403),
 //    NOT the problem+json requireAccount, so the status/unlink no-auth 401 goldens
@@ -990,11 +990,12 @@ function bouncePage(res: http.ServerResponse, status: number, payload: BouncePay
 //  - RATE LIMIT stays legacy prose. The Discord rate-limit keying is entangled
 //    with handler logic (start resolves an account only in link mode; four
 //    handlers self-limit internally), so it stays in-handler / a legacy-prose
-//    middleware writing { error: 'rate limited' } (the Phase 10/11 in-handler-guard
-//    pattern), NOT the coded rateLimit(DISCORD_POLICY) adapter (which would emit
-//    problem+json rate_limit.exceeded, a Phase-22 end-state). The pre-seeded
-//    DISCORD_POLICY (server/http/middleware/rate_limit.ts) stays UNMOUNTED until
-//    Phase 22 wires the client code-matcher. start's legacy double-count (the
+//    middleware writing { error: 'rate limited' } (the leaderboard.ts /
+//    auth_routes.ts in-handler-guard pattern), NOT the coded
+//    rateLimit(DISCORD_POLICY) adapter (which would emit problem+json
+//    rate_limit.exceeded, the coded-emission end-state). The pre-seeded
+//    DISCORD_POLICY (server/http/middleware/rate_limit.ts) stays UNMOUNTED, held
+//    for a future coded-emission adoption. start's legacy double-count (the
 //    PR #1044 nit: main.ts pre-checked AND handleDiscordStart self-checks) drops
 //    to a single count on the new path (the RouteDef does not pre-check; the
 //    handler self-limits once). status/unlink carry the discordActiveRateGuard
@@ -1016,7 +1017,7 @@ function bouncePage(res: http.ServerResponse, status: number, payload: BouncePay
 //
 //  - CALLBACK stays HTML, never problem+json. The RouteDef carries
 //    meta.envelope 'html', so even an UNEXPECTED throw escaping handleDiscordCallback
-//    serializes through the Phase 7/8 boundary as an HTML error (never problem+json,
+//    serializes through the withErrors boundary as an HTML error (never problem+json,
 //    which would break window.opener.postMessage in the popup). Its normal responses
 //    are the self-written bouncePage. Frozen by a contract test.
 //
@@ -1080,10 +1081,10 @@ const activeGuard = createActiveGuard(() => discordDb);
  * here). Mirrors bearerActiveAccount / createActiveGuard EXACTLY: 401
  * { error: 'not authenticated' } no/bad/unknown token, 403 { error: 'this token is
  * read-only' } read-only scope, 403 moderationErrorBody(status) moderation-locked, in
- * that order; writes the legacy body (plus its Phase 22 additive machine code) and
+ * that order; writes the legacy body (plus its additive machine code) and
  * returns null on any reject. (A candidate
- * for the Phase 22/25 shared bearer-resolver consolidation, alongside the three
- * inline activeGuard copies.)
+ * for the shared bearer-resolver consolidation follow-up, filed in
+ * docs/api-pipeline/progress.md, alongside the three inline activeGuard copies.)
  */
 async function resolveActiveAccount(ctx: Ctx): Promise<number | null> {
   const token = bearerToken(ctx.req);

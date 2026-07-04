@@ -1,7 +1,7 @@
-// Owner-gated character surface, ported onto RouteDefs (Phase 12 of docs/api-pipeline/).
+// Owner-gated character surface, ported onto RouteDefs.
 //
 // The account-scoped character endpoints move off the inline handleApi ladder in
-// server/main.ts onto the shared server/http/ pipeline the Phase 9 dispatcher serves
+// server/main.ts onto the shared server/http/ pipeline the registry dispatcher serves
 // when API_DISPATCH is 'new':
 //   GET    /api/me/characters             read-scoped character list (companion tokens)
 //   GET    /api/characters                full-session character list (byte-identical body)
@@ -16,9 +16,10 @@
 //  - handlers are thin Ctx adapters that write the SAME legacy body shapes with the
 //    same http_util json() helper, so every ported success/error body is byte-identical
 //    to today and the parity harness proves it (the no-auth 401 goldens pin the guard
-//    bodies). RFC-9457-ification of these bodies is Phase 22; until then the client
-//    prose-matcher (src/main.ts userFacingApiError) keys on them, so a migrated route
-//    MUST keep the legacy prose body, not a problem+json envelope.
+//    bodies). These bodies stay legacy prose plus the additive machine `code` the
+//    client code-matcher (src/ui/api_error_i18n.ts userFacingApiError) keys on, with
+//    the prose as its fallback, so a migrated route MUST keep the legacy prose body,
+//    not a problem+json envelope.
 //  - the bearer + moderation gates are decomposed into small per-route guard middleware
 //    (activeGuard / readGuard) that mirror the legacy bearerActiveAccount /
 //    bearerReadAccount resolvers and write the legacy { error } bodies, NOT the generic
@@ -76,9 +77,9 @@ import { REALM } from './realm';
 
 // ---------------------------------------------------------------------------
 // Ported response bodies (the exact legacy { error } identities). Named constants so
-// the guards and handlers cannot drift; the client prose-matcher resolves each until
-// Phase 22 wires the stable codes. NO em dash appears in any of these (the legacy
-// character strings never used one).
+// the guards and handlers cannot drift; each carries its stable machine `code` (the
+// client code-matcher keys on it, with the legacy prose as the fallback). NO em dash
+// appears in any of these (the legacy character strings never used one).
 // ---------------------------------------------------------------------------
 
 const NOT_AUTHENTICATED = { error: 'not authenticated', code: 'auth.required' } as const;

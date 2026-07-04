@@ -1,5 +1,5 @@
 // Custom-map route layer for the map editor surface, ported onto RouteDefs in the
-// v0.20.0 release-merge reconciliation (docs/api-pipeline/). The business rules
+// v0.20.0 release-merge reconciliation. The business rules
 // stay in server/maps.ts (MapsService, zero HTTP); this module owns:
 //
 //  - The shared per-lane CORES (post-auth, limiter-free (req, res, ...) functions
@@ -7,7 +7,7 @@
 //    lanes in server/main.ts keep their own precheck/auth/limiter lines and then
 //    call the core, and the RouteDefs below mount the equivalent guards and call
 //    the same core, so the success/error bodies cannot drift between the arms
-//    (the wallet *Core template from Phase 14).
+//    (the wallet *Core template, server/wallet.ts).
 //  - The RouteDefs the registry spreads. Guards mirror the legacy arm order
 //    exactly: Content-Length precheck BEFORE auth on the save lanes (the
 //    /api/card 413 + Connection: close treatment), then the bearer guard, then
@@ -208,7 +208,7 @@ export async function mapSetPublishedCore(
 
 // ---------------------------------------------------------------------------
 // Guards. The bearer guards come from the shared factories (LAZY db reads, the
-// Phase 18b insurance against partial db mocks). The Content-Length precheck
+// lazy-db-bundle insurance against partial db mocks). The Content-Length precheck
 // mirrors the legacy lane: BEFORE auth, 413 + Connection: close, no body read.
 // ---------------------------------------------------------------------------
 

@@ -250,11 +250,11 @@ function sanitizeVoiceMember(m: unknown): {
   };
 }
 
-// ── Route table (Phase 18 of docs/api-pipeline/) ────────────────────────────
+// ── Route table ────────────────────────────
 // All 11 handleInternalApi endpoints as RouteDefs for the shared dispatcher:
 // the deploy-gated restart-countdown plus the 10 Discord-bot-gated routes
-// (including the two daily-rewards-winners routes the phase doc's original
-// count of 9 predates). PARITY-FIRST: each thin handler REPRODUCES its frozen
+// (including the two daily-rewards-winners routes added after the original
+// count of 9). PARITY-FIRST: each thin handler REPRODUCES its frozen
 // legacy branch above byte-for-byte (same imported data cores, same clamps and
 // truncations, same ok()/fail() envelope bodies), and the secret gates move to
 // the requireInternalSecret middleware, which writes the SAME legacy bodies
@@ -275,8 +275,8 @@ function sanitizeVoiceMember(m: unknown): {
 // withErrors serializes it through the admin-shape serializer as 500
 // { success: false, data: null, error: 'internal.error' }. The internal
 // envelope IS the admin { success, data, error } shape, so the routes carry
-// meta.envelope 'admin' (EnvelopeKind is a frozen Phase 2 contract with no
-// separate 'internal' member; serializeAdmin already emits this exact shape).
+// meta.envelope 'admin' (EnvelopeKind is a frozen server/http/types.ts contract
+// with no separate 'internal' member; serializeAdmin already emits this exact shape).
 
 // The game-loop side effect the restart-countdown handler needs, injected at
 // boot by main.ts (configureInternalRuntime(game)) so this module never

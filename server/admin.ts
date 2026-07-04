@@ -618,10 +618,10 @@ export async function handleAdminApi(
 }
 
 // ===========================================================================
-// Route layer, ported onto RouteDefs (Phase 17 of docs/api-pipeline/).
+// Route layer, ported onto RouteDefs.
 //
 // The ~30 handleAdminApi branches move off the inline if-ladder above onto the
-// shared server/http/ pipeline the Phase 9 dispatcher serves under API_DISPATCH
+// shared server/http/ pipeline the registry dispatcher serves under API_DISPATCH
 // 'new' (server/main.ts routes /admin/api through its own flag-gated dispatcher
 // whose delegate is the legacy handleAdminApi, kept as the flag-off rollback path
 // until the ladder-deletion PR, next release). This follows the server/discord.ts +
@@ -632,7 +632,7 @@ export async function handleAdminApi(
 //    (ok/fail) byte-for-byte. The envelope is FROZEN (a contract test pins the
 //    success / error / data:{ ok:true } variants); it is NOT problem+json. Each
 //    RouteDef carries surface 'admin' + meta.envelope 'admin' so an UNEXPECTED throw
-//    also serializes through the Phase 7/8 boundary as the admin envelope
+//    also serializes through the withErrors boundary as the admin envelope
 //    (serializeAdmin: { success:false, data:null, error: code }) rather than
 //    problem+json. That 500 body differs from the legacy outer-catch 500
 //    { ...error: 'internal error' } only in the error string (the code 'internal.error'
@@ -651,12 +651,12 @@ export async function handleAdminApi(
 //  - The admin.login limiter stays the legacy in-handler rateLimited(req,
 //    ADMIN_LOGIN_MAX_PER_MINUTE), NOT the new coded POLICIES table (rate_limit.ts):
 //    its own per-minute ceiling, isolated from the account/IP policy set, keeping the
-//    429 body byte-identical. Its own isolated limiter STORE is the Phase 19 two-tier
+//    429 body byte-identical. Its own isolated limiter STORE is the two-tier limiter
 //    end-state; parity-first keeps the legacy shared-store call in-handler.
 //
 //  - The enum-segment route restructures. The legacy regex route
-//    /moderation/accounts/:id/(suspend|unsuspend|ban|unban) violates the Phase 4
-//    no-regex-routing guard, so it becomes /moderation/accounts/:id/:action with a
+//    /moderation/accounts/:id/(suspend|unsuspend|ban|unban) violates the table
+//    router's no-regex-routing guard, so it becomes /moderation/accounts/:id/:action with a
 //    schema-validated enum action; an action outside the four decodes to 422
 //    (adminEnumInvalid422 deviation, vs the legacy POST-fallthrough 405). The literal
 //    sibling routes (reactivate / chat-mute / lift-mute / note / reset-strikes) sort

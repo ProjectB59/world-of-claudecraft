@@ -1,7 +1,7 @@
-// Public-read API surface, ported onto RouteDefs (Phase 10 of docs/api-pipeline/).
+// Public-read API surface, ported onto RouteDefs.
 //
-// This is the FIRST real domain migration in the stacked-PR chain. It hosts the
-// anonymous public GET routes the Phase 9 dispatcher serves when API_DISPATCH is
+// This module hosts the anonymous public GET routes the registry dispatcher
+// serves when API_DISPATCH is
 // 'new': the lifetime-XP leaderboard (players, the guild fork, and the legacy
 // single-page limit form), the arena ladder, the GitHub releases proxy feed,
 // project-stats, search, the realm directory, the public character sheet, the
@@ -13,7 +13,7 @@
 // Structure (the module-first split this repo wants): the SQL reads stay in db.ts
 // and the main.ts caches; this module carries only pure query decoders, pure
 // response builders, host-agnostic read functions that take a narrow Db interface
-// (unit-tested via the Phase 2 FakeDb), and thin Ctx handlers. The handlers write
+// (unit-tested via the FakeDb fakes), and thin Ctx handlers. The handlers write
 // with the same http_util json() helper the legacy arms use, so a ported success
 // or error body is byte-identical to today's; the ONLY deliberate changes are the
 // two labeled knownDeviations (the /api/status name-list trim and the /api/realms
@@ -275,7 +275,7 @@ export function buildDevBoard(
 // Read functions (host-agnostic; take a narrow Db interface, no ctx/req/res).
 // The FakeCharactersDb / FakeLeaderboardDb (tests/server/helpers/fake_db.ts)
 // satisfy the relevant subset structurally, so these are unit-tested against the
-// Phase 2 FakeDb. The db-touching routes (arena, search, realms, project-stats,
+// fakes. The db-touching routes (arena, search, realms, project-stats,
 // sheet) go through these; the leaderboard/guild/releases routes read through the
 // injected cache-fronted runtime and the pure builders above instead.
 // ---------------------------------------------------------------------------
@@ -423,7 +423,7 @@ export function resetLeaderboardDbForTests(): void {
 // ---------------------------------------------------------------------------
 // Handlers (thin Ctx adapters). Each decodes the query, reads through the
 // runtime/db, and writes the legacy-identical response with json(). Errors keep
-// their legacy { error } bodies (RFC 9457-ification of these is Phase 22); the
+// their legacy { error } bodies (deliberately NOT problem+json); the
 // sole new stable-code path is the gap-close auth.token_invalid, thrown by
 // requireAccount({ optional: true }) and mapped by withErrors.
 // ---------------------------------------------------------------------------
@@ -542,7 +542,7 @@ async function realmsHandler(ctx: Ctx): Promise<void> {
  * character sheet, resolved by name and rate-limited to deter scraping. The 429
  * (rate limited) and 404 (not found) bodies stay legacy-identical; the limiter is
  * called in-handler (not via the rateLimit middleware) precisely to keep its 429
- * body shape unchanged, which the phase's rate-limit invariant requires.
+ * body shape unchanged, which the parity-first rate-limit invariant requires.
  */
 async function publicSheetHandler(ctx: Ctx): Promise<void> {
   if (!publicReadRateLimited(ctx.req).allowed) {
@@ -560,7 +560,7 @@ async function publicSheetHandler(ctx: Ctx): Promise<void> {
 
 // ---------------------------------------------------------------------------
 // The route table. registry.ts spreads this into apiRoutes. Under API_DISPATCH
-// 'new' the Phase 9 dispatcher serves these via the onion; the legacy handleApi
+// 'new' the registry dispatcher serves these via the onion; the legacy handleApi
 // arms stay in main.ts for the flag-off rollback until the ladder-deletion PR (next release).
 // ---------------------------------------------------------------------------
 

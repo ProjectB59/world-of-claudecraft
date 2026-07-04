@@ -1,8 +1,8 @@
-// Auth credential surface, ported onto RouteDefs (Phase 11 of docs/api-pipeline/).
+// Auth credential surface, ported onto RouteDefs.
 //
-// The highest-sensitivity domain migration in the stacked-PR chain: the three
+// The highest-sensitivity migrated domain: the three
 // credential-issuing POST routes move off the inline handleApi ladder in
-// server/main.ts onto the shared server/http/ pipeline the Phase 9 dispatcher
+// server/main.ts onto the shared server/http/ pipeline the registry dispatcher
 // serves when API_DISPATCH is 'new':
 //   POST /api/register                      create an account, issue a session token
 //   POST /api/login                         verify credentials (+ 2FA), issue a token
@@ -11,11 +11,11 @@
 // It follows the server/leaderboard.ts template exactly:
 //  - the handlers are thin Ctx adapters that write the SAME legacy body shapes with
 //    the same http_util json() helper, so every ported success/error body is
-//    byte-identical to today and the parity harness proves it. RFC-9457-ification of
-//    these bodies is Phase 22. The rate-limit 429 strings use a comma (the no-em-dash
-//    code invariant forbids a U+2014 literal in new code); Phase 13 aligned the legacy
-//    handleApi ladder strings to the same comma, so the bodies are now byte-identical
-//    and the former authRateLimitDashToComma known deviation was retired.
+//    byte-identical to today and the parity harness proves it. The rate-limit 429
+//    strings use a comma (the no-em-dash code invariant forbids a U+2014 literal in
+//    new code); the legacy handleApi ladder strings were aligned to the same comma,
+//    so the bodies are now byte-identical and the former authRateLimitDashToComma
+//    known deviation was retired.
 //  - the credential checks stay in their exact legacy ORDER, decomposed into small
 //    per-route guard middleware so the onion runs them cheap-reject-first (origin
 //    guard, IP rate-limit, register IP block) BEFORE withBody parses the body and the
@@ -80,12 +80,13 @@ import { isWebClientRequest, webLoginEnforced } from './web_login_guard';
 // userFacingApiError) resolves each of these; the two 429 strings match on their
 // "too many attempts" / "too many failed attempts" PREFIX, so the comma-for-em-dash
 // swap the no-em-dash code invariant forces is matcher-safe and localizes
-// identically. The stable machine codes (RFC 9457) are wired in Phase 22.
+// identically. The stable machine codes (RFC 9457) ride alongside additively
+// (the REST error i18n / client code-matcher).
 // ---------------------------------------------------------------------------
 
 const WEB_LOGIN_ONLY = 'logins are only allowed from the game client';
 // A comma (the no-em-dash code invariant forbids a U+2014 literal in new code).
-// Phase 13 aligned the legacy handleApi ladder strings to this same comma, so the
+// The legacy handleApi ladder strings were aligned to this same comma, so the
 // legacy and migrated 429 bodies are now byte-identical. The client matcher keys on
 // the prefix, so the localized text is unchanged either way.
 const TOO_MANY_ATTEMPTS = 'too many attempts, wait a minute and try again';
@@ -372,7 +373,7 @@ async function challengeHandler(ctx: Ctx): Promise<void> {
 
 // ---------------------------------------------------------------------------
 // The route table. registry.ts spreads this into apiRoutes. Under API_DISPATCH
-// 'new' the Phase 9 dispatcher serves these via the onion; the legacy handleApi
+// 'new' the registry dispatcher serves these via the onion; the legacy handleApi
 // arms stay in main.ts for the flag-off rollback until the ladder-deletion PR (next release).
 //
 // Middleware order per route is the exact legacy check order, cheap-reject-first:
