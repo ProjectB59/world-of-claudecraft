@@ -1171,6 +1171,12 @@ export const ru_RU: EnTranslations = {
     "social": {
       "lastSeen": "Последний вход: {when}",
       "lastSeenNever": "никогда"
+    },
+    "gathering": {
+      "title": "Собирательство",
+      "mining": "Горное дело",
+      "logging": "Лесозаготовка",
+      "herbalism": "Травничество"
     }
   },
   "guide": {
@@ -2509,7 +2515,9 @@ export const ru_RU: EnTranslations = {
   },
   "download": {
     "title": "Скачать загрузчик для ПК",
-    "desc": "Загрузите отдельный клиент для оптимальной производительности и игры на весь экран."
+    "desc": "Загрузите отдельный клиент для оптимальной производительности и игры на весь экран.",
+    "macCta": "Скачать для macOS",
+    "windowsPending": "Сборка для Windows готовится."
   },
   "comingSoon": {
     "placeholder": "Скоро...",
@@ -5656,6 +5664,24 @@ export const ru_RU: EnTranslations = {
       },
       "silverleaf_sickle": {
         "name": "Серебролистный серп"
+      },
+      "thorium_mining_pick": {
+        "name": "Ториевая кирка"
+      },
+      "arcanite_mining_pick": {
+        "name": "Арканитовая кирка"
+      },
+      "ashwood_axe": {
+        "name": "Ясеневый топор"
+      },
+      "elderwood_axe": {
+        "name": "Топор из древнего дерева"
+      },
+      "goldleaf_sickle": {
+        "name": "Золотолистный серп"
+      },
+      "sunpetal_sickle": {
+        "name": "Солнцелепестковый серп"
       },
       "bristleback_maul": {
         "name": "Молот Гэллоугласа"
