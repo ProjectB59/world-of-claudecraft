@@ -90,6 +90,11 @@ export interface CharacterSummary {
   forceRename: boolean;
   lastPlayed?: string | null;
   playtimeSeconds?: number;
+  // Real, in-world appearance so the char-select preview matches the game. Both
+  // optional for back-compat with an older server that omits them: absent
+  // skinCatalog defaults to the class rig, absent mainhand shows no weapon.
+  skinCatalog?: 'class' | 'mech';
+  mainhandItemId?: string | null;
 }
 
 function stringList(value: unknown): string[] {
