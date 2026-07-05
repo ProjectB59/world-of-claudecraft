@@ -24,6 +24,12 @@ vi.mock('../server/antibot_config_db', () => ({
     updatedAt: '2026-07-04T00:00:01.000Z',
   })),
 }));
+vi.mock('../server/staff_db', () => ({
+  adminRolesForAccount: vi.fn(),
+  listStaff: vi.fn(async () => []),
+  roleChangeHistory: vi.fn(async () => []),
+  setAccountAdminRoles: vi.fn(),
+}));
 
 import { handleAdminApi } from '../server/admin';
 import {
@@ -33,6 +39,7 @@ import {
 } from '../server/antibot_config_db';
 import type { ConfigField } from '../server/bot_detector/contract';
 import { accountForToken, isAdminAccount } from '../server/db';
+import { adminRolesForAccount } from '../server/staff_db';
 
 const VALID_TOKEN = 'a'.repeat(64);
 
@@ -121,6 +128,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(accountForToken).mockResolvedValue(7);
   vi.mocked(isAdminAccount).mockResolvedValue(true);
+  vi.mocked(adminRolesForAccount).mockResolvedValue({
+    username: 'admin',
+    roles: ['admin'],
+  });
   vi.mocked(loadAntibotConfig).mockResolvedValue({ data: {}, updatedAt: null });
 });
 

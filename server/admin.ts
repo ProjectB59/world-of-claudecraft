@@ -19,6 +19,14 @@ import {
   loadAntibotConfig,
   saveAntibotConfigChange,
 } from './antibot_config_db';
+import {
+  type AdminPermission,
+  ASSIGNABLE_ADMIN_ROLES,
+  permissionsForRoles,
+  SUPERADMIN_ROLE,
+  sanitizeRoles,
+} from './admin_permissions';
+import { adminPathKnown, permissionForAdminRoute } from './admin_routes';
 import { newToken, verifyPassword } from './auth';
 import { getBugReportScreenshot, listBugReports } from './bug_report_db';
 import {
@@ -59,10 +67,20 @@ import {
 } from './moderation_db';
 import { providerUsageSnapshot } from './provider_usage';
 import { rateLimited } from './ratelimit';
+import {
+  adminRolesForAccount,
+  listStaff,
+  roleChangeHistory,
+  setAccountAdminRoles,
+} from './staff_db';
 import { PgUserAssetsDb } from './user_assets_db';
 
 // Admin API: everything under /admin/api/*. Auth is a bearer token whose
-// account has is_admin = TRUE — the admin.* hostname is routing, not security.
+// account has at least one staff role (accounts.admin_roles; is_admin stays
+// the derived "is staff" flag): the admin.* hostname is routing, not security.
+// Authorization is per route: every route is declared with a permission in
+// admin_routes.ts and gated centrally in handleAdminApi before any handler
+// runs, so a route absent from that table can never execute.
 
 const ADMIN_LOGIN_MAX_PER_MINUTE = 10;
 const MAX_PAGE_LIMIT = 200;
@@ -147,12 +165,28 @@ function getBlockedIpsForAccount(
   return [...ips].filter((ip) => game.isIpBlocked(ip));
 }
 
-async function adminAccountId(req: http.IncomingMessage): Promise<number | null> {
+interface AdminIdentity {
+  accountId: number;
+  username: string;
+  roles: string[];
+  permissions: ReadonlySet<AdminPermission>;
+}
+
+// Roles are re-read on every request, so a dashboard revocation applies to the
+// next call (a revoked operator's next request 401s: no roles means not staff).
+async function adminIdentity(req: http.IncomingMessage): Promise<AdminIdentity | null> {
   const m = /^Bearer ([a-f0-9]{64})$/.exec(req.headers.authorization ?? '');
   if (!m) return null;
   const accountId = await accountForToken(m[1]);
   if (accountId === null) return null;
-  return (await isAdminAccount(accountId)) ? accountId : null;
+  const staff = await adminRolesForAccount(accountId);
+  if (staff === null) return null;
+  return {
+    accountId,
+    username: staff.username,
+    roles: staff.roles,
+    permissions: permissionsForRoles(staff.roles),
+  };
 }
 
 async function handleLogin(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
@@ -164,13 +198,19 @@ async function handleLogin(req: http.IncomingMessage, res: http.ServerResponse):
   if (!account || !(await verifyPassword(String(body.password ?? ''), account.password_hash))) {
     return fail(res, 401, 'invalid username or password');
   }
-  if (!(await isAdminAccount(account.id))) {
+  const staff = await adminRolesForAccount(account.id);
+  if (staff === null) {
     return fail(res, 403, 'this account does not have admin access');
   }
   await touchLogin(account.id);
   const token = newToken();
   await saveToken(token, account.id);
-  ok(res, { token, username: account.username });
+  ok(res, {
+    token,
+    username: account.username,
+    roles: staff.roles,
+    permissions: [...permissionsForRoles(staff.roles)],
+  });
 }
 
 // Bot-detector config: the body's override document is validated and applied
@@ -244,8 +284,73 @@ export async function handleAdminApi(
       return await handleLogin(req, res);
     }
 
-    const accountId = await adminAccountId(req);
-    if (accountId === null) return fail(res, 401, 'admin authentication required');
+    const identity = await adminIdentity(req);
+    if (identity === null) return fail(res, 401, 'admin authentication required');
+    const accountId = identity.accountId;
+
+    // Central authorization gate: resolve the route's declared permission
+    // before any handler runs. Fail closed on unmapped routes.
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      return fail(res, 405, 'method not allowed');
+    }
+    const routePermission = permissionForAdminRoute(req.method, path);
+    if (routePermission === null) {
+      return adminPathKnown(path)
+        ? fail(res, 405, 'method not allowed')
+        : fail(res, 404, 'unknown admin endpoint');
+    }
+    if (routePermission !== 'any' && !identity.permissions.has(routePermission)) {
+      return fail(res, 403, 'you do not have permission to do this');
+    }
+
+    if (req.method === 'GET' && path === '/admin/api/me') {
+      return ok(res, {
+        username: identity.username,
+        roles: identity.roles,
+        permissions: [...identity.permissions],
+      });
+    }
+
+    // Staff role management. superadmin is out of the dashboard's reach in
+    // both directions (grant and revoke): it moves only via the grant script
+    // or SQL, so a compromised dashboard session cannot mint one. Own-account
+    // edits are refused so an operator cannot lock themselves out silently.
+    if (req.method === 'GET' && path === '/admin/api/staff') {
+      return ok(res, { rows: await listStaff(), assignableRoles: [...ASSIGNABLE_ADMIN_ROLES] });
+    }
+    if (req.method === 'GET' && path === '/admin/api/staff/history') {
+      return ok(res, { rows: await roleChangeHistory(50) });
+    }
+    if (req.method === 'POST' && path === '/admin/api/staff/roles') {
+      const body = await readBody(req);
+      const roles = sanitizeRoles(body.roles);
+      if (roles === null) return fail(res, 400, 'unknown role');
+      if (roles.includes(SUPERADMIN_ROLE)) {
+        return fail(res, 400, 'superadmin roles are managed via the grant script');
+      }
+      const target = typeof body.username === 'string' ? await findAccount(body.username) : null;
+      if (!target) return fail(res, 404, 'account not found');
+      if (target.id === accountId) {
+        return fail(res, 400, 'you cannot change your own roles');
+      }
+      const currentStaff = await adminRolesForAccount(target.id);
+      if (currentStaff?.roles.includes(SUPERADMIN_ROLE)) {
+        return fail(res, 400, 'superadmin roles are managed via the grant script');
+      }
+      const change = await setAccountAdminRoles({
+        accountId: target.id,
+        roles,
+        actorAccountId: accountId,
+      });
+      if (!change) return fail(res, 404, 'account not found');
+      // In-game permissions are snapshotted at WS join, so force the account's
+      // live sessions to reconnect: a revoked moderator loses in-game commands
+      // immediately instead of at their next voluntary relog.
+      if (change.before.join(',') !== change.after.join(',')) {
+        game.disconnectAccount(target.id, IP_BLOCK_KICK_MESSAGE);
+      }
+      return ok(res, { ok: true, username: target.username, roles: change.after });
+    }
 
     const actionMatch =
       /^\/admin\/api\/moderation\/accounts\/(\d+)\/(suspend|unsuspend|ban|unban)$/.exec(path);
@@ -497,8 +602,14 @@ export async function handleAdminApi(
             serverStats.online,
           ),
         },
-        usage: providerUsageSnapshot(),
       });
+    }
+
+    // Provider usage (request counts + cache stats) is its own permission
+    // (ops_usage.read), held only by admin/superadmin, so it lives on a
+    // dedicated route rather than riding inside the analytics.read overview.
+    if (path === '/admin/api/provider-usage') {
+      return ok(res, { usage: providerUsageSnapshot() });
     }
     if (path === '/admin/api/online') {
       return ok(res, { players: game.liveSessions() });

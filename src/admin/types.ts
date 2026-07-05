@@ -65,6 +65,11 @@ export interface Overview {
   peakOnlineAllTime: number;
   siteUsersNow: number;
   server: ServerStats;
+}
+
+// Provider usage is served on its own ops_usage.read-gated route, not inside
+// the overview payload.
+export interface ProviderUsageResponse {
   usage: ProviderUsageSnapshot;
 }
 
@@ -470,4 +475,33 @@ export interface AntibotConfigHistoryEntry {
 
 export interface AntibotConfigHistory {
   entries: AntibotConfigHistoryEntry[];
+}
+
+// Staff page (role management). assignableRoles never contains superadmin:
+// it is grantable only via the grant script, and superadmin rows render
+// read-only.
+export interface StaffRow {
+  accountId: number;
+  username: string;
+  roles: string[];
+  lastLogin: string | null;
+}
+
+export interface StaffData {
+  rows: StaffRow[];
+  assignableRoles: string[];
+}
+
+export interface RoleChangeRow {
+  id: number;
+  accountId: number;
+  username: string | null;
+  adminUsername: string | null;
+  rolesBefore: string[];
+  rolesAfter: string[];
+  createdAt: string;
+}
+
+export interface StaffHistoryData {
+  rows: RoleChangeRow[];
 }

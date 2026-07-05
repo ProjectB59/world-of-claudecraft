@@ -33,6 +33,7 @@ import {
 import { handleAdminApi, parsePageParams } from './admin';
 import { currentSitePresenceUsers, recordSitePresenceSample } from './admin_db';
 import { loadAntibotConfig } from './antibot_config_db';
+import { permissionsForRoles } from './admin_permissions';
 import {
   hashPassword,
   newToken,
@@ -167,6 +168,7 @@ import {
 import { isPublicCorsPath, publicOriginFromRequest, REALM, REALM_DIRECTORY } from './realm';
 import { resolveReportTarget } from './report_target';
 import { handleSitePresenceHeartbeat } from './site_presence';
+import { adminRolesForAccount } from './staff_db';
 import { cacheControlFor, etagFor, isNotModified } from './static_cache';
 import { passesTurnstile } from './turnstile';
 import {
@@ -1929,7 +1931,9 @@ async function main(): Promise<void> {
     // they consume a session slot.
     const meta = requestMetadata(req);
     const ip = meta.ip;
-    const isAdmin = await isAdminAccount(accountId);
+    const staff = await adminRolesForAccount(accountId);
+    const isAdmin = staff !== null;
+    const adminPermissions = staff ? [...permissionsForRoles(staff.roles)] : [];
     if (
       isConnectionRefused({
         blocked: game.isIpBlocked(ip),
@@ -1959,6 +1963,7 @@ async function main(): Promise<void> {
         chatStrikes: status.chatStrikes,
         accountCosmetics,
         isAdmin,
+        adminPermissions,
         clientSeed,
       },
     );
