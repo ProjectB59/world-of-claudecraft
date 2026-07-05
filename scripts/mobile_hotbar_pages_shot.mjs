@@ -78,6 +78,9 @@ const rects = async () =>
   page.evaluate(() => {
     const els = [
       '#mobile-attack-nearest',
+      '#mobile-autorun',
+      '#mobile-chat',
+      '#mobile-more',
       '#mobile-jump',
       '#mobile-target',
       '#mobile-interact',

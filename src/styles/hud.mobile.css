@@ -380,10 +380,13 @@
     pointer-events: auto;
   }
   body.mobile-touch #mobile-chat {
-    top: calc(max(8px, env(safe-area-inset-top)) + 152px);
+    /* 60px pitch (was 48, a 4px gap on 44px-tall buttons that read as
+       touching/overlapping under the glass blur/glow), giving each button a
+       clean 16px gap from its neighbor. */
+    top: calc(max(8px, env(safe-area-inset-top)) + 164px);
   }
   body.mobile-touch #mobile-more {
-    top: calc(max(8px, env(safe-area-inset-top)) + 200px);
+    top: calc(max(8px, env(safe-area-inset-top)) + 224px);
   }
   body.mobile-touch.mobile-left-handed #mobile-autorun,
   body.mobile-touch.mobile-left-handed #mobile-chat,
@@ -485,10 +488,16 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 8px;
     padding: 0 10px;
     font-size: 17px;
+    /* The base .mobile-btn's border-radius: 50% is meant for the near-square
+       combat/hotbar buttons; on this wide row it computes a squashed oval
+       (elliptical corner radii bigger than the box is tall). A pill needs the
+       radius capped at half the height so the ends are true semicircles and
+       the sides stay straight. */
+    border-radius: 21px;
   }
   body.mobile-touch #mobile-extra-controls .mobile-label {
     display: inline;
@@ -2077,6 +2086,7 @@
       height: 40px;
       font-size: 16px;
       padding: 0 9px;
+      border-radius: 20px;
     }
     body.mobile-touch #mobile-extra-controls .mobile-label {
       font-size: 9px;
