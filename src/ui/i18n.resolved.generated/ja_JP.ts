@@ -311,9 +311,7 @@ export const ja_JP: EnTranslations = {
       "nameplates": "ネームプレート",
       "haptics": "振動",
       "hapticsOff": "振動オフ",
-      "toggleHaptics": "振動を切り替え",
-      "hotbarPage": "スキル",
-      "hotbarPageAria": "次のスキルセットを表示"
+      "toggleHaptics": "振動を切り替え"
     },
     "tutorial": {
       "moveBodyTouch": "移動スティックで移動し、画面をドラッグして周囲を見回します。数歩進んで始めましょう。",

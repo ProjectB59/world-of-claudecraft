@@ -1132,7 +1132,6 @@ async function startGame(
       return music.enabled;
     },
     onRecenterCamera: () => input.recenterCameraBehind(world.player.facing),
-    onCycleHotbarPage: () => hud.cycleMobileHotbarPage(),
   });
   mobileControls.start();
   // reflect the current music state on the touch toggle (it may already be off

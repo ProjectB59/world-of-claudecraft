@@ -311,9 +311,7 @@ export const en_XA: EnTranslations = {
       "nameplates": "[Ñáɱéš]",
       "haptics": "[Ĥáþţíçš]",
       "hapticsOff": "[Ĥáþţíçš Óƒƒ]",
-      "toggleHaptics": "[Ţóĝĝļé ĥáþţíçš]",
-      "hotbarPage": "[Šķíļļš]",
-      "hotbarPageAria": "[Šĥóŵ ñéẋţ šéţ óƒ šķíļļš]"
+      "toggleHaptics": "[Ţóĝĝļé ĥáþţíçš]"
     },
     "tutorial": {
       "moveBodyTouch": "[Úšé ţĥé ɱóʋéɱéñţ šţíçķ ţó ɱóʋé áñð ðŕáĝ ţĥé šçŕééñ ţó ļóóķ áŕóúñð. Ţáķé á ƒéŵ šţéþš ţó ƀéĝíñ.]",
