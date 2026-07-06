@@ -2643,6 +2643,8 @@ export const es: EnTranslations = {
     "title": "Descargar Lanzador de Escritorio",
     "desc": "Consigue el lanzador independiente para un rendimiento optimizado y juego a pantalla completa.",
     "macCta": "Descargar para macOS",
+    "linuxCta": "Download for Linux",
+    "linuxHint": "AppImage: make it executable, then run it. No install needed.",
     "windowsPending": "Compilacion para Windows pendiente."
   },
   "comingSoon": {

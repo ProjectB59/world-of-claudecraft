@@ -2643,6 +2643,8 @@ export const ja_JP: EnTranslations = {
     "title": "デスクトップランチャーのダウンロード",
     "desc": "最適化されたパフォーマンスと全画面表示でのプレイのために、スタンドアロン版ランチャーを入手してください。",
     "macCta": "macOS版をダウンロード",
+    "linuxCta": "Download for Linux",
+    "linuxHint": "AppImage: make it executable, then run it. No install needed.",
     "windowsPending": "Windows版は準備中です。"
   },
   "comingSoon": {

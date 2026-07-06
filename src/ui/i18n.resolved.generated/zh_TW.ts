@@ -2643,6 +2643,8 @@ export const zh_TW: EnTranslations = {
     "title": "下載電腦版啟動器",
     "desc": "獲取獨立啟動器，以獲得更優化的效能和全螢幕遊戲體驗。",
     "macCta": "下載 macOS 版",
+    "linuxCta": "Download for Linux",
+    "linuxHint": "AppImage: make it executable, then run it. No install needed.",
     "windowsPending": "Windows 版本即將推出。"
   },
   "comingSoon": {

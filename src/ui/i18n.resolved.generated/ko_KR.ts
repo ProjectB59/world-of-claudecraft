@@ -2643,6 +2643,8 @@ export const ko_KR: EnTranslations = {
     "title": "데스크톱 런처 다운로드",
     "desc": "최적화된 성능과 전체 화면 플레이를 위해 독립형 런처를 다운로드하세요.",
     "macCta": "macOS용 다운로드",
+    "linuxCta": "Download for Linux",
+    "linuxHint": "AppImage: make it executable, then run it. No install needed.",
     "windowsPending": "Windows 빌드는 준비 중입니다."
   },
   "comingSoon": {

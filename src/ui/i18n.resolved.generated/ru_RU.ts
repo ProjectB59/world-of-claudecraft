@@ -2643,6 +2643,8 @@ export const ru_RU: EnTranslations = {
     "title": "Скачать загрузчик для ПК",
     "desc": "Загрузите отдельный клиент для оптимальной производительности и игры на весь экран.",
     "macCta": "Скачать для macOS",
+    "linuxCta": "Download for Linux",
+    "linuxHint": "AppImage: make it executable, then run it. No install needed.",
     "windowsPending": "Сборка для Windows готовится."
   },
   "comingSoon": {

@@ -2643,6 +2643,8 @@ export const zh_CN: EnTranslations = {
     "title": "下载电脑版启动器",
     "desc": "获取独立启动器，以获得更优化的性能和全屏游戏体验。",
     "macCta": "下载 macOS 版",
+    "linuxCta": "Download for Linux",
+    "linuxHint": "AppImage: make it executable, then run it. No install needed.",
     "windowsPending": "Windows 版本即将推出。"
   },
   "comingSoon": {
