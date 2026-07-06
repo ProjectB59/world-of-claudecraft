@@ -83,19 +83,38 @@ export interface ToolEffectSlot {
   effectId: ToolEffectId;
   /** Remaining charges. Reaches 0 when the effect is fully depleted. */
   durability: number;
+  /**
+   * Player id of whoever produced this effect via the production craft that
+   * made it (#1137). Additive and optional: undefined means either no
+   * identity was recorded, or the slot predates this field. Recharging
+   * (below) reads this only to decide the original-crafter discount; it
+   * never gates the base tool or the bonus itself.
+   */
+  craftedBy?: string;
   /** How this slot's effect fires. Defaults to 'always' (see slotEffect). */
   confirmMode: ToolEffectConfirmMode;
 }
 
 // Attaches an effect from the catalog to a tool, at its full starting
 // durability. Re-slotting (calling this again) always resets to full charges,
-// same as installing a fresh effect. `confirmMode` defaults to 'always' so a
-// caller that never touches the new config gets #1136's exact prior behavior.
+// same as installing a fresh effect. `craftedBy` (#1137) records the player
+// id of the production craft that made this effect, if known; omit it when no
+// identity is available (the slot is then never eligible for the
+// original-crafter recharge discount). `confirmMode` (#1138) defaults to
+// 'always' so a caller that never touches the new config gets #1136's exact
+// prior behavior. Keyword options (not positional) so a future third option
+// can't silently rebind an existing one.
 export function slotEffect(
   effectId: ToolEffectId,
-  confirmMode: ToolEffectConfirmMode = 'always',
+  options: { craftedBy?: string; confirmMode?: ToolEffectConfirmMode } = {},
 ): ToolEffectSlot {
-  return { effectId, durability: TOOL_EFFECTS[effectId].startingDurability, confirmMode };
+  const { craftedBy, confirmMode = 'always' } = options;
+  return {
+    effectId,
+    durability: TOOL_EFFECTS[effectId].startingDurability,
+    craftedBy,
+    confirmMode,
+  };
 }
 
 // The outcome shape a harvest/craft action produces. `quantity`/`quality` are
@@ -148,6 +167,78 @@ export function depleteEffect(slot: ToolEffectSlot | undefined, rng: Rng): boole
   return false;
 }
 
+// Effect recharge (#1137). A depleted (or partially depleted) effect can be
+// restored to full durability by recharging it through the production craft
+// that made it, or through a generic Enchanter/Scribe. Recharging through the
+// effect's ORIGINAL crafter (the `craftedBy` recorded on the slot at
+// `slotEffect` time) is cheaper and faster than a generic recharge: this is
+// the whole point of recording `craftedBy` on the slot. Both costs are fixed
+// multiples of the same base cost, so the discount can never invert.
+export interface RechargeCost {
+  /** Crafting materials consumed by the recharge. */
+  materials: number;
+  /** Ticks (20 Hz) the recharge takes to complete. */
+  ticks: number;
+}
+
+// Base cost for a generic Enchanter/Scribe recharge, before the
+// original-crafter discount is considered.
+const RECHARGE_BASE_MATERIALS = 4;
+const RECHARGE_BASE_TICKS = 20 * 30; // 30 seconds
+
+// The original crafter pays half the materials and half the time of a
+// generic recharge. Kept as one named fraction so both halves of the
+// discount can never drift apart.
+const ORIGINAL_CRAFTER_DISCOUNT = 0.5;
+
+// True only when the slot recorded who crafted the effect AND that identity
+// matches the player attempting the recharge. A slot with no recorded
+// `craftedBy` (an effect slotted before #1137, or with no known crafter) is
+// never eligible for the discount, so it always costs the generic rate.
+export function isOriginalCrafter(slot: ToolEffectSlot, rechargerId: string): boolean {
+  return slot.craftedBy !== undefined && slot.craftedBy === rechargerId;
+}
+
+// Pure: the materials/time a recharge of this slot would cost `rechargerId`.
+// Strictly less for the original crafter than for anyone else (a generic
+// Enchanter/Scribe), on both dimensions.
+export function rechargeCost(slot: ToolEffectSlot, rechargerId: string): RechargeCost {
+  const discount = isOriginalCrafter(slot, rechargerId) ? ORIGINAL_CRAFTER_DISCOUNT : 1;
+  return {
+    materials: Math.ceil(RECHARGE_BASE_MATERIALS * discount),
+    ticks: Math.ceil(RECHARGE_BASE_TICKS * discount),
+  };
+}
+
+export interface RechargeResult {
+  /** False when `materialsProvided` did not cover the computed cost. */
+  success: boolean;
+  cost: RechargeCost;
+}
+
+// Attempts to recharge `slot` for `rechargerId`, consuming
+// `materialsProvided`. On success, durability is restored to the effect's
+// full starting value (same as a fresh `slotEffect`) so `applyEffectBonus`
+// resumes applying its bonus immediately; `craftedBy` is left untouched, so a
+// recharge never changes who the slot's original crafter is. On failure
+// (insufficient materials) the slot is not mutated at all. The caller is
+// responsible for actually deducting `cost.materials` from the recharger's
+// inventory and for gating `cost.ticks` as craft-time, same as any other
+// production craft; this module only computes the cost and applies the
+// durability restore.
+export function rechargeEffect(
+  slot: ToolEffectSlot,
+  rechargerId: string,
+  materialsProvided: number,
+): RechargeResult {
+  const cost = rechargeCost(slot, rechargerId);
+  if (materialsProvided < cost.materials) {
+    return { success: false, cost };
+  }
+  slot.durability = TOOL_EFFECTS[slot.effectId].startingDurability;
+  return { success: true, cost };
+}
+
 // The outcome of attempting to use a slotted effect for one harvest/craft
 // action, after the always/prompt-on-use gate (#1138) has been applied.
 export interface ToolEffectUseResult {
@@ -187,15 +278,19 @@ export function resolveToolEffectUse(
   return { outcome: bonused, depleted, applied: true };
 }
 
-// INTEGRATION NOTE (#1136, extended by #1138): the node-harvest outcome path
-// (#1121) and the recipe-crafting outcome path (#1127) are not present on
-// this branch (this branch is stacked directly on #1135, the crafted-tool-
-// tiers PR), so there is no live call site to wire `resolveToolEffectUse`
-// into yet. Once either lands, its outcome-producing function should: build
-// the base HarvestOutcome, then call `resolveToolEffectUse(slot, outcome,
-// rng, confirmed)` using the SAME `Rng` the caller already draws from (never
-// a fresh one) so the depletion roll (when it fires) takes its place in the
-// one shared draw order. `confirmed` should come from the player's client
-// request for a 'prompt' slot (see the tool/effect UI toggle); a caller with
-// no confirmation flow yet can pass `true` unconditionally, which is
-// equivalent to every slot behaving as 'always'.
+// INTEGRATION NOTE (#1136, extended by #1137 and #1138): the node-harvest
+// outcome path (#1121) and the recipe-crafting outcome path (#1127) are not
+// present on this branch (this branch is stacked directly on #1135, the
+// crafted-tool-tiers PR), so there is no live call site to wire
+// `resolveToolEffectUse`/`rechargeEffect` into yet. Once either lands, its
+// outcome-producing function should: build the base HarvestOutcome, then call
+// `resolveToolEffectUse(slot, outcome, rng, confirmed)` using the SAME `Rng`
+// the caller already draws from (never a fresh one) so the depletion roll
+// (when it fires) takes its place in the one shared draw order. `confirmed`
+// should come from the player's client request for a 'prompt' slot (see the
+// tool/effect UI toggle); a caller with no confirmation flow yet can pass
+// `true` unconditionally, which is equivalent to every slot behaving as
+// 'always'. `rechargeEffect` (#1137) has the same no-live-call-site status:
+// once a production/recharge UI action exists, it should deduct
+// `cost.materials` from the recharger's inventory and gate `cost.ticks` as
+// craft time before calling `rechargeEffect`.
