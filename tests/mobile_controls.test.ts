@@ -504,7 +504,6 @@ function mobileCallbacks() {
     onNameplates: () => false,
     onMusic: () => true,
     onRecenterCamera: noop,
-    onCycleHotbarPage: noop,
   };
 }
 
