@@ -240,6 +240,7 @@ export const da_DK: EnTranslations = {
       "customColors": "Tilpassede farver",
       "reset": "Nulstil",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Klassisk guld",
         "midnight": "Midnat",
         "parchment": "Pergament",

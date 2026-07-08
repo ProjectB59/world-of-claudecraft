@@ -240,6 +240,7 @@ export const vi_VN: EnTranslations = {
       "customColors": "Màu Tùy Chỉnh",
       "reset": "Đặt Lại",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Vàng Cổ Điển",
         "midnight": "Nửa Đêm",
         "parchment": "Giấy Da",

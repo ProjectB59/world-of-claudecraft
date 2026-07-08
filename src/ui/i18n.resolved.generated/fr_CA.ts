@@ -240,6 +240,7 @@ export const fr_CA: EnTranslations = {
       "customColors": "Couleurs personnalisées",
       "reset": "Réinitialiser",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Or classique",
         "midnight": "Minuit",
         "parchment": "Parchemin",

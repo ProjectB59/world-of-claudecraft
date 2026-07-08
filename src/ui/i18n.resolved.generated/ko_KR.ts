@@ -240,6 +240,7 @@ export const ko_KR: EnTranslations = {
       "customColors": "사용자 지정 색상",
       "reset": "초기화",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "클래식 골드",
         "midnight": "미드나이트",
         "parchment": "양피지",

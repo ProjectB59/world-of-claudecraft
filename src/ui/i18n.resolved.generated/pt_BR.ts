@@ -240,6 +240,7 @@ export const pt_BR: EnTranslations = {
       "customColors": "Cores personalizadas",
       "reset": "Redefinir",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Ouro clássico",
         "midnight": "Meia-noite",
         "parchment": "Pergaminho",

@@ -240,6 +240,7 @@ export const zh_CN: EnTranslations = {
       "customColors": "自定义颜色",
       "reset": "重置",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "经典金色",
         "midnight": "午夜",
         "parchment": "羊皮纸",

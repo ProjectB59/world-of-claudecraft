@@ -240,6 +240,7 @@ export const zh_TW: EnTranslations = {
       "customColors": "自訂顏色",
       "reset": "重設",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "經典金色",
         "midnight": "午夜",
         "parchment": "羊皮紙",

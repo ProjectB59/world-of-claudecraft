@@ -240,6 +240,7 @@ export const nl_NL: EnTranslations = {
       "customColors": "Aangepaste kleuren",
       "reset": "Herstellen",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Klassiek Goud",
         "midnight": "Middernacht",
         "parchment": "Perkament",

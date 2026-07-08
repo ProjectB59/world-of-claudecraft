@@ -240,6 +240,7 @@ export const tr_TR: EnTranslations = {
       "customColors": "Özel Renkler",
       "reset": "Sıfırla",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Klasik Altın",
         "midnight": "Gece Yarısı",
         "parchment": "Parşömen",

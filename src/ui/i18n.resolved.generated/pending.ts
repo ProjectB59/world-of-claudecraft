@@ -9,24 +9,62 @@
 // Reproducibility is checked by tests/i18n_resolved_equivalence.test.ts.
 
 export const pending: Record<string, readonly string[]> = {
-  "es": [],
-  "es_ES": [],
-  "fr_FR": [],
-  "fr_CA": [],
+  "es": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "es_ES": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "fr_FR": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "fr_CA": [
+    "hudChrome.theme.presets.xenon"
+  ],
   "en_CA": [],
-  "it_IT": [],
-  "de_DE": [],
-  "zh_CN": [],
-  "zh_TW": [],
-  "ko_KR": [],
-  "ja_JP": [],
-  "pt_BR": [],
-  "ru_RU": [],
-  "nl_NL": [],
-  "pl_PL": [],
-  "id_ID": [],
-  "tr_TR": [],
-  "sv_SE": [],
-  "vi_VN": [],
-  "da_DK": []
+  "it_IT": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "de_DE": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "zh_CN": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "zh_TW": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "ko_KR": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "ja_JP": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "pt_BR": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "ru_RU": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "nl_NL": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "pl_PL": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "id_ID": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "tr_TR": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "sv_SE": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "vi_VN": [
+    "hudChrome.theme.presets.xenon"
+  ],
+  "da_DK": [
+    "hudChrome.theme.presets.xenon"
+  ]
 };

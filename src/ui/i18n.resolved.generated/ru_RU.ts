@@ -240,6 +240,7 @@ export const ru_RU: EnTranslations = {
       "customColors": "Настраиваемые цвета",
       "reset": "Сброс",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Классическое золото",
         "midnight": "Полночь",
         "parchment": "Пергамент",

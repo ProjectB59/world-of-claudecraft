@@ -240,6 +240,7 @@ export const ja_JP: EnTranslations = {
       "customColors": "カスタムカラー",
       "reset": "リセット",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "クラシックゴールド",
         "midnight": "ミッドナイト",
         "parchment": "羊皮紙",

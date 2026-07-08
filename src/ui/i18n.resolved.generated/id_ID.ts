@@ -240,6 +240,7 @@ export const id_ID: EnTranslations = {
       "customColors": "Warna Kustom",
       "reset": "Atur Ulang",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Emas Klasik",
         "midnight": "Tengah Malam",
         "parchment": "Perkamen",

@@ -240,6 +240,7 @@ export const sv_SE: EnTranslations = {
       "customColors": "Anpassade färger",
       "reset": "Återställ",
       "presets": {
+        "xenon": "Xenon Neon",
         "classic": "Klassiskt guld",
         "midnight": "Midnatt",
         "parchment": "Pergament",
