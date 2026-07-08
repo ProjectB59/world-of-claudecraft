@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": { "noEmit": true, "skipLibCheck": true },
-  "files": [
-    "src/render/space_grade.ts",
-    "src/ui/arcade_minigame.ts",
-    "src/ui/theme.ts"
-  ]
-}
