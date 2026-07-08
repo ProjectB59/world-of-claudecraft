@@ -70,8 +70,8 @@ export function barkTexture(): THREE.CanvasTexture {
 
 export function foliageTexture(detail = false): THREE.CanvasTexture {
   return makeCanvas(128, (ctx, s) => {
-    // olive-forest base — the old lime palette read as neon under the grade
-    ctx.fillStyle = '#34512f';
+    // Xenon alien canopy -- violet base (was olive forest)
+    ctx.fillStyle = '#33254e';
     ctx.fillRect(0, 0, s, s);
     if (detail) {
       // shadowed cavities first so leaves overlap them; kept small so the
@@ -80,7 +80,7 @@ export function foliageTexture(detail = false): THREE.CanvasTexture {
         const x = rnd() * s,
           y = rnd() * s,
           r = 3 + rnd() * 7;
-        ctx.fillStyle = `rgba(${10 + rnd() * 12},${28 + rnd() * 16},${14 + rnd() * 10},0.5)`;
+        ctx.fillStyle = `rgba(${16 + rnd() * 12},${8 + rnd() * 8},${30 + rnd() * 16},0.5)`;
         ctx.beginPath();
         ctx.ellipse(x, y, r, r * 0.75, rnd() * Math.PI, 0, Math.PI * 2);
         ctx.fill();
@@ -88,8 +88,8 @@ export function foliageTexture(detail = false): THREE.CanvasTexture {
     }
     const leaves = detail ? 1500 : 900;
     for (let i = 0; i < leaves; i++) {
-      const g = detail ? 60 + Math.floor(rnd() * 75) : 70 + Math.floor(rnd() * 60);
-      ctx.fillStyle = `rgba(${30 + rnd() * 30},${g},${30 + rnd() * 18},${detail ? 0.6 : 0.5})`;
+      const v = detail ? 90 + Math.floor(rnd() * 75) : 100 + Math.floor(rnd() * 60);
+      ctx.fillStyle = `rgba(${Math.round(v * 0.72) + Math.floor(rnd() * 20)},${26 + Math.floor(rnd() * 20)},${v},${detail ? 0.6 : 0.5})`;
       const x = rnd() * s,
         y = rnd() * s;
       ctx.beginPath();
@@ -97,11 +97,11 @@ export function foliageTexture(detail = false): THREE.CanvasTexture {
       ctx.fill();
     }
     if (detail) {
-      // sun-catching highlight leaves — warm olive, not lime
+      // light-catching highlight leaves -- magenta-pink bioluminescence
       for (let i = 0; i < 200; i++) {
         const x = rnd() * s,
           y = rnd() * s;
-        ctx.fillStyle = `rgba(${95 + rnd() * 40},${145 + rnd() * 40},${70 + rnd() * 28},0.45)`;
+        ctx.fillStyle = `rgba(${185 + rnd() * 40},${60 + rnd() * 30},${160 + rnd() * 40},0.45)`;
         ctx.beginPath();
         ctx.ellipse(x, y, 1 + rnd() * 2, 2.5 + rnd() * 4, rnd() * Math.PI, 0, Math.PI * 2);
         ctx.fill();
@@ -271,12 +271,14 @@ export function skyTexture(): THREE.CanvasTexture {
   c.width = 4;
   c.height = 256;
   const ctx = c.getContext('2d')!;
+  // NodeB59 Space Edition: permanent Xenon night -- deep space at the zenith
+  // falling to a magenta nebula glow at the horizon.
   const g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0.0, '#4f86c6');
-  g.addColorStop(0.45, '#7eb2e4');
-  g.addColorStop(0.62, '#aacdec');
-  g.addColorStop(0.75, '#cfe4f2');
-  g.addColorStop(1.0, '#dcecf4');
+  g.addColorStop(0.0, '#06021a');
+  g.addColorStop(0.45, '#160a34');
+  g.addColorStop(0.62, '#2c1454');
+  g.addColorStop(0.75, '#4a1e6e');
+  g.addColorStop(1.0, '#7a2a86');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 4, 256);
   const tex = new THREE.CanvasTexture(c);
@@ -294,12 +296,11 @@ export function grassTuftTexture(blades = 18): THREE.CanvasTexture {
     const x = 8 + rnd() * 48;
     const sway = (rnd() - 0.5) * 14;
     const h = 26 + rnd() * 30;
-    // olive blades, darker at the root — the old neon green detached from the
-    // ground and glowed in shadow/night scenes
+    // Xenon spore-grass: violet blades, darker at the root
     const g = 95 + Math.floor(rnd() * 55);
     const grad = ctx.createLinearGradient(x, 64, x + sway, 64 - h);
-    grad.addColorStop(0, `rgba(${34 + rnd() * 18},${g - 38},${30 + rnd() * 14},0.9)`);
-    grad.addColorStop(1, `rgba(${52 + rnd() * 30},${g},${44 + rnd() * 20},0.9)`);
+    grad.addColorStop(0, `rgba(${44 + rnd() * 18},${24 + rnd() * 10},${g - 24},0.9)`);
+    grad.addColorStop(1, `rgba(${66 + rnd() * 30},${34 + rnd() * 14},${g + 24},0.9)`);
     ctx.strokeStyle = grad;
     ctx.lineWidth = 1.5 + rnd();
     ctx.beginPath();
@@ -937,7 +938,7 @@ export function foliageCardTexture(): THREE.CanvasTexture {
       y = cy + Math.sin(a) * d;
     const fade = 1 - d / 64;
     const g = 80 + rnd() * 80;
-    ctx.fillStyle = `rgba(${30 + rnd() * 35},${g},${28 + rnd() * 25},${(0.5 + rnd() * 0.5) * fade})`;
+    ctx.fillStyle = `rgba(${Math.round(g * 0.7) + rnd() * 25},${26 + rnd() * 18},${g + 20},${(0.5 + rnd() * 0.5) * fade})`;
     ctx.beginPath();
     ctx.ellipse(x, y, 2 + rnd() * 4, 4 + rnd() * 7, a + Math.PI / 2, 0, Math.PI * 2);
     ctx.fill();

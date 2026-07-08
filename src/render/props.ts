@@ -204,22 +204,73 @@ const MAT_OVERRIDES: Record<
     roughness?: number;
   }
 > = {
-  'village:Windows': { emissive: 0x2a3c55, emissiveIntensity: 1.1, roughness: 0.4 },
-  'village:Bell': { metalness: 0.6, roughness: 0.35 },
-  'ore:Stone_Dark': { color: 0xb87333, metalness: 0.45, roughness: 0.5 },
-  // bandit/cult tents: weathered canvas instead of Kenney's toy red
-  'tent:colorRed': { color: 0x9c8662 },
-  'tent:colorRedDark': { color: 0x6e5c42 },
-  // murloc huts: a giant mushroom recolored to read as a woven thatch dome
-  'shroom:colorRed': { color: 0xb29459 },
-  'shroom:_defaultMat': { color: 0xc9b896 },
-  // mine mound: Kenney nature rocks are beige dirt + teal grass — regrade to
-  // granite with a dull moss cap so the pile reads as blasted rock
-  'minerock:dirt': { color: 0x82868a },
-  'minerock:grass': { color: 0x77846a },
-  'minerock:_defaultMat': { color: 0x6f7376 },
-  // graveyard colormap is near-white; knock it toward weathered stone
-  'grave:colormap': { color: 0xd2d2c8 },
+  // NodeB59 Space Edition (Planet Xenon): the medieval kits regraded as a
+  // derelict arcade colony -- rust-orange hull plate, violet shadow tones,
+  // neon magenta/green light sources. Kit:material keys unchanged.
+  // Quaternius Medieval Village -> colony hull
+  'village:Texture': { color: 0x3a3448, metalness: 0.14, roughness: 0.8 },
+  'village:Material': { color: 0x3a3448, metalness: 0.14, roughness: 0.8 },
+  'village:colormap': { color: 0x3a3448, metalness: 0.14, roughness: 0.8 },
+  'village:Atlas': { color: 0x3a3448, metalness: 0.14, roughness: 0.8 },
+  'village:Stone': { color: 0x38323e, metalness: 0.08, roughness: 0.88 },
+  'village:Wood': { color: 0x51372a, metalness: 0.06, roughness: 0.9 }, // rusted plate
+  'village:Roof': { color: 0x2a2036, metalness: 0.3, roughness: 0.66 },
+  'village:Thatch': { color: 0x2e2438, roughness: 0.95 },
+  'village:Wall': { color: 0x342c42, metalness: 0.1, roughness: 0.84 },
+  'village:Door': { color: 0x1e1628, metalness: 0.22, roughness: 0.7 },
+  'village:Metal': { color: 0x4a4254, metalness: 0.72, roughness: 0.28 },
+  'village:Windows': { emissive: 0xd4188e, emissiveIntensity: 1.7, roughness: 0.2, metalness: 0.5 },
+  'village:Bell': { color: 0x484044, metalness: 0.66, roughness: 0.34 },
+  // Ore rocks -> xenonite crystal outcropping
+  'ore:Stone_Dark': { color: 0x241040, metalness: 0.28, roughness: 0.48 },
+  'ore:Crystal': { color: 0xff3db8, emissive: 0xd4188e, emissiveIntensity: 1.2 },
+  'ore:_defaultMat': { color: 0x201640, metalness: 0.22, roughness: 0.52 },
+  // Tents -> emergency shelter pods
+  'tent:colorRed': { color: 0x2a1e3e },
+  'tent:colorRedDark': { color: 0x180e28 },
+  'tent:colorBlue': { color: 0x1e1a34 },
+  'tent:colorLight': { color: 0x3a3050 },
+  'tent:colorGrey': { color: 0x2c2640 },
+  'tent:_defaultMat': { color: 0x261c3c },
+  // Mushrooms -> habitat dome shells
+  'shroom:colorRed': { color: 0x241a40 },
+  'shroom:_defaultMat': { color: 0x2c2248 },
+  // Mine/asteroid rocks
+  'minerock:dirt': { color: 0x4e4658 },
+  'minerock:grass': { color: 0x2e2a38 },
+  'minerock:_defaultMat': { color: 0x443c50 },
+  // Ancient columns -> alien monoliths (faint violet glow)
+  'nature:colormap': { color: 0x2a2440, roughness: 0.68 },
+  'nature:colorGrey': { color: 0x342e48 },
+  'nature:_defaultMat': { color: 0x262040, emissive: 0x14042a, emissiveIntensity: 0.5 },
+  'nature:Stone': { color: 0x2e2a4a },
+  // Graveyard -> data-archive steles
+  'grave:colormap': { color: 0x1a1430, emissive: 0x2a0a50, emissiveIntensity: 0.6, roughness: 0.58 },
+  'grave:_defaultMat': { color: 0x140e26, emissive: 0x220848, emissiveIntensity: 0.5 },
+  // Dock -> landing platform
+  'pirate:colormap': { color: 0x322a44, metalness: 0.32, roughness: 0.62 },
+  'pirate:colorGrey': { color: 0x342e44 },
+  'pirate:colorBrown': { color: 0x4a3428 }, // rust
+  'pirate:colorDark': { color: 0x1c1628 },
+  'pirate:colorLight': { color: 0x46405e },
+  'pirate:_defaultMat': { color: 0x2c2440, metalness: 0.28 },
+  // Town timbers -> structural struts
+  'town:colorBrown': { color: 0x42302a },
+  'town:colorDark': { color: 0x1a1424 },
+  'town:_defaultMat': { color: 0x262038, metalness: 0.16, roughness: 0.82 },
+  'town:colormap': { color: 0x2c2640, metalness: 0.18 },
+  // Supply props (crates / barrels / anvil / weapon stand / lantern)
+  'qprops:colorBrown': { color: 0x503826, metalness: 0.2 }, // rusted cargo
+  'qprops:colorRed': { color: 0xb84a10, metalness: 0.14 }, // hazard orange
+  'qprops:colorDark': { color: 0x140e1e },
+  'qprops:colorLight': { color: 0x40384e },
+  'qprops:colorGrey': { color: 0x322a3e, metalness: 0.32, roughness: 0.62 },
+  'qprops:colorYellow': { color: 0xffb020, emissive: 0x3a2400, emissiveIntensity: 0.5 },
+  'qprops:colormap': { color: 0x2e2842, metalness: 0.2 },
+  'qprops:Metal': { color: 0x3c3444, metalness: 0.68, roughness: 0.36 },
+  'qprops:Glass': { color: 0x40ff9a, emissive: 0x00cc55, emissiveIntensity: 2.2, roughness: 0.1 },
+  'qprops:LanternGlass': { color: 0x40ff9a, emissive: 0x00bb50, emissiveIntensity: 2.6, roughness: 0.08 },
+  'qprops:_defaultMat': { color: 0x2a2238, metalness: 0.2, roughness: 0.74 },
 };
 
 // ---------------------------------------------------------------------------
@@ -707,8 +758,8 @@ export function buildProps(seed: number, delveLabel?: (delveId: string) => strin
   const recessMat = surfaceMat({ color: 0x14100b, roughness: 1 });
   const holeMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
   const lanternMat = surfaceMat({
-    color: 0xffcc66,
-    emissive: 0xff9933,
+    color: 0x60ffb0,
+    emissive: 0x00b050,
     emissiveIntensity: usePbr ? 2 : 1.2,
     roughness: 0.4,
   });
@@ -926,8 +977,8 @@ export function buildProps(seed: number, delveLabel?: (delveId: string) => strin
     const flame = new THREE.Mesh(
       flameGeo,
       new THREE.MeshLambertMaterial({
-        color: 0xffaa33,
-        emissive: 0xff6600,
+        color: 0xff7ad4,
+        emissive: 0xd4188e,
         emissiveIntensity: usePbr ? 2.2 : 1.4,
         transparent: true,
         opacity: 0.92,
@@ -938,7 +989,7 @@ export function buildProps(seed: number, delveLabel?: (delveId: string) => strin
     g.add(flame);
     flames.push(flame);
     noShadow.add(flame);
-    const light = new THREE.PointLight(0xff8830, 12, 16, 2);
+    const light = new THREE.PointLight(0xff40b0, 12, 16, 2);
     light.position.y = 1.2;
     g.add(light);
     fireLights.push(light);

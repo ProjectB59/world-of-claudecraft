@@ -47,10 +47,10 @@ export function hasWaterShaderAssets(): boolean {
   return Boolean(WATER_TEX.n1 && WATER_TEX.n2 && WATER_TEX.broad);
 }
 
-const DEEP_COLOR = new THREE.Color(0x0d3a52);
-const SHALLOW_COLOR = new THREE.Color(0x2d8077);
-const SKY_TINT = new THREE.Color(0x7fb2e0); // matches the sky horizon band
-const SUN_COLOR = new THREE.Color(0xfff0d4);
+const DEEP_COLOR = new THREE.Color(0x140a3a); // Xenon: abyssal violet
+const SHALLOW_COLOR = new THREE.Color(0x4a2a8a); // Xenon: nebula-lit shallows
+const SKY_TINT = new THREE.Color(0x8a4aa0); // matches the Xenon nebula horizon
+const SUN_COLOR = new THREE.Color(0xffd0f0); // magenta star glint
 
 export interface WaterView {
   meshes: THREE.Mesh[];
@@ -227,11 +227,11 @@ function buildPhongWater(): WaterView {
   const [norm] = waterNormalMaps();
   norm.repeat.set(26, 78);
   const mat = new THREE.MeshPhongMaterial({
-    color: 0x2a6a96,
+    color: 0x3a2270, // Xenon low-tier water
     transparent: true,
     opacity: 0.8,
     shininess: 140,
-    specular: 0xd8ecff,
+    specular: 0xf0d0ff,
     map: tex,
     normalMap: norm,
     normalScale: new THREE.Vector2(0.8, 0.8),

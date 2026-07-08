@@ -22,6 +22,7 @@ import {
 import { loadGltf } from './assets/loader';
 import { registerPreload } from './assets/preload';
 import { configureMaskedDoubleSidedVegetationMaterial, GFX, sharedUniforms } from './gfx';
+import { xenonGradeTexture } from './space_grade';
 import { grassTuftTexture } from './textures';
 
 // Vegetation: trees, rocks, ground dressing and the grass ring.
@@ -112,59 +113,59 @@ for (const urls of Object.values(MODEL_URLS)) {
 // their own hue, so tints are lerped most of the way to white before use
 // (raw tints multiply into the albedo and read as grime).
 const PINE_TINT: Record<BiomeId, number> = {
-  vale: 0x9bb48d,
-  marsh: 0x87966b,
-  peaks: 0x6f8a7a,
-  beach: 0xa8b878,
-  desert: 0xa8a468,
-  volcano: 0x6a5f52,
-  cave: 0x77837a,
+  vale: 0xa08cc0,
+  marsh: 0x8474a4,
+  peaks: 0x8a86b4,
+  beach: 0xb494c8,
+  desert: 0xb49a8c,
+  volcano: 0x6a5468,
+  cave: 0x8a7ca0,
 };
 const OAK_TINT: Record<BiomeId, number> = {
-  vale: 0xa7b886,
-  marsh: 0x8d9865,
-  peaks: 0x92a37f,
-  beach: 0xb2bd7e,
-  desert: 0xb0a468,
-  volcano: 0x74624f,
-  cave: 0x84907f,
+  vale: 0xac94c4,
+  marsh: 0x8c7aa8,
+  peaks: 0x9a8cba,
+  beach: 0xbc9cd0,
+  desert: 0xb89e90,
+  volcano: 0x74586c,
+  cave: 0x9484aa,
 };
 const ROCK_TINT: Record<BiomeId, number> = {
-  vale: 0x8d8d85,
-  marsh: 0x565c4e,
-  peaks: 0x878e99,
-  beach: 0xb0a894,
-  desert: 0xb08d6a,
-  volcano: 0x4a4038,
-  cave: 0x6a6a66,
+  vale: 0x8d85a0,
+  marsh: 0x565064,
+  peaks: 0x8788a4,
+  beach: 0xa89ab4,
+  desert: 0xa88a92,
+  volcano: 0x4a3a4c,
+  cave: 0x6a667a,
 };
 const TRUNK_TINT: Record<BiomeId, number> = {
   vale: 0xffffff,
-  marsh: 0xd2d8bc,
-  peaks: 0xd9dde4,
-  beach: 0xf2e4c8,
-  desert: 0xe6d2ac,
-  volcano: 0xb8a394,
-  cave: 0xc4c8c2,
+  marsh: 0xd2c8dc,
+  peaks: 0xd9d6e8,
+  beach: 0xf2dce8,
+  desert: 0xe6ccc4,
+  volcano: 0xb894ac,
+  cave: 0xc4becc,
 };
 const GRASS_TINT: Record<BiomeId, number> = {
-  vale: 0xdde4c0,
-  marsh: 0xbfc492,
-  peaks: 0xc2cec8,
-  beach: 0xe8e2b0,
-  desert: 0xdcc890,
-  volcano: 0x8a7a68,
-  cave: 0xa2a89c,
+  vale: 0xd8c8ec,
+  marsh: 0xbcaad4,
+  peaks: 0xc2bad8,
+  beach: 0xe4ccec,
+  desert: 0xdcbcb4,
+  volcano: 0x8a6a84,
+  cave: 0xa298b8,
 };
-const SWAMP_CANOPY_TINT = 0x7e8b58;
+const SWAMP_CANOPY_TINT = 0x6e589a;
 const DRESS_TINT: Record<BiomeId, number> = {
-  vale: 0xaebf8e,
-  marsh: 0x8d9865,
-  peaks: 0x93a78f,
-  beach: 0xc2c188,
-  desert: 0xc0aa74,
-  volcano: 0x7a6a58,
-  cave: 0x8a948a,
+  vale: 0xac96c8,
+  marsh: 0x8c7aa8,
+  peaks: 0x9690b8,
+  beach: 0xc2a4cc,
+  desert: 0xc0a294,
+  volcano: 0x7a5e74,
+  cave: 0x8a84a2,
 };
 // how far tints collapse toward white (1 = no tint at all)
 const LEAF_TINT_SOFTEN = 0.6;
@@ -396,7 +397,8 @@ function foliageMaterial(src: THREE.Material, hasVertexColors: boolean): THREE.M
   const std = src as THREE.MeshStandardMaterial;
   const pol = MAT_POLICY[src.name] ?? DEFAULT_POLICY;
   const common = {
-    map: std.map,
+    // Xenon: regrade the baked green leaf sheets to the violet alien family
+    map: xenonGradeTexture(std.map, pol.leaf ? 'leaf' : 'bark'),
     color: std.color.clone(), // baseColorFactor — some kit sheets rely on it
     vertexColors: hasVertexColors,
     alphaTest: pol.leaf ? LEAF_ALPHA_TEST : 0,
@@ -571,12 +573,12 @@ function farTreeProxyMaterial(shape: SpeciesSpec['proxyShape']): THREE.Material 
   if (cached) return cached;
   const fallback =
     shape === 'dead'
-      ? 0xbca784
+      ? 0xbca4b0
       : shape === 'pine'
-        ? 0xb8d7a5
+        ? 0xb0a5d7
         : shape === 'twisted'
-          ? 0xb7cda0
-          : 0xc0d8a8;
+          ? 0xb2a0cd
+          : 0xbaa8d8;
   const mat = new THREE.MeshLambertMaterial({
     color: fallback,
     vertexColors: true,

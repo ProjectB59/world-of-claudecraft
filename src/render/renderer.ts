@@ -83,6 +83,9 @@ import { resolveDirectPickEntityId } from './pick_resolution';
 import { PlacedAssetsView } from './placed_assets';
 import { buildComposer, type PostPipeline } from './post';
 import { buildPropMaterialPrewarmGroup, buildProps } from './props';
+import { buildSpaceDecor, type SpaceDecorResult } from './props-space';
+import { patchPropMaterials } from './props-space';
+import { isArcadeOpen, openArcadeMinigame } from '../ui/arcade_minigame';
 import { buildGroundQuestObject } from './quest_objects';
 import { isOwnedPetHostile } from './reaction';
 import { RenderBudgetGovernor, type RenderBudgetState } from './render_budget';
@@ -854,6 +857,7 @@ export class Renderer {
   private impactSite: ImpactSiteView;
   private fogScratch = new THREE.Color();
   private flames: THREE.Mesh[];
+  private spaceDecor: SpaceDecorResult | null = null;
   private fireLights: THREE.PointLight[];
   // Point lights owned by entity views (e.g. the quest-object glow). These stream
   // in/out with interest, so they are budgeted into the SAME constant count as the
@@ -1080,11 +1084,11 @@ export class Renderer {
       pmrem.dispose(); // prefiltered envRTs stay alive for the session
     }
 
-    const hemi = new THREE.HemisphereLight(0xdcefff, 0x465f39, LOW_GFX ? 0.98 : HEMI_INTENSITY);
+    const hemi = new THREE.HemisphereLight(0xc8a0e8, 0x3a2a52, LOW_GFX ? 0.98 : HEMI_INTENSITY); // Xenon nebula bounce
     this.scene.add(hemi);
     this.hemi = hemi;
     const sun = new THREE.DirectionalLight(
-      LOW_GFX ? 0xfff0d0 : 0xffedd0,
+      LOW_GFX ? 0xffd8ec : 0xffd2e8, // the Xenon star runs white-magenta
       LOW_GFX ? 2.65 : SUN_INTENSITY,
     );
     sun.position.copy(SUN_ANCHOR);
@@ -1233,6 +1237,7 @@ export class Renderer {
     const props = buildProps(this.sim.cfg.seed, (delveId) =>
       tEntity({ kind: 'delve', id: delveId, field: 'name' }),
     );
+    patchPropMaterials(props.group); // Xenon: shift residual warm prop colours
     setRenderCategory(props.group, 'props');
     this.scene.add(props.group);
     this.flames = props.flames;
@@ -1247,6 +1252,33 @@ export class Renderer {
     // numPointLights -> materials never recompile for a light-count change).
     this.fireLights.push(this.impactSite.light);
     this.propsView = props;
+
+    // NodeB59 Space Edition: procedural sci-fi overlay (plasma vents, comms
+    // relays, data steles, mine fields, landing beacons, droids, arcade).
+    const spaceDecor = buildSpaceDecor(this.sim.cfg.seed);
+    setRenderCategory(spaceDecor.group, 'props');
+    this.scene.add(spaceDecor.group);
+    freezeStaticMatrices(spaceDecor.group);
+    for (const robot of spaceDecor.robots) {
+      // droids idle-animate (bob + head sweep): keep their matrices live
+      robot.group.traverse((o) => { o.matrixAutoUpdate = true; });
+    }
+    this.spaceDecor = spaceDecor;
+    // Clicking an arcade cabinet (within reach) opens the Buckazoids overlay.
+    this.webgl.domElement.addEventListener('click', (ev) => {
+      const decor = this.spaceDecor;
+      if (!decor || decor.arcadeTargets.length === 0 || isArcadeOpen()) return;
+      const rect = this.webgl.domElement.getBoundingClientRect();
+      const ndc = new THREE.Vector2(
+        ((ev.clientX - rect.left) / rect.width) * 2 - 1,
+        -((ev.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+      const ray = new THREE.Raycaster();
+      ray.far = 40;
+      ray.setFromCamera(ndc, this.camera);
+      const hits = ray.intersectObjects(decor.arcadeTargets, false);
+      if (hits.length > 0 && hits[0].distance < 26) openArcadeMinigame();
+    });
 
     // Map-editor play-test: freely placed GLB models (cosmetic, render-only). Loads
     // async and pops in; absent for the built-in world. The view supports live
@@ -3615,15 +3647,16 @@ export class Renderer {
   // crisp when viewed from the zone's hub/centre; ratio near:far kept roughly
   // constant per biome so the fog gradient itself doesn't change shape.
   private static BIOME_FOG: Record<BiomeId, { color: number; near: number; far: number }> = {
-    vale: { color: 0xa6c6e0, near: 95, far: 340 },
-    marsh: { color: 0xa3b294, near: 60, far: 240 },
-    peaks: { color: 0xbdd3ec, near: 110, far: 390 },
-    beach: { color: 0xbcd6e6, near: 105, far: 370 },
-    desert: { color: 0xd8c9a8, near: 100, far: 360 },
-    volcano: { color: 0x8a7468, near: 50, far: 220 },
-    cave: { color: 0x76807c, near: 45, far: 190 },
+    // NodeB59 Space Edition: violet night haze; ember biomes glow warm
+    vale: { color: 0x5a3a7a, near: 95, far: 340 },
+    marsh: { color: 0x3e3058, near: 60, far: 240 },
+    peaks: { color: 0x6a4a8e, near: 110, far: 390 },
+    beach: { color: 0x74489a, near: 105, far: 370 },
+    desert: { color: 0x8a4a54, near: 100, far: 360 },
+    volcano: { color: 0x5e2c3a, near: 50, far: 220 },
+    cave: { color: 0x3a3452, near: 45, far: 190 },
   };
-  private static LOW_FOG = { color: 0xa6c6e0, near: 70, far: 260 };
+  private static LOW_FOG = { color: 0x5a3a7a, near: 70, far: 260 };
 
   private outdoorFogPreset(): { color: number; near: number; far: number } {
     if (this.lowGfx) return Renderer.LOW_FOG;
@@ -4547,6 +4580,20 @@ export class Renderer {
       light.intensity = base + Math.sin(this.time * 11 + i * 1.7) * 2.5 * (base / 11);
     }
     this.budgetFireLights(p.pos.x, p.pos.z);
+    if (this.spaceDecor) {
+      // Xenon decor: beacon pulse + droid idle (bob, head sweep)
+      const bcs = this.spaceDecor.beacons;
+      for (let i = 0; i < bcs.length; i++) {
+        const mat = bcs[i].material as THREE.MeshStandardMaterial;
+        mat.emissiveIntensity = 1.7 + Math.sin(this.time * 2.1 + i * 1.3) * 0.55;
+      }
+      for (let i = 0; i < this.spaceDecor.robots.length; i++) {
+        const robot = this.spaceDecor.robots[i];
+        const baseY = (robot.group.userData.baseY ??= robot.group.position.y) as number;
+        robot.group.position.y = baseY + Math.sin(this.time * 1.7 + robot.phase) * 0.045;
+        robot.head.rotation.y = Math.sin(this.time * 0.53 + robot.phase) * 0.7;
+      }
+    }
     worldStart = markWorldPhase('lights', worldStart);
 
     // clouds drift (the high cirrus layer crawls slower); on the lit tiers

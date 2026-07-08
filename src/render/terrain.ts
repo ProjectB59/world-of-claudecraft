@@ -106,6 +106,8 @@ const NORMAL_TEX_W = 640;
 const NORMAL_TEX_H = 1920;
 const NORMAL_TEX_STRENGTH = 1.35;
 
+// NodeB59 Space Edition: Planet Xenon regolith regrade -- violet dust
+// plains, no chlorophyll. Channel names kept (grass = undergrowth tint).
 // Ground colors per biome; boundaries blend across the same window as the
 // heightfield's shape blend. This is the tint layer the splat albedo
 // multiplies into (splat textures are authored near mid-gray).
@@ -114,65 +116,65 @@ const BIOME_PALETTE: Record<
   { grass: number; grassDark: number; grassYellow: number; dirt: number; sand: number }
 > = {
   vale: {
-    grass: 0x548545,
-    grassDark: 0x3e6635,
-    grassYellow: 0x768c44,
-    dirt: 0x8a6f47,
-    sand: 0xc2b283,
+    grass: 0x4a3a68,
+    grassDark: 0x352a50,
+    grassYellow: 0x6a4a86,
+    dirt: 0x5e4458,
+    sand: 0x8a7090,
   },
   // Darker, murkier and more desaturated than the vale so the swamp reads as
   // gloomy lowland rather than "vale but slightly duller". Pushed further
   // toward drab olive/brown than a first pass so it reads at a glance.
   marsh: {
-    grass: 0x3f4d28,
-    grassDark: 0x2c3a1e,
-    grassYellow: 0x505c34,
-    dirt: 0x4f4028,
-    sand: 0x655741,
+    grass: 0x2c2444,
+    grassDark: 0x1e1832,
+    grassYellow: 0x3c3054,
+    dirt: 0x342640,
+    sand: 0x4a3a58,
   },
   // Cooler and greyer than the vale/marsh's warm greens, pushing toward sage
   // and stone since altitude thins out the lush growth. Pushed further blue-
   // grey than a first pass so peaks are unmistakably a different biome.
   peaks: {
-    grass: 0x7a8878,
-    grassDark: 0x5c6862,
-    grassYellow: 0x9aa192,
-    dirt: 0x8a7d6a,
-    sand: 0xbdb49c,
+    grass: 0x5e5878,
+    grassDark: 0x464060,
+    grassYellow: 0x7a7492,
+    dirt: 0x6a5e72,
+    sand: 0x948aa4,
   },
   // Paint-only biomes (editor brush): flat palettes, no zone-band blend.
   // Coastal green-blue, brighter sand than the desert's.
   beach: {
-    grass: 0x9ab86a,
-    grassDark: 0x7d9a5a,
-    grassYellow: 0xb8c278,
-    dirt: 0xc2a575,
-    sand: 0xf0e4bc,
+    grass: 0x7a5a9a,
+    grassDark: 0x644a82,
+    grassYellow: 0x9a72b2,
+    dirt: 0x9a7a9a,
+    sand: 0xc4a8cc,
   },
   // Warmer and browner than the beach, less green. Pushed further orange
   // than a first pass to separate it clearly from the beach at a glance.
   desert: {
-    grass: 0xcbaa5e,
-    grassDark: 0xa88d48,
-    grassYellow: 0xe0c070,
-    dirt: 0xc08f4a,
-    sand: 0xecc890,
+    grass: 0xa06a52,
+    grassDark: 0x84543e,
+    grassYellow: 0xbc8060,
+    dirt: 0x9a5e3c,
+    sand: 0xc08a68,
   },
   // Dark, red-tinted ash rather than the cave's neutral grey. Pushed darker
   // still so it reads as scorched ground, not just "dirty".
   volcano: {
-    grass: 0x3c2c28,
-    grassDark: 0x281c18,
-    grassYellow: 0x503830,
-    dirt: 0x2c2018,
-    sand: 0x4c342c,
+    grass: 0x38202c,
+    grassDark: 0x24141e,
+    grassYellow: 0x4c2c38,
+    dirt: 0x2a1820,
+    sand: 0x462834,
   },
   // Neutral blue-grey stone, distinct from volcano's warm ash. Pushed cooler
   // and darker so it reads as underground rock, not daylight dirt.
   cave: {
-    grass: 0x585e66,
-    grassDark: 0x3e444c,
-    grassYellow: 0x6a7078,
+    grass: 0x4a4460,
+    grassDark: 0x343048,
+    grassYellow: 0x5c5670,
     dirt: 0x484e56,
     sand: 0x767c86,
   },

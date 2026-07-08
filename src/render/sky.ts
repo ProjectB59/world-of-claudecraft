@@ -8,6 +8,9 @@ import { cloudTexture, skyTexture } from './textures';
 
 // HDRI sky dome + cloud sprites.
 //
+// NodeB59 Space Edition: the dome samples generated Planet Xenon equirects
+// (scripts/gen_space_env.mjs) -- permanent violet night, nebula, ringed gas
+// giant, one hot star baked at u=0.600 for the SUN_ANCHOR rotation.
 // High tier: the dome fragment shader samples real Poly Haven equirect HDRIs
 // (one per biome) by view direction, cross-fading two maps across the same
 // zone-boundary windows the terrain palette uses. Each HDRI's sample is
@@ -33,34 +36,33 @@ const DOME_RADIUS = 560;
 // reined in harder or half the sky white-outs. The renderer's PMREM capture
 // samples the same shader, so IBL stays in step.
 const HDRI_TUNE: Record<BiomeId, { gain: number; clamp: number }> = {
-  vale: { gain: 0.6, clamp: 2.6 },
-  marsh: { gain: 0.6, clamp: 2.2 },
-  peaks: { gain: 0.48, clamp: 1.7 },
-  // Paint-only biomes reuse the closest shipped sky (no new HDRI downloads).
-  beach: { gain: 0.6, clamp: 2.6 },
-  desert: { gain: 0.55, clamp: 2.2 },
-  volcano: { gain: 0.5, clamp: 2.0 },
-  cave: { gain: 0.55, clamp: 2.0 },
+  vale: { gain: 1.0, clamp: 3.0 },
+  marsh: { gain: 1.0, clamp: 3.0 },
+  peaks: { gain: 1.0, clamp: 3.0 },
+  beach: { gain: 1.0, clamp: 3.0 },
+  desert: { gain: 1.0, clamp: 3.0 },
+  volcano: { gain: 1.0, clamp: 3.0 },
+  cave: { gain: 1.0, clamp: 3.0 },
 };
 
 const BIOME_HDRI_2K: Record<BiomeId, string> = {
-  vale: '/env/vale_day_2k.hdr',
-  marsh: '/env/marsh_overcast_2k.hdr',
-  peaks: '/env/peaks_dawn_2k.hdr',
-  beach: '/env/vale_day_2k.hdr',
-  desert: '/env/peaks_dawn_2k.hdr',
-  volcano: '/env/marsh_overcast_2k.hdr',
-  cave: '/env/marsh_overcast_2k.hdr',
+  vale: '/env/xenon_2k.hdr',
+  marsh: '/env/xenon_2k.hdr',
+  peaks: '/env/xenon_2k.hdr',
+  beach: '/env/xenon_2k.hdr',
+  desert: '/env/xenon_ember_2k.hdr',
+  volcano: '/env/xenon_ember_2k.hdr',
+  cave: '/env/xenon_2k.hdr',
 };
 
 const BIOME_HDRI_1K: Record<BiomeId, string> = {
-  vale: '/env/vale_day_1k.hdr',
-  marsh: '/env/marsh_overcast_1k.hdr',
-  peaks: '/env/peaks_dawn_1k.hdr',
-  beach: '/env/vale_day_1k.hdr',
-  desert: '/env/peaks_dawn_1k.hdr',
-  volcano: '/env/marsh_overcast_1k.hdr',
-  cave: '/env/marsh_overcast_1k.hdr',
+  vale: '/env/xenon_1k.hdr',
+  marsh: '/env/xenon_1k.hdr',
+  peaks: '/env/xenon_1k.hdr',
+  beach: '/env/xenon_1k.hdr',
+  desert: '/env/xenon_ember_1k.hdr',
+  volcano: '/env/xenon_ember_1k.hdr',
+  cave: '/env/xenon_1k.hdr',
 };
 
 function shouldUseLiteHdri(): boolean {
@@ -84,23 +86,23 @@ function shouldUseLiteHdri(): boolean {
 const BIOME_HDRI = shouldUseLiteHdri() ? BIOME_HDRI_1K : BIOME_HDRI_2K;
 
 const BIOME_BACKDROP_8K: Record<BiomeId, string> = {
-  vale: '/env/vale_backdrop.webp',
-  marsh: '/env/marsh_backdrop.webp',
-  peaks: '/env/peaks_backdrop.webp',
-  beach: '/env/vale_backdrop.webp',
-  desert: '/env/peaks_backdrop.webp',
-  volcano: '/env/peaks_backdrop.webp',
-  cave: '/env/marsh_backdrop.webp',
+  vale: '/env/xenon_backdrop.webp',
+  marsh: '/env/xenon_backdrop.webp',
+  peaks: '/env/xenon_backdrop.webp',
+  beach: '/env/xenon_backdrop.webp',
+  desert: '/env/xenon_ember_backdrop.webp',
+  volcano: '/env/xenon_ember_backdrop.webp',
+  cave: '/env/xenon_backdrop.webp',
 };
 
 const BIOME_BACKDROP_4K: Record<BiomeId, string> = {
-  vale: '/env/vale_backdrop_4k.webp',
-  marsh: '/env/marsh_backdrop_4k.webp',
-  peaks: '/env/peaks_backdrop_4k.webp',
-  beach: '/env/vale_backdrop_4k.webp',
-  desert: '/env/peaks_backdrop_4k.webp',
-  volcano: '/env/peaks_backdrop_4k.webp',
-  cave: '/env/marsh_backdrop_4k.webp',
+  vale: '/env/xenon_backdrop_4k.webp',
+  marsh: '/env/xenon_backdrop_4k.webp',
+  peaks: '/env/xenon_backdrop_4k.webp',
+  beach: '/env/xenon_backdrop_4k.webp',
+  desert: '/env/xenon_ember_backdrop_4k.webp',
+  volcano: '/env/xenon_ember_backdrop_4k.webp',
+  cave: '/env/xenon_backdrop_4k.webp',
 };
 
 const BACKDROP_Y_BIAS: Record<BiomeId, number> = {
@@ -160,13 +162,13 @@ const BIOME_BACKDROP = shouldUseLiteBackdrop() ? BIOME_BACKDROP_4K : BIOME_BACKD
 // Measured brightest-texel u (sun azimuth in equirect space) per HDRI — see
 // tmp/analyze_hdr.mjs. Used to rotate each map so its sun matches SUN_ANCHOR.
 const HDRI_SUN_U: Record<BiomeId, number> = {
-  vale: 0.595,
-  marsh: 0.657,
-  peaks: 0.631,
-  beach: 0.595,
-  desert: 0.631,
-  volcano: 0.657,
-  cave: 0.657,
+  vale: 0.6,
+  marsh: 0.6,
+  peaks: 0.6,
+  beach: 0.6,
+  desert: 0.6,
+  volcano: 0.6,
+  cave: 0.6,
 };
 
 const hdriStore: Partial<Record<BiomeId, THREE.DataTexture>> = {};
