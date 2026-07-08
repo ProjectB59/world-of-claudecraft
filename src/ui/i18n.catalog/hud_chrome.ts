@@ -105,6 +105,7 @@ export const hudChromeStrings = {
     customColors: 'Custom Colors',
     reset: 'Reset',
     presets: {
+      xenon: 'Xenon Neon',
       classic: 'Classic Gold',
       midnight: 'Midnight',
       parchment: 'Parchment',

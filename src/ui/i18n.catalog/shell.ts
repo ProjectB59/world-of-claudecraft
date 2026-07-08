@@ -33,7 +33,7 @@ export const shellStrings = {
     loading: {
       world: 'Loading world...',
       worldProgress: 'Loading world... {done}/{total}',
-      enteringWorld: 'Entering the world...',
+      enteringWorld: 'Initializing sector jump...',
       connectingRealm: 'Connecting to world...',
       assetsFailed: 'Asset loading failed: try reloading. {error}',
       rendererFailed: 'Could not start the renderer: try reloading. {error}',

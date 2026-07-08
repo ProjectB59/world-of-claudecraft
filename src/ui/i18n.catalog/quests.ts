@@ -5,13 +5,13 @@
 const questStringsEn = {
   questUi: {
     tracker: {
-      title: 'Quests',
+      title: 'Missions',
       complete: 'Complete',
       showOnMap: 'Show {name} on the map',
       hideFromMap: 'Hide {name} from the map',
     },
     log: {
-      title: 'Quest Log',
+      title: 'Mission Log',
       close: 'Close quest log',
       summary: 'Active: {active} / Completed: {completed}',
       emptyTitle: 'No active quests.',

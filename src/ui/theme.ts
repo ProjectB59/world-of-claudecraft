@@ -25,7 +25,7 @@ export type ThemeKnob =
 
 export type ThemeKnobs = Record<ThemeKnob, string>;
 
-export type PresetId = 'classic' | 'midnight' | 'parchment' | 'highContrast';
+export type PresetId = 'classic' | 'midnight' | 'parchment' | 'highContrast' | 'xenon';
 
 export interface ThemeState {
   preset: PresetId;
@@ -59,7 +59,7 @@ export const THEME_KNOB_LABEL_KEY: Record<ThemeKnob, string> = {
   energy: 'energy',
 };
 
-export const PRESET_ORDER: PresetId[] = ['classic', 'midnight', 'parchment', 'highContrast'];
+export const PRESET_ORDER: PresetId[] = ['xenon', 'classic', 'midnight', 'parchment', 'highContrast'];
 
 // `classic` reproduces the shipped gold/dark palette; the others are alternates.
 export const THEME_PRESETS: Record<PresetId, ThemeKnobs> = {
@@ -96,6 +96,18 @@ export const THEME_PRESETS: Record<PresetId, ThemeKnobs> = {
     rage: '#b03a2e',
     energy: '#a8801f',
   },
+  xenon: {
+    // NodeB59 Space Edition: neon arcade over deep violet -- Planet Xenon.
+    accent: '#ff3db8',
+    border: '#55307a',
+    panel: '#120a1e',
+    text: '#efe2ff',
+    textMuted: '#9c82bd',
+    hp: '#2ee88a',
+    mana: '#5a78ff',
+    rage: '#ff4560',
+    energy: '#ffb020',
+  },
   highContrast: {
     accent: '#ffe000',
     border: '#ffffff',
@@ -109,7 +121,7 @@ export const THEME_PRESETS: Record<PresetId, ThemeKnobs> = {
   },
 };
 
-export const DEFAULT_PRESET: PresetId = 'classic';
+export const DEFAULT_PRESET: PresetId = 'xenon';
 export const DEFAULT_THEME: ThemeState = { preset: DEFAULT_PRESET, custom: {} };
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
