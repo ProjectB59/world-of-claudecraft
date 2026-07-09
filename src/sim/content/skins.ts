@@ -7,9 +7,8 @@ import type { PlayerClass, SkinRank } from '../types';
 // client HUD (overlay gating). It lives in sim/ so it carries no DOM/render
 // imports and runs unchanged on the server, offline, and headless.
 //
-// DEV PLACEHOLDER: until real event skins ship, each tier offers exactly one of
-// the per-class alternate skins we already have (index into SKINS[player_<cls>]
-// in the renderer; 0 = the class default, which the event does not grant).
+// Event tiers grant named Planet Xenon cosmetics while preserving the renderer's
+// existing per-class skin indices (0 = class default, not granted by the event).
 // ---------------------------------------------------------------------------
 
 /** The item that opens the skin-select overlay when used. Dev-grantable via
@@ -35,44 +34,50 @@ export function rollSkinRank(unitRoll: number): SkinRank {
   return 'uncommon';
 }
 
-/** One selectable skin per tier (placeholder mapping onto existing alt skins). */
+/** One selectable space cosmetic per tier. */
 export interface SkinTier {
+  /** Stable event-cosmetic id for logs, rewards, and future localized labels. */
+  id: string;
   rank: SkinRank;
+  /** English fallback label used by server/dev tooling. */
+  name: string;
   /** Index into the renderer's SKINS[player_<cls>] list. */
   skin: number;
 }
 
 export const EVENT_SKIN_TIERS: readonly SkinTier[] = [
-  { rank: 'uncommon', skin: 1 },
-  { rank: 'rare', skin: 2 },
-  { rank: 'epic', skin: 3 },
+  { id: 'xenon_field_suit', rank: 'uncommon', name: 'Xenon Field Suit', skin: 1 },
+  { id: 'nebula_pressure_suit', rank: 'rare', name: 'Nebula Pressure Suit', skin: 2 },
+  { id: 'janitor_prime_coveralls', rank: 'epic', name: 'Janitor Prime Coveralls', skin: 3 },
 ] as const;
 
 export interface MechChroma {
   /** stable id, unique across all tiers; also the i18n name-key leaf */
   id: string;
   rank: SkinRank;
+  /** English fallback label used by server/dev tooling. */
+  name: string;
 }
 
 // Order defines the skin index into SKINS.player_mech / SKIN_EMISSIVE.player_mech
 // (0-based: the 8 uncommon, then 3 rare, then 4 epic). Keep in lockstep with
 // src/render/characters/manifest.ts.
 export const MECH_CHROMAS: readonly MechChroma[] = [
-  { id: 'amber_crimson', rank: 'uncommon' },
-  { id: 'crimson_amber', rank: 'uncommon' },
-  { id: 'cyan_magenta', rank: 'uncommon' },
-  { id: 'magenta_cyan', rank: 'uncommon' },
-  { id: 'orange_steel', rank: 'uncommon' },
-  { id: 'steel_orange', rank: 'uncommon' },
-  { id: 'forest_pink', rank: 'uncommon' },
-  { id: 'pink_forest', rank: 'uncommon' },
-  { id: 'amethyst_silver', rank: 'rare' },
-  { id: 'ivory_copper', rank: 'rare' },
-  { id: 'onyx_gold', rank: 'rare' },
-  { id: 'imperial_crimson', rank: 'epic' },
-  { id: 'imperial_gold', rank: 'epic' },
-  { id: 'vanguard_azure', rank: 'epic' },
-  { id: 'vanguard_chrome', rank: 'epic' },
+  { id: 'amber_crimson', rank: 'uncommon', name: 'Amber EVA Shell' },
+  { id: 'crimson_amber', rank: 'uncommon', name: 'Crimson EVA Shell' },
+  { id: 'cyan_magenta', rank: 'uncommon', name: 'Relay Tech Shell' },
+  { id: 'magenta_cyan', rank: 'uncommon', name: 'Nebula Tech Shell' },
+  { id: 'orange_steel', rank: 'uncommon', name: 'Cargo Bay Shell' },
+  { id: 'steel_orange', rank: 'uncommon', name: 'Landing Crew Shell' },
+  { id: 'forest_pink', rank: 'uncommon', name: 'Hydroponic Signal Shell' },
+  { id: 'pink_forest', rank: 'uncommon', name: 'Greenhouse Signal Shell' },
+  { id: 'amethyst_silver', rank: 'rare', name: 'Xenon Surveyor Shell' },
+  { id: 'ivory_copper', rank: 'rare', name: 'Colony Archivist Shell' },
+  { id: 'onyx_gold', rank: 'rare', name: 'Deep Orbit Shell' },
+  { id: 'imperial_crimson', rank: 'epic', name: 'Red Comet Shell' },
+  { id: 'imperial_gold', rank: 'epic', name: 'Solar Crown Shell' },
+  { id: 'vanguard_azure', rank: 'epic', name: 'Blue Horizon Shell' },
+  { id: 'vanguard_chrome', rank: 'epic', name: 'Chrome Vanguard Shell' },
 ] as const;
 
 export const ALDRIC_MECH_CHROMA_ID = 'amber_crimson';

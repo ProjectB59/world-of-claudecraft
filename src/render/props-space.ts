@@ -32,6 +32,7 @@ const HAZ_YEL = 0xffb020;
 const RUST = 0xa85a28; // droid shell
 const RUST_DARK = 0x6e3a1a;
 const HULL = 0x3a3448;
+const DARK_GLASS = 0x241044;
 
 const usePbr = () => GFX.standardMaterials;
 
@@ -51,6 +52,8 @@ let _warnMat: THREE.MeshStandardMaterial | null = null;
 let _rustMat: THREE.MeshStandardMaterial | null = null;
 let _rustDarkMat: THREE.MeshStandardMaterial | null = null;
 let _eyeMat: THREE.MeshStandardMaterial | null = null;
+let _glassMat: THREE.MeshStandardMaterial | null = null;
+let _terminalMat: THREE.MeshStandardMaterial | null = null;
 
 function neonMat(): THREE.MeshStandardMaterial {
   _neonMat ??= new THREE.MeshStandardMaterial({
@@ -128,6 +131,30 @@ function eyeMat(): THREE.MeshStandardMaterial {
     roughness: 0.05,
   });
   return _eyeMat;
+}
+function glassMat(): THREE.MeshStandardMaterial {
+  _glassMat ??= new THREE.MeshStandardMaterial({
+    color: new THREE.Color(DARK_GLASS),
+    emissive: new THREE.Color(VIOLET_DEEP),
+    emissiveIntensity: usePbr() ? 0.7 : 0.35,
+    transparent: true,
+    opacity: 0.28,
+    roughness: 0.08,
+    metalness: 0.1,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  return _glassMat;
+}
+function terminalMat(): THREE.MeshStandardMaterial {
+  _terminalMat ??= new THREE.MeshStandardMaterial({
+    color: new THREE.Color(0x02140c),
+    emissive: new THREE.Color(TERM_GREEN_DEEP),
+    emissiveIntensity: usePbr() ? 2.5 : 1.45,
+    roughness: 0.05,
+    metalness: 0.25,
+  });
+  return _terminalMat;
 }
 
 // ── A. Residual warm-material shift (violet grade) ───────────────────────────
@@ -234,6 +261,21 @@ const _cabMarquee = new THREE.BoxGeometry(0.95, 0.28, 0.55);
 const _cabScreen = new THREE.PlaneGeometry(0.68, 0.5);
 const _cabPanel = new THREE.BoxGeometry(0.9, 0.08, 0.42);
 const _cabStick = new THREE.SphereGeometry(0.045, 6, 5);
+
+// Hub dressing
+const _padGeo = new THREE.CylinderGeometry(4.8, 4.8, 0.18, 48);
+const _padRingGeo = new THREE.TorusGeometry(4.15, 0.08, 8, 48);
+const _padLightGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 8);
+const _domeGeo = new THREE.SphereGeometry(4.6, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2);
+const _domeRibGeo = new THREE.TorusGeometry(4.6, 0.035, 6, 48);
+const _domeBaseGeo = new THREE.TorusGeometry(4.62, 0.08, 8, 48);
+const _kioskBaseGeo = new THREE.CylinderGeometry(0.42, 0.55, 0.42, 10);
+const _kioskBodyGeo = new THREE.BoxGeometry(0.72, 1.55, 0.36);
+const _kioskScreenGeo = new THREE.PlaneGeometry(0.52, 0.62);
+const _terminalBaseGeo = new THREE.BoxGeometry(1.35, 0.72, 0.72);
+const _terminalScreenGeo = new THREE.PlaneGeometry(1.0, 0.52);
+const _terminalMastGeo = new THREE.CylinderGeometry(0.035, 0.045, 1.5, 6);
+const _terminalDishGeo = new THREE.RingGeometry(0.18, 0.44, 16, 1, 0, Math.PI);
 
 // ── C. The droid ─────────────────────────────────────────────────────────────
 
@@ -383,6 +425,132 @@ function buildArcadeCabinet(variant: number): THREE.Group {
 
 // ── B. Decor build ───────────────────────────────────────────────────────────
 
+function screenLabelTexture(top: string, bottom: string, glow = '#40ff9a'): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#02060a';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = 'rgba(64,255,154,0.14)';
+    for (let y = 0; y < c.height; y += 8) ctx.fillRect(0, y, c.width, 2);
+    ctx.textAlign = 'center';
+    ctx.font = '700 54px monospace';
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = glow;
+    ctx.fillText(top, c.width / 2, 104);
+    ctx.shadowBlur = 10;
+    ctx.font = '700 28px monospace';
+    ctx.fillText(bottom, c.width / 2, 166);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function buildLandingPad(): THREE.Group {
+  const g = new THREE.Group();
+  g.name = 'xenon-landing-pad';
+  const pad = new THREE.Mesh(
+    _padGeo,
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0x2a2234),
+      metalness: 0.55,
+      roughness: 0.52,
+    }),
+  );
+  pad.position.y = 0.09;
+  g.add(pad);
+  const ring = new THREE.Mesh(_padRingGeo, warnMat());
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.23;
+  g.add(ring);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const light = new THREE.Mesh(_padLightGeo, i % 2 === 0 ? neonMat() : eyeMat());
+    light.position.set(Math.sin(a) * 3.55, 0.32, Math.cos(a) * 3.55);
+    g.add(light);
+  }
+  return g;
+}
+
+function buildHabitatDome(): THREE.Group {
+  const g = new THREE.Group();
+  g.name = 'xenon-habitat-dome';
+  const dome = new THREE.Mesh(_domeGeo, glassMat());
+  dome.position.y = 0.05;
+  g.add(dome);
+  for (const rot of [0, Math.PI / 2]) {
+    const rib = new THREE.Mesh(_domeRibGeo, neonMat());
+    rib.rotation.set(Math.PI / 2, 0, rot);
+    rib.position.y = 0.05;
+    g.add(rib);
+  }
+  const base = new THREE.Mesh(_domeBaseGeo, hullMat());
+  base.rotation.x = Math.PI / 2;
+  g.add(base);
+  return g;
+}
+
+function buildProfileKiosk(variant: number): THREE.Group {
+  const g = new THREE.Group();
+  g.name = 'xenon-profile-kiosk';
+  const base = new THREE.Mesh(_kioskBaseGeo, hullMat());
+  base.position.y = 0.21;
+  g.add(base);
+  const body = new THREE.Mesh(_kioskBodyGeo, rustDarkMat());
+  body.position.y = 1.13;
+  body.userData.profileKiosk = true;
+  g.add(body);
+  const screen = new THREE.Mesh(
+    _kioskScreenGeo,
+    new THREE.MeshStandardMaterial({
+      map: screenLabelTexture('PROFILE', variant % 2 === 0 ? 'PUBLIC' : 'SIGNAL'),
+      emissive: new THREE.Color(TERM_GREEN_DEEP),
+      emissiveIntensity: usePbr() ? 1.7 : 1.0,
+      roughness: 0.1,
+    }),
+  );
+  screen.position.set(0, 1.18, 0.195);
+  screen.userData.profileKiosk = true;
+  g.add(screen);
+  const cap = new THREE.Mesh(_beaconGeo, neonMat());
+  cap.position.y = 2.0;
+  g.add(cap);
+  return g;
+}
+
+function buildIrcTerminal(): THREE.Group {
+  const g = new THREE.Group();
+  g.name = 'xenon-irc-terminal';
+  const base = new THREE.Mesh(_terminalBaseGeo, hullMat());
+  base.position.y = 0.54;
+  base.userData.ircTerminal = true;
+  g.add(base);
+  const screen = new THREE.Mesh(
+    _terminalScreenGeo,
+    new THREE.MeshStandardMaterial({
+      map: screenLabelTexture('#modulo59', 'IRC RELAY'),
+      emissive: new THREE.Color(TERM_GREEN_DEEP),
+      emissiveIntensity: usePbr() ? 2.2 : 1.2,
+      roughness: 0.05,
+    }),
+  );
+  screen.position.set(0, 0.72, 0.37);
+  screen.userData.ircTerminal = true;
+  g.add(screen);
+  const mast = new THREE.Mesh(_terminalMastGeo, terminalMat());
+  mast.position.set(0.55, 1.5, -0.1);
+  g.add(mast);
+  const dish = new THREE.Mesh(_terminalDishGeo, neonMat());
+  dish.position.set(0.55, 2.26, -0.1);
+  dish.rotation.set(-Math.PI / 2.5, 0, Math.PI);
+  g.add(dish);
+  return g;
+}
+
 export interface SpaceDecorResult {
   group: THREE.Group;
   /** Emissive meshes pulsed each frame by the renderer. */
@@ -391,6 +559,10 @@ export interface SpaceDecorResult {
   robots: SpaceRobot[];
   /** Cabinet meshes (userData.arcade) for the click raycast. */
   arcadeTargets: THREE.Object3D[];
+  /** Public profile kiosk meshes for the click raycast. */
+  profileTargets: THREE.Object3D[];
+  /** IRC terminal meshes for the click raycast. */
+  ircTargets: THREE.Object3D[];
 }
 
 /**
@@ -403,6 +575,8 @@ export function buildSpaceDecor(seed: number): SpaceDecorResult {
   const beacons: THREE.Mesh[] = [];
   const robots: SpaceRobot[] = [];
   const arcadeTargets: THREE.Object3D[] = [];
+  const profileTargets: THREE.Object3D[] = [];
+  const ircTargets: THREE.Object3D[] = [];
   const P = getActiveWorldContent().props;
 
   const shadow = <T extends THREE.Object3D>(o: T): T => {
@@ -629,7 +803,45 @@ export function buildSpaceDecor(seed: number): SpaceDecorResult {
         if (o.userData.arcade) arcadeTargets.push(o);
       });
     }
+
+    // 9. Main colony hub: landing pad, habitat dome, profile kiosks, IRC terminal.
+    const hubX = w.x;
+    const hubZ = w.z;
+    const pad = buildLandingPad();
+    const padX = hubX - 7.4;
+    const padZ = hubZ - 5.8;
+    pad.position.set(padX, _gnd(padX, padZ, seed), padZ);
+    pad.rotation.y = _propRand(padX, padZ, 41) * Math.PI * 2;
+    root.add(shadow(pad));
+
+    const dome = buildHabitatDome();
+    const domeX = hubX + 7.0;
+    const domeZ = hubZ - 4.4;
+    dome.position.set(domeX, _gnd(domeX, domeZ, seed) + 0.04, domeZ);
+    root.add(shadow(dome));
+
+    for (let i = 0; i < 2; i++) {
+      const kx = hubX + 3.6 + i * 1.7;
+      const kz = hubZ + 4.2;
+      const kiosk = buildProfileKiosk(i);
+      kiosk.position.set(kx, _gnd(kx, kz, seed), kz);
+      kiosk.rotation.y = Math.atan2(hubX - kx, hubZ - kz);
+      root.add(shadow(kiosk));
+      kiosk.traverse((o) => {
+        if (o.userData.profileKiosk) profileTargets.push(o);
+      });
+    }
+
+    const irc = buildIrcTerminal();
+    const ix = hubX - 3.9;
+    const iz = hubZ + 4.6;
+    irc.position.set(ix, _gnd(ix, iz, seed), iz);
+    irc.rotation.y = Math.atan2(hubX - ix, hubZ - iz);
+    root.add(shadow(irc));
+    irc.traverse((o) => {
+      if (o.userData.ircTerminal) ircTargets.push(o);
+    });
   }
 
-  return { group: root, beacons, robots, arcadeTargets };
+  return { group: root, beacons, robots, arcadeTargets, profileTargets, ircTargets };
 }

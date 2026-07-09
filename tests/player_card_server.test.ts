@@ -179,7 +179,7 @@ beforeEach(() => {
     }
     if (s.includes('SELECT character_id, account_id, png, title, description'))
       return Promise.resolve({ rows: cardRows });
-    if (s.includes('SELECT title, description, locale')) return Promise.resolve({ rows: cardRows }); // metadata-only OG page read
+    if (s.includes('FROM player_cards pc')) return Promise.resolve({ rows: cardRows }); // metadata-only OG page read
     if (s.includes('SELECT account_id FROM player_cards WHERE slug'))
       return Promise.resolve({ rows: accountForSlugRows });
     if (s.includes('INSERT INTO referrals')) return Promise.resolve({ rows: [] });
@@ -624,6 +624,28 @@ describe('GET /p/<slug>', () => {
     expect(html).not.toContain('card.png?v=');
   });
 
+  it('links a hosted player card to the character public profile page', async () => {
+    cardRows = [
+      {
+        character_id: 5,
+        account_id: 1,
+        png: validCardPng,
+        title: 'Sir Test - Level 12 Mage',
+        description: 'd',
+        locale: 'en',
+        character_name: 'Sir Test',
+        character_class: 'mage',
+        character_level: 12,
+      },
+    ];
+    const res = makeRes();
+    await handleCardRoutes(makeGetReq('/p/sir-test'), res);
+    const html = String(res.body);
+    expect(html).toContain('href="/c/Sir%20Test"');
+    expect(html).toContain('View public profile</a>');
+    expect(html).toContain('Level 12 Mage');
+  });
+
   it('cache-busts the og:image with the card updated_at so a re-published card is re-fetched', async () => {
     // Without a version query, X/Discord/browsers keep serving the cached PNG for
     // the stable /p/<slug>/card.png URL even after a level-up re-publish.
@@ -907,7 +929,7 @@ describe('GET /p/<slug>', () => {
   it('returns 500 when the card metadata lookup throws', async () => {
     dbMock.query.mockImplementation((sql: string) => {
       const s = String(sql).replace(/\s+/g, ' ');
-      if (s.includes('SELECT title, description, locale'))
+      if (s.includes('FROM player_cards pc'))
         return Promise.reject(new Error('db down'));
       return Promise.resolve({ rows: [] });
     });

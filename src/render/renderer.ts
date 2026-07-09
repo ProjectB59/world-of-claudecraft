@@ -86,6 +86,11 @@ import { buildPropMaterialPrewarmGroup, buildProps } from './props';
 import { buildSpaceDecor, type SpaceDecorResult } from './props-space';
 import { patchPropMaterials } from './props-space';
 import { isArcadeOpen, openArcadeMinigame } from '../ui/arcade_minigame';
+import {
+  isXenonHubPanelOpen,
+  openXenonIrcPanel,
+  openXenonProfileKiosk,
+} from '../ui/xenon_hub_panels';
 import { buildGroundQuestObject } from './quest_objects';
 import { isOwnedPetHostile } from './reaction';
 import { RenderBudgetGovernor, type RenderBudgetState } from './render_budget';
@@ -1264,10 +1269,10 @@ export class Renderer {
       robot.group.traverse((o) => { o.matrixAutoUpdate = true; });
     }
     this.spaceDecor = spaceDecor;
-    // Clicking an arcade cabinet (within reach) opens the Buckazoids overlay.
+    // Clicking Xenon hub props (within reach) opens their client-side overlays.
     this.webgl.domElement.addEventListener('click', (ev) => {
       const decor = this.spaceDecor;
-      if (!decor || decor.arcadeTargets.length === 0 || isArcadeOpen()) return;
+      if (!decor || isArcadeOpen() || isXenonHubPanelOpen()) return;
       const rect = this.webgl.domElement.getBoundingClientRect();
       const ndc = new THREE.Vector2(
         ((ev.clientX - rect.left) / rect.width) * 2 - 1,
@@ -1276,14 +1281,24 @@ export class Renderer {
       const ray = new THREE.Raycaster();
       ray.far = 40;
       ray.setFromCamera(ndc, this.camera);
-      const hits = ray.intersectObjects(decor.arcadeTargets, false);
-      if (hits.length > 0 && hits[0].distance < 26) openArcadeMinigame();
+      let hits = ray.intersectObjects(decor.arcadeTargets, false);
+      if (hits.length > 0 && hits[0].distance < 26) {
+        openArcadeMinigame();
+        return;
+      }
+      hits = ray.intersectObjects(decor.profileTargets, false);
+      if (hits.length > 0 && hits[0].distance < 26) {
+        openXenonProfileKiosk();
+        return;
+      }
+      hits = ray.intersectObjects(decor.ircTargets, false);
+      if (hits.length > 0 && hits[0].distance < 26) openXenonIrcPanel();
     });
-    // pointer cursor when hovering a cabinet (throttled: 8/s)
+    // Pointer cursor when hovering an interactive Xenon prop (throttled: 8/s).
     let lastArcadeHover = 0;
     this.webgl.domElement.addEventListener('pointermove', (ev) => {
       const decor = this.spaceDecor;
-      if (!decor || decor.arcadeTargets.length === 0) return;
+      if (!decor) return;
       const now = performance.now();
       if (now - lastArcadeHover < 125) return;
       lastArcadeHover = now;
@@ -1295,9 +1310,14 @@ export class Renderer {
       const ray = new THREE.Raycaster();
       ray.far = 30;
       ray.setFromCamera(ndc, this.camera);
-      const hits = ray.intersectObjects(decor.arcadeTargets, false);
-      this.webgl.domElement.style.cursor =
-        hits.length > 0 && hits[0].distance < 26 ? 'pointer' : '';
+      const arcadeHits = ray.intersectObjects(decor.arcadeTargets, false);
+      const profileHits = ray.intersectObjects(decor.profileTargets, false);
+      const ircHits = ray.intersectObjects(decor.ircTargets, false);
+      const near =
+        (arcadeHits.length > 0 && arcadeHits[0].distance < 26) ||
+        (profileHits.length > 0 && profileHits[0].distance < 26) ||
+        (ircHits.length > 0 && ircHits[0].distance < 26);
+      this.webgl.domElement.style.cursor = near ? 'pointer' : '';
     });
 
     // Map-editor play-test: freely placed GLB models (cosmetic, render-only). Loads

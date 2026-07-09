@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { absolutePublishedCardUrl, type PublishedCard } from '../src/ui/player_card_share';
+import {
+  absolutePublicProfileUrl,
+  absolutePublishedCardUrl,
+  type PublishedCard,
+} from '../src/ui/player_card_share';
 
 describe('shareable player card URL contract', () => {
   it('normalizes server-relative card paths against the selected realm origin', () => {
@@ -17,5 +21,15 @@ describe('shareable player card URL contract', () => {
     expect(
       absolutePublishedCardUrl('https://cards.example/p/sir-test', 'https://realm.example', 'https://page.example'),
     ).toBe('https://cards.example/p/sir-test');
+  });
+
+  it('normalizes character profile URLs against the selected realm origin', () => {
+    const profileUrl = absolutePublicProfileUrl('Sir Test', 'https://realm.example', 'https://page.example');
+    const card: PublishedCard = {
+      url: absolutePublishedCardUrl('/p/sir-test', 'https://realm.example', 'https://page.example'),
+      profileUrl,
+    };
+
+    expect(card.profileUrl).toBe('https://realm.example/c/Sir%20Test');
   });
 });

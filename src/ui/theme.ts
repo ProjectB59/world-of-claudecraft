@@ -25,7 +25,13 @@ export type ThemeKnob =
 
 export type ThemeKnobs = Record<ThemeKnob, string>;
 
-export type PresetId = 'classic' | 'midnight' | 'parchment' | 'highContrast' | 'xenon';
+export type PresetId =
+  | 'classic'
+  | 'midnight'
+  | 'parchment'
+  | 'highContrast'
+  | 'xenon'
+  | 'b59Terminal';
 
 export interface ThemeState {
   preset: PresetId;
@@ -59,7 +65,14 @@ export const THEME_KNOB_LABEL_KEY: Record<ThemeKnob, string> = {
   energy: 'energy',
 };
 
-export const PRESET_ORDER: PresetId[] = ['xenon', 'classic', 'midnight', 'parchment', 'highContrast'];
+export const PRESET_ORDER: PresetId[] = [
+  'xenon',
+  'b59Terminal',
+  'classic',
+  'midnight',
+  'parchment',
+  'highContrast',
+];
 
 // `classic` reproduces the shipped gold/dark palette; the others are alternates.
 export const THEME_PRESETS: Record<PresetId, ThemeKnobs> = {
@@ -106,6 +119,18 @@ export const THEME_PRESETS: Record<PresetId, ThemeKnobs> = {
     hp: '#2ee88a',
     mana: '#5a78ff',
     rage: '#ff4560',
+    energy: '#ffb020',
+  },
+  b59Terminal: {
+    // NodeB59 terminal mode: CRT green phosphor, amber alerts, dark chassis.
+    accent: '#40ff9a',
+    border: '#1f7a55',
+    panel: '#06120d',
+    text: '#d8ffe8',
+    textMuted: '#79b890',
+    hp: '#40ff9a',
+    mana: '#31b7ff',
+    rage: '#ff5a46',
     energy: '#ffb020',
   },
   highContrast: {

@@ -24,17 +24,31 @@ export function absolutePublishedCardUrl(
   return new URL(url, realmOrigin || pageOrigin).href as AbsoluteUrl;
 }
 
+/** Absolute public profile URL for the character represented by a hosted card. */
+export function absolutePublicProfileUrl(
+  characterName: string,
+  realmOrigin: string,
+  pageOrigin: string,
+): AbsoluteUrl {
+  return new URL(`/c/${encodeURIComponent(characterName)}`, realmOrigin || pageOrigin)
+    .href as AbsoluteUrl;
+}
+
 /** Result of publishing a card. The card page itself embeds the `?ref=` CTA
  *  server-side, so clients share this URL directly. */
 export interface PublishedCard {
   /** Absolute URL of the public card page. */
   url: AbsoluteUrl;
+  /** Absolute URL of the character's public profile page. */
+  profileUrl?: AbsoluteUrl;
 }
 
 /** Card details the uploader needs so the hosted page matches the composited PNG. */
 export interface PublishedCardMeta {
   /** The character level drawn on the PNG (live), used for the hosted card title. */
   level: number;
+  /** Character name used to derive the public `/c/<name>` profile URL. */
+  characterName?: string;
 }
 
 export type CardUploader = (png: Blob, meta: PublishedCardMeta) => Promise<PublishedCard>;

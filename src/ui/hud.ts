@@ -10595,6 +10595,7 @@ export class Hud {
       setStatus(t('playerCard.statusPublishing'));
       const pub = await publishCard(await cardCanvasToUploadBlob(state.canvas), {
         level: state.data?.level ?? this.sim.player.level,
+        characterName: state.data?.name ?? this.sim.player.name,
       });
       state.published = pub;
       linkInput.value = pub.url;

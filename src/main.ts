@@ -175,6 +175,7 @@ import { PerfOverlay } from './ui/perf_overlay';
 import { type PerfOverlayConfig, PerfOverlayConfigStore } from './ui/perf_overlay_config';
 import { buildPerfOverlayView, FrameMeter } from './ui/perf_overlay_model';
 import {
+  absolutePublicProfileUrl,
   absolutePublishedCardUrl,
   setCardUploader,
   setReferralProvider,
@@ -4068,9 +4069,16 @@ async function enterWorld(c: CharacterSummary, button?: HTMLButtonElement): Prom
   // Wire shareable player cards for this online session: publishing uploads the
   // composited PNG to this realm and returns an absolute public page URL, and
   // the referral provider feeds the card footer. Both are cleared on disconnect.
-  setCardUploader(async (png) => {
+  setCardUploader(async (png, meta) => {
     const r = await api.uploadCard(c.id, png, getLanguage());
-    return { url: absolutePublishedCardUrl(r.url, api.base, location.origin) };
+    return {
+      url: absolutePublishedCardUrl(r.url, api.base, location.origin),
+      profileUrl: absolutePublicProfileUrl(
+        meta.characterName || c.name,
+        api.base,
+        location.origin,
+      ),
+    };
   });
   setReferralProvider(() => api.referralStats());
   setStandingProvider(() => api.characterStanding(c.id));

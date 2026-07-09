@@ -241,6 +241,7 @@ export const pt_BR: EnTranslations = {
       "reset": "Redefinir",
       "presets": {
         "xenon": "Xenon Neon",
+        "b59Terminal": "B59 Terminal",
         "classic": "Ouro clássico",
         "midnight": "Meia-noite",
         "parchment": "Pergaminho",
@@ -257,6 +258,24 @@ export const pt_BR: EnTranslations = {
         "rage": "Raiva",
         "energy": "Energia"
       }
+    },
+    "xenon": {
+      "profileKicker": "Colony registry",
+      "profileTitle": "Public Profile Kiosk",
+      "profileBody": "Browse pilot records, character cards, and signal trails from the NodeB59 colony.",
+      "profileFieldCallsign": "Callsign",
+      "profileFieldSignal": "Signal",
+      "profileFieldRoute": "Route",
+      "profileValuePublic": "Public profile",
+      "profileValueSignal": "Signal persists",
+      "profileRoutePattern": "/c/<character-name>",
+      "profileCta": "Enter world to publish",
+      "ircTitle": "#modulo59 relay",
+      "ircPrompt": "type /join when the terminal comes alive",
+      "ircLineSkin": "planet xenon skin online",
+      "ircLineCart": "cart parked by the loading bay",
+      "ircLineCabinet": "buckazoids cabinet reports green",
+      "ircLineSignal": "signal persists"
     },
     "questTracker": {
       "count": "({count})",

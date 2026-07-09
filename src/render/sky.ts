@@ -107,12 +107,22 @@ const BIOME_BACKDROP_4K: Record<BiomeId, string> = {
 
 const BACKDROP_Y_BIAS: Record<BiomeId, number> = {
   vale: 0,
-  marsh: 0,
-  peaks: 0,
-  beach: 0,
-  desert: 0,
-  volcano: 0,
-  cave: 0,
+  marsh: -0.035,
+  peaks: 0.035,
+  beach: -0.015,
+  desert: 0.015,
+  volcano: 0.04,
+  cave: -0.055,
+};
+
+const BIOME_SKY_TINT: Record<BiomeId, number> = {
+  vale: 0xffffff,
+  marsh: 0xb8ffd8,
+  peaks: 0xdce8ff,
+  beach: 0xbff8ff,
+  desert: 0xffc68e,
+  volcano: 0xff8aa0,
+  cave: 0xaeb8ff,
 };
 
 interface NetworkInformationLike {
@@ -251,6 +261,8 @@ const SKY_FRAG = /* glsl */ `
   uniform float uBackdropStrength;
   uniform float uBackdropBiasA;
   uniform float uBackdropBiasB;
+  uniform vec3 uTintA;
+  uniform vec3 uTintB;
   varying vec3 vDir;
 
   vec3 sampleSky(sampler2D map, vec3 dir, float uOff, vec2 tune) {
@@ -298,6 +310,7 @@ const SKY_FRAG = /* glsl */ `
     vec3 backB = sampleBackdrop(uBackdropB, dir, uBackdropBiasB);
     vec3 backdrop = mix(backA, backB, uMix);
     c = mix(c, backdrop, uBackdropStrength);
+    c *= mix(uTintA, uTintB, uMix);
     float sunAmt = pow(max(dot(dir, uSunDir), 0.0), 8.0);
     c += vec3(1.0, 0.85, 0.6) * sunAmt * 0.3;                        // warm glow around the anchor sun
     float sunCore = pow(max(dot(dir, uSunDir), 0.0), 90.0);
@@ -379,6 +392,8 @@ export function buildSky(lowGfx: boolean, sunDir: THREE.Vector3): SkyView {
     uBackdropStrength: { value: backdropsReady ? 1 : 0 },
     uBackdropBiasA: { value: BACKDROP_Y_BIAS[start.from] },
     uBackdropBiasB: { value: BACKDROP_Y_BIAS[start.to] },
+    uTintA: { value: new THREE.Color(BIOME_SKY_TINT[start.from]) },
+    uTintB: { value: new THREE.Color(BIOME_SKY_TINT[start.to]) },
   };
   const material = new THREE.ShaderMaterial({
     uniforms,
@@ -407,6 +422,8 @@ export function buildSky(lowGfx: boolean, sunDir: THREE.Vector3): SkyView {
         uniforms.uBackdropB.value = backdropTex(next.to);
         uniforms.uBackdropBiasA.value = BACKDROP_Y_BIAS[next.from];
         uniforms.uBackdropBiasB.value = BACKDROP_Y_BIAS[next.to];
+        uniforms.uTintA.value.setHex(BIOME_SKY_TINT[next.from]);
+        uniforms.uTintB.value.setHex(BIOME_SKY_TINT[next.to]);
         uniforms.uMix.value = next.t;
         cur = next;
         return;

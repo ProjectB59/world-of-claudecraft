@@ -93,6 +93,8 @@ export interface PublicCardCopy {
   levelClass: string;
   description: string;
   cta: string;
+  profileKicker?: string;
+  profileCta?: string;
   missingTitle: string;
   missingHeading: string;
   missingDescription: string;
@@ -119,6 +121,8 @@ export const PUBLIC_CARD_COPY: Record<PublicCardLocale, PublicCardCopy> = {
     levelClass: 'Level {level} {className}',
     description: '{name} is forging a legend in World of Claudecraft. Join the realm.',
     cta: 'Forge your legend',
+    profileKicker: 'NodeB59 public profile',
+    profileCta: 'View public profile',
     missingTitle: 'Card not found',
     missingHeading: 'This card is no longer available.',
     missingDescription: 'It may have been retired or never existed.',
@@ -219,6 +223,8 @@ export const PUBLIC_CARD_COPY: Record<PublicCardLocale, PublicCardCopy> = {
     levelClass: 'Level {level} {className}',
     description: '{name} is forging a legend in World of Claudecraft. Join the realm.',
     cta: 'Forge your legend',
+    profileKicker: 'NodeB59 public profile',
+    profileCta: 'View public profile',
     missingTitle: 'Card not found',
     missingHeading: 'This card is no longer available.',
     missingDescription: 'It may have been retired or never existed.',
@@ -712,6 +718,9 @@ async function serveCardPage(
       locale: normalizePublicCardLocale(card.locale),
       origin,
       version: card.updatedAt,
+      characterName: card.characterName,
+      characterClass: card.characterClass,
+      characterLevel: card.characterLevel,
     }),
   );
 }
@@ -723,12 +732,16 @@ function cardPageHtml(opts: {
   locale: PublicCardLocale;
   origin: string;
   version: number;
+  characterName?: string | null;
+  characterClass?: string | null;
+  characterLevel?: number | null;
 }): string {
-  const { slug, title, description, locale, origin, version } = opts;
+  const { slug, title, description, locale, origin, version, characterName } = opts;
   const pagePath = `/p/${encodeURIComponent(slug)}`;
   const imageQuery = version > 0 ? `?v=${version}` : '';
   const imagePath = `${pagePath}/card.png${imageQuery}`;
   const playPath = `/?ref=${encodeURIComponent(slug)}`;
+  const profilePath = characterName ? `/c/${encodeURIComponent(characterName)}` : '';
   const pageUrl = `${origin}${pagePath}`;
   const imageUrl = `${origin}${imagePath}`;
   const copy = publicCardCopy(locale);
@@ -736,6 +749,26 @@ function cardPageHtml(opts: {
   const d = escapeHtml(description);
   const gameName = escapeHtml(copy.gameName);
   const cta = escapeHtml(copy.cta);
+  const profileKicker = escapeHtml(copy.profileKicker ?? PUBLIC_CARD_COPY.en.profileKicker ?? '');
+  const profileCta = escapeHtml(copy.profileCta ?? PUBLIC_CARD_COPY.en.profileCta ?? '');
+  const profileName = characterName ? escapeHtml(characterName) : '';
+  const profileLevel =
+    opts.characterLevel != null && opts.characterClass
+      ? escapeHtml(
+          interpolate(copy.levelClass, {
+            level: opts.characterLevel,
+            className: classDisplay(opts.characterClass, locale),
+          }),
+        )
+      : '';
+  const profileBlock = profilePath
+    ? `<section class="profile-panel" aria-label="${profileCta}">
+      <div class="profile-kicker">${profileKicker}</div>
+      <h2>${profileName}</h2>
+      ${profileLevel ? `<p class="profile-meta">${profileLevel}</p>` : ''}
+      <a class="profile-link" href="${escapeHtml(profilePath)}">${profileCta}</a>
+    </section>`
+    : '';
   return `<!doctype html>
 <html lang="${publicCardLanguageTag(locale)}">
 <head>
@@ -758,27 +791,41 @@ function cardPageHtml(opts: {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root { --gold: #ffd100; }
+  :root { --pink: #ff3db8; --green: #40ff9a; --violet: #8a3dff; }
   * { box-sizing: border-box; }
   /* 100dvh tracks the visible area as the mobile URL bar shows/hides. */
   body { margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; padding: 32px 16px;
-    background: radial-gradient(circle at 50% 18%, #241910, #0a0805 70%);
-    color: #ece2c4; font-family: 'Alegreya Sans', system-ui, sans-serif; text-align: center; }
+    background:
+      radial-gradient(circle at 50% 12%, rgba(255,61,184,.26), transparent 34%),
+      radial-gradient(circle at 80% 28%, rgba(64,255,154,.14), transparent 30%),
+      linear-gradient(180deg, #05010d 0%, #120a1e 56%, #05060c 100%);
+    color: #d8ffe8; font-family: 'Alegreya Sans', system-ui, sans-serif; text-align: center; }
   /* margin:auto centers the card when it fits and lets the page scroll from the TOP
      when it doesn't (justify-content:center would clip the top on a short/portrait
      phone, the reported bug). */
-  main { margin: auto; width: 100%; max-width: 720px; display: flex; flex-direction: column;
-    align-items: center; gap: 22px; }
-  h1 { font-family: 'Cinzel', Georgia, serif; color: var(--gold); font-size: clamp(22px, 4vw, 34px);
-    margin: 0; max-width: 100%; overflow-wrap: anywhere; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
-  p { margin: 0; color: #c9bb92; max-width: 640px; line-height: 1.5; overflow-wrap: anywhere; }
-  img.card { width: 100%; max-width: 720px; height: auto; border-radius: 12px;
-    box-shadow: 0 12px 48px rgba(0,0,0,.6); border: 1px solid #4a3a18; }
-  a.cta { display: inline-block; margin-top: 6px; padding: 13px 30px; border-radius: 8px;
+  main { margin: auto; width: 100%; max-width: 760px; display: flex; flex-direction: column;
+    align-items: center; gap: 18px; }
+  h1 { font-family: 'Cinzel', Georgia, serif; color: #ff8ad4; font-size: clamp(22px, 4vw, 34px);
+    margin: 0; max-width: 100%; overflow-wrap: anywhere; text-shadow: 0 0 18px rgba(255,61,184,.45); }
+  p { margin: 0; color: #bca8d8; max-width: 640px; line-height: 1.5; overflow-wrap: anywhere; }
+  img.card { width: 100%; max-width: 720px; height: auto; border-radius: 8px;
+    box-shadow: 0 16px 56px rgba(0,0,0,.62), 0 0 34px rgba(138,61,255,.24);
+    border: 1px solid rgba(64,255,154,.34); }
+  .profile-panel { width: 100%; max-width: 720px; padding: 16px; border: 1px solid rgba(64,255,154,.44);
+    border-radius: 8px; background: rgba(2,7,6,.78); box-shadow: inset 0 0 18px rgba(64,255,154,.08); }
+  .profile-kicker { color: var(--green); font: 700 12px ui-monospace, Consolas, monospace;
+    letter-spacing: .14em; text-transform: uppercase; }
+  .profile-panel h2 { margin: 6px 0 0; color: #efe2ff; font: 700 24px 'Cinzel', Georgia, serif;
+    overflow-wrap: anywhere; }
+  .profile-meta { color: #79b890; font: 700 15px ui-monospace, Consolas, monospace; }
+  a.profile-link { display: inline-flex; margin-top: 12px; min-height: 36px; align-items: center;
+    padding: 0 14px; border: 1px solid rgba(64,255,154,.58); border-radius: 6px; color: #d8ffe8;
+    background: rgba(64,255,154,.12); text-decoration: none; }
+  a.cta { display: inline-block; margin-top: 4px; padding: 13px 30px; border-radius: 8px;
     font-family: 'Cinzel', serif; font-weight: 700; font-size: 17px; text-decoration: none;
-    color: #2a1d05; background: linear-gradient(#ffe27a, #e0a52a); box-shadow: 0 4px 18px rgba(224,165,42,.4); }
+    color: #1a0614; background: linear-gradient(#ff9fdf, #ff3db8); box-shadow: 0 0 24px rgba(255,61,184,.36); }
   a.cta:hover { filter: brightness(1.08); }
-  footer { color: #7c6f4e; font-size: 13px; }
+  footer { color: #79b890; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -786,6 +833,7 @@ function cardPageHtml(opts: {
     <h1>${t}</h1>
     <img class="card" src="${escapeHtml(imagePath)}" alt="${t}" width="1200" height="630">
     <p>${d}</p>
+    ${profileBlock}
     <a class="cta" href="${escapeHtml(playPath)}">${cta}</a>
     <footer>${gameName}</footer>
   </main>

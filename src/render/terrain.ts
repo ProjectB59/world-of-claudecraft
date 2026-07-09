@@ -106,8 +106,8 @@ const NORMAL_TEX_W = 640;
 const NORMAL_TEX_H = 1920;
 const NORMAL_TEX_STRENGTH = 1.35;
 
-// NodeB59 Space Edition: Planet Xenon regolith regrade -- violet dust
-// plains, no chlorophyll. Channel names kept (grass = undergrowth tint).
+// NodeB59 Space Edition: Planet Xenon regolith regrade. Channel names stay
+// legacy (grass = dust-flat tint) so the splat shader contract does not move.
 // Ground colors per biome; boundaries blend across the same window as the
 // heightfield's shape blend. This is the tint layer the splat albedo
 // multiplies into (splat textures are authored near mid-gray).
@@ -116,67 +116,67 @@ const BIOME_PALETTE: Record<
   { grass: number; grassDark: number; grassYellow: number; dirt: number; sand: number }
 > = {
   vale: {
-    grass: 0x4a3a68,
-    grassDark: 0x352a50,
-    grassYellow: 0x6a4a86,
-    dirt: 0x5e4458,
-    sand: 0x8a7090,
+    grass: 0x6b5f6e,
+    grassDark: 0x3d3744,
+    grassYellow: 0x8b7c68,
+    dirt: 0x5b4a42,
+    sand: 0x9e8b7a,
   },
   // Darker, murkier and more desaturated than the vale so the swamp reads as
   // gloomy lowland rather than "vale but slightly duller". Pushed further
   // toward drab olive/brown than a first pass so it reads at a glance.
   marsh: {
-    grass: 0x2c2444,
-    grassDark: 0x1e1832,
-    grassYellow: 0x3c3054,
-    dirt: 0x342640,
-    sand: 0x4a3a58,
+    grass: 0x2e3e46,
+    grassDark: 0x1e2a32,
+    grassYellow: 0x3b5858,
+    dirt: 0x27343a,
+    sand: 0x52606a,
   },
   // Cooler and greyer than the vale/marsh's warm greens, pushing toward sage
   // and stone since altitude thins out the lush growth. Pushed further blue-
   // grey than a first pass so peaks are unmistakably a different biome.
   peaks: {
-    grass: 0x5e5878,
-    grassDark: 0x464060,
-    grassYellow: 0x7a7492,
-    dirt: 0x6a5e72,
-    sand: 0x948aa4,
+    grass: 0x6e7076,
+    grassDark: 0x4e525a,
+    grassYellow: 0x8a8a90,
+    dirt: 0x5a5658,
+    sand: 0xaaa29a,
   },
   // Paint-only biomes (editor brush): flat palettes, no zone-band blend.
   // Coastal green-blue, brighter sand than the desert's.
   beach: {
-    grass: 0x7a5a9a,
-    grassDark: 0x644a82,
-    grassYellow: 0x9a72b2,
-    dirt: 0x9a7a9a,
-    sand: 0xc4a8cc,
+    grass: 0x708b88,
+    grassDark: 0x526f70,
+    grassYellow: 0xa2aaa0,
+    dirt: 0x8a7970,
+    sand: 0xc2b6a3,
   },
   // Warmer and browner than the beach, less green. Pushed further orange
   // than a first pass to separate it clearly from the beach at a glance.
   desert: {
-    grass: 0xa06a52,
-    grassDark: 0x84543e,
-    grassYellow: 0xbc8060,
-    dirt: 0x9a5e3c,
-    sand: 0xc08a68,
+    grass: 0x9b6a4e,
+    grassDark: 0x6e4632,
+    grassYellow: 0xc0905e,
+    dirt: 0x7e4a32,
+    sand: 0xb98258,
   },
   // Dark, red-tinted ash rather than the cave's neutral grey. Pushed darker
   // still so it reads as scorched ground, not just "dirty".
   volcano: {
-    grass: 0x38202c,
-    grassDark: 0x24141e,
-    grassYellow: 0x4c2c38,
-    dirt: 0x2a1820,
-    sand: 0x462834,
+    grass: 0x332a2e,
+    grassDark: 0x1d171b,
+    grassYellow: 0x5a3830,
+    dirt: 0x251c1c,
+    sand: 0x4c332c,
   },
   // Neutral blue-grey stone, distinct from volcano's warm ash. Pushed cooler
   // and darker so it reads as underground rock, not daylight dirt.
   cave: {
-    grass: 0x4a4460,
-    grassDark: 0x343048,
-    grassYellow: 0x5c5670,
-    dirt: 0x484e56,
-    sand: 0x767c86,
+    grass: 0x4e5862,
+    grassDark: 0x343b44,
+    grassYellow: 0x64707a,
+    dirt: 0x3e464e,
+    sand: 0x76828a,
   },
 };
 
@@ -209,15 +209,15 @@ const grassC = new THREE.Color(),
   grassYellowC = new THREE.Color();
 const dirtC = new THREE.Color(),
   sandC = new THREE.Color();
-const dirtDarkC = new THREE.Color(0x73592f);
-const rockC = new THREE.Color(0x7a7a72);
-const wetRockC = new THREE.Color(0x3f4442); // dark wet-rock shoreline (peaks/volcano/cave)
-const impactAshC = new THREE.Color(0x18110d);
-const impactScorchC = new THREE.Color(0x2a160c);
-const hazyPeakC = new THREE.Color(0xa8bdd4); // world-rim mountains, atmospheric
-const snowCapC = new THREE.Color(0xedf3fa);
-const lowSunC = new THREE.Color(0xe7d9a5);
-const lowShadeC = new THREE.Color(0x60745b);
+const dirtDarkC = new THREE.Color(0x45363a);
+const rockC = new THREE.Color(0x76737c);
+const wetRockC = new THREE.Color(0x263f46); // dark wet mineral shoreline
+const impactAshC = new THREE.Color(0x171319);
+const impactScorchC = new THREE.Color(0x301818);
+const hazyPeakC = new THREE.Color(0x8f9db2); // world-rim mountains, atmospheric
+const snowCapC = new THREE.Color(0xd9e0ea);
+const lowSunC = new THREE.Color(0xcaa36c);
+const lowShadeC = new THREE.Color(0x344050);
 const zonePalettes = ZONES.map((zn) => {
   const p = BIOME_PALETTE[zn.biome];
   return {
