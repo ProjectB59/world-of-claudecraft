@@ -134,7 +134,7 @@ function renderVariant(name) {
   const sunDir = dirFromUV(SUN_U, 0.5 - 24 / 180);
 
   // ringed planet: az u=0.27, elevation 10 deg, angular radius ~0.16 rad
-  const planetDir = dirFromUV(0.27, 0.5 - 16 / 180);
+  const planetDir = dirFromUV(0.27, 0.5 - 38 / 180); // high enough to clear the ridge silhouettes
   const pR = 0.34; // looms over the horizon, per the reference art
   // local basis around the planet for disc/ring math
   const pe1 = norm(cross([0, 1, 0], planetDir));

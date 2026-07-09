@@ -582,9 +582,38 @@ export function buildSpaceDecor(seed: number): SpaceDecorResult {
     robots.push(robot);
   }
 
-  // 8. Buckazoids arcade corner: three cabinets in an arc by the first well
+  // 8. Buckazoids arcade corner: three cabinets in an arc by the first well,
+  // crowned by a floating neon sign so players know they're playable.
   if (P.wells.length > 0) {
     const w = P.wells[0];
+    {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 128;
+      const ctx = c.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, 512, 128);
+        ctx.textAlign = 'center';
+        ctx.font = '700 52px monospace';
+        ctx.shadowColor = '#ff3db8';
+        ctx.shadowBlur = 26;
+        ctx.fillStyle = '#ff8ad4';
+        ctx.fillText('BUCKAZOIDS', 256, 58);
+        ctx.shadowBlur = 12;
+        ctx.font = '700 30px monospace';
+        ctx.fillStyle = '#40ff9a';
+        ctx.fillText('- CLICK TO PLAY -', 256, 104);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const sign = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }),
+      );
+      sign.scale.set(4.6, 1.15, 1);
+      const sy = _gnd(w.x, w.z + 5.2, seed);
+      sign.position.set(w.x, sy + 3.3, w.z + 5.2);
+      root.add(sign);
+    }
     for (let i = 0; i < 3; i++) {
       const ang = -0.5 + i * 0.5;
       const cx = w.x + Math.sin(ang) * 5.2;

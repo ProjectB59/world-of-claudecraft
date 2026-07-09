@@ -1,4 +1,5 @@
 import { type LetterDef, QUEST_LETTERS, WELCOME_LETTER } from '../sim/content/letters';
+import { spaceEntityOverride } from './entity_space_names';
 import {
   ABILITIES,
   CLASSES,
@@ -333,6 +334,10 @@ function recordFallback(request: EntityTranslationRequest, value: string): void 
 
 export function tEntity(request: EntityTranslationRequest): string {
   const key = entityTranslationKey(request);
+  // NodeB59 Space Edition: English display names route through the Xenon
+  // overlay first (client-side paint only; ids/locales/logic untouched).
+  const spaceName = spaceEntityOverride(key, getLanguage());
+  if (spaceName !== null) return interpolateSource(spaceName, request.values);
   const translated = tOptional(key, request.values);
   if (translated !== null) return translated;
   const fallback = interpolateSource(canonicalEntityText(request), request.values);

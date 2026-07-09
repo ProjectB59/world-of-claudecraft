@@ -47,35 +47,36 @@ export function paintTerrainRows(
       const h = terrainHeight(x, z, seed);
       const wl = waterLevelAt(x, z);
       const biome = zoneBiomeAt(z);
-      let r = 58,
-        g = 105,
-        b = 48;
+      // NodeB59 Space Edition: minimap mirrors the violet regolith grade
+      let r = 74,
+        g = 58,
+        b = 104;
       if (biome === 'marsh') {
-        r = 64;
-        g = 86;
-        b = 48;
+        r = 44;
+        g = 36;
+        b = 68;
       } else if (biome === 'peaks') {
-        r = 92;
-        g = 100;
-        b = 82;
+        r = 94;
+        g = 88;
+        b = 120;
       }
       if (h < waterLevelAt(x, z)) {
-        r = 38;
-        g = 84;
-        b = 138;
+        r = 42;
+        g = 22;
+        b = 96;
       } else if (h > 26) {
-        r = 168;
-        g = 172;
-        b = 178;
-      } // ridge / peak rock+snow
+        r = 172;
+        g = 162;
+        b = 190;
+      } // ridge / peak rock+dust
       else if (h > 11) {
         r = 112;
-        g = 110;
-        b = 102;
+        g = 100;
+        b = 128;
       } else if (h > 6) {
-        r = 88;
-        g = 102;
-        b = 62;
+        r = 90;
+        g = 72;
+        b = 116;
       }
       let nearHub = false;
       for (const zn of ZONES) {
@@ -85,13 +86,13 @@ export function paintTerrainRows(
         }
       }
       if (nearHub) {
-        r = 125;
-        g = 100;
-        b = 66;
+        r = 128;
+        g = 96;
+        b = 118;
       } else if (h >= wl && roadDistance(x, z) < 2.4) {
-        r = 138;
-        g = 111;
-        b = 71;
+        r = 140;
+        g = 108;
+        b = 130;
       }
       // hillshade: relief from the west-to-east slope, reusing the already-computed
       // left-neighbour height so it costs no extra terrainHeight() calls

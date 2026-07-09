@@ -1279,6 +1279,26 @@ export class Renderer {
       const hits = ray.intersectObjects(decor.arcadeTargets, false);
       if (hits.length > 0 && hits[0].distance < 26) openArcadeMinigame();
     });
+    // pointer cursor when hovering a cabinet (throttled: 8/s)
+    let lastArcadeHover = 0;
+    this.webgl.domElement.addEventListener('pointermove', (ev) => {
+      const decor = this.spaceDecor;
+      if (!decor || decor.arcadeTargets.length === 0) return;
+      const now = performance.now();
+      if (now - lastArcadeHover < 125) return;
+      lastArcadeHover = now;
+      const rect = this.webgl.domElement.getBoundingClientRect();
+      const ndc = new THREE.Vector2(
+        ((ev.clientX - rect.left) / rect.width) * 2 - 1,
+        -((ev.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+      const ray = new THREE.Raycaster();
+      ray.far = 30;
+      ray.setFromCamera(ndc, this.camera);
+      const hits = ray.intersectObjects(decor.arcadeTargets, false);
+      this.webgl.domElement.style.cursor =
+        hits.length > 0 && hits[0].distance < 26 ? 'pointer' : '';
+    });
 
     // Map-editor play-test: freely placed GLB models (cosmetic, render-only). Loads
     // async and pops in; absent for the built-in world. The view supports live
