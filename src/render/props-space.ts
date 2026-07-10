@@ -276,6 +276,22 @@ const _terminalBaseGeo = new THREE.BoxGeometry(1.35, 0.72, 0.72);
 const _terminalScreenGeo = new THREE.PlaneGeometry(1.0, 0.52);
 const _terminalMastGeo = new THREE.CylinderGeometry(0.035, 0.045, 1.5, 6);
 const _terminalDishGeo = new THREE.RingGeometry(0.18, 0.44, 16, 1, 0, Math.PI);
+// Canteen (the hangout corner)
+const _slabGeo = new THREE.BoxGeometry(11.5, 0.16, 9);
+const _counterGeo = new THREE.BoxGeometry(4.6, 1.02, 0.9);
+const _counterTopGeo = new THREE.BoxGeometry(4.9, 0.09, 1.1);
+const _canopyPostGeo = new THREE.CylinderGeometry(0.09, 0.11, 2.7, 8);
+const _canopyGeo = new THREE.BoxGeometry(5.4, 0.14, 1.7);
+const _canteenSignGeo = new THREE.PlaneGeometry(3.6, 0.95);
+const _shelfGeo = new THREE.BoxGeometry(4.2, 0.07, 0.42);
+const _bottleGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.34, 8);
+const _cupGeo = new THREE.CylinderGeometry(0.07, 0.055, 0.16, 8);
+const _stoolSeatGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.1, 10);
+const _stoolLegGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.52, 8);
+const _tableTopGeo = new THREE.CylinderGeometry(0.92, 0.92, 0.09, 12);
+const _tableLegGeo = new THREE.CylinderGeometry(0.12, 0.16, 0.78, 8);
+const _lampGeo = new THREE.SphereGeometry(0.09, 8, 6);
+const _lampPostGeo = new THREE.CylinderGeometry(0.06, 0.08, 2.9, 8);
 
 // ── C. The droid ─────────────────────────────────────────────────────────────
 
@@ -549,6 +565,166 @@ function buildIrcTerminal(): THREE.Group {
   dish.rotation.set(-Math.PI / 2.5, 0, Math.PI);
   g.add(dish);
   return g;
+}
+
+/**
+ * Canteen: the colony's hangout corner. A lit slab with a bar counter under a
+ * neon canopy sign, glowing bottle shelves, stools, two tables with drinks,
+ * and a string of warm lamps — somewhere to stand around and talk, not a
+ * kiosk. Purely decorative: no raycast targets. Returns the pulsing emissives
+ * in `glow` so the renderer's beacon loop picks them up.
+ */
+function buildCanteen(): { g: THREE.Group; glow: THREE.Mesh[] } {
+  const g = new THREE.Group();
+  g.name = 'xenon-canteen';
+  const glow: THREE.Mesh[] = [];
+  // Clone shared singleton materials before pulsing them, or every other
+  // prop using the same material would throb along with the bar.
+  const drinkMats = [
+    () => neonMat().clone(),
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color(0x04231a),
+        emissive: new THREE.Color(TERM_GREEN_DEEP),
+        emissiveIntensity: usePbr() ? 2.0 : 1.2,
+        roughness: 0.12,
+      }),
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color(0x1a0a2e),
+        emissive: new THREE.Color(VIOLET),
+        emissiveIntensity: usePbr() ? 1.9 : 1.1,
+        roughness: 0.12,
+      }),
+  ];
+  const cupMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(0x06222c),
+    emissive: new THREE.Color(0x2cd4f2),
+    emissiveIntensity: usePbr() ? 1.8 : 1.1,
+    roughness: 0.1,
+  });
+
+  // Floor slab
+  const slab = new THREE.Mesh(_slabGeo, hullMat());
+  slab.position.y = 0.08;
+  g.add(slab);
+
+  // Bar counter with lit top edge
+  const counter = new THREE.Mesh(_counterGeo, rustDarkMat());
+  counter.position.set(0, 0.67, -2.6);
+  g.add(counter);
+  const top = new THREE.Mesh(_counterTopGeo, terminalMat().clone());
+  top.position.set(0, 1.22, -2.6);
+  g.add(top);
+  glow.push(top);
+
+  // Canopy + neon sign
+  for (const px of [-2.55, 2.55]) {
+    const post = new THREE.Mesh(_canopyPostGeo, hullMat());
+    post.position.set(px, 1.51, -3.25);
+    g.add(post);
+  }
+  const canopy = new THREE.Mesh(_canopyGeo, rustDarkMat());
+  canopy.position.set(0, 2.93, -3.25);
+  g.add(canopy);
+  const sign = new THREE.Mesh(
+    _canteenSignGeo,
+    new THREE.MeshStandardMaterial({
+      map: screenLabelTexture('CANTEEN 59', '· REFUEL · HANG OUT ·', '#ff8ad4'),
+      emissive: new THREE.Color(NEON_DEEP),
+      emissiveIntensity: usePbr() ? 1.9 : 1.1,
+      roughness: 0.1,
+    }),
+  );
+  sign.position.set(0, 2.42, -2.37);
+  g.add(sign);
+
+  // Back shelves with glowing bottles
+  for (const [sy, count] of [
+    [1.62, 7],
+    [2.14, 5],
+  ] as const) {
+    const shelf = new THREE.Mesh(_shelfGeo, hullMat());
+    shelf.position.set(0, sy, -3.5);
+    g.add(shelf);
+    for (let i = 0; i < count; i++) {
+      const bx = -1.7 + (3.4 / (count - 1)) * i;
+      const bottle = new THREE.Mesh(_bottleGeo, drinkMats[i % drinkMats.length]());
+      bottle.position.set(bx, sy + 0.22, -3.5);
+      g.add(bottle);
+      glow.push(bottle);
+    }
+  }
+
+  // Stools along the counter + a few cups on the top
+  for (const sx of [-1.4, 0, 1.4]) {
+    const leg = new THREE.Mesh(_stoolLegGeo, hullMat());
+    leg.position.set(sx, 0.42, -1.55);
+    g.add(leg);
+    const seat = new THREE.Mesh(_stoolSeatGeo, rustDarkMat());
+    seat.position.set(sx, 0.73, -1.55);
+    g.add(seat);
+  }
+  for (const cx of [-1.9, 0.5, 1.6]) {
+    const cup = new THREE.Mesh(_cupGeo, cupMat);
+    cup.position.set(cx, 1.35, -2.45);
+    g.add(cup);
+    glow.push(cup);
+  }
+
+  // Two hangout tables with stools and drinks
+  for (const [tx, tz, rot] of [
+    [-3.1, 1.5, 0.4],
+    [3.0, 2.1, 2.3],
+  ] as const) {
+    const leg = new THREE.Mesh(_tableLegGeo, hullMat());
+    leg.position.set(tx, 0.55, tz);
+    g.add(leg);
+    const tt = new THREE.Mesh(_tableTopGeo, rustDarkMat());
+    tt.position.set(tx, 0.99, tz);
+    g.add(tt);
+    for (let i = 0; i < 3; i++) {
+      const a = rot + (i / 3) * Math.PI * 2;
+      const sx = tx + Math.sin(a) * 1.45;
+      const sz = tz + Math.cos(a) * 1.45;
+      const sl = new THREE.Mesh(_stoolLegGeo, hullMat());
+      sl.position.set(sx, 0.42, sz);
+      g.add(sl);
+      const ss = new THREE.Mesh(_stoolSeatGeo, rustDarkMat());
+      ss.position.set(sx, 0.73, sz);
+      g.add(ss);
+    }
+    for (let i = 0; i < 2; i++) {
+      const cup = new THREE.Mesh(_cupGeo, cupMat);
+      cup.position.set(tx + (i === 0 ? 0.3 : -0.35), 1.12, tz + (i === 0 ? 0.2 : -0.25));
+      g.add(cup);
+      glow.push(cup);
+    }
+  }
+
+  // String of warm lamps from the canopy to a corner post
+  const lampPost = new THREE.Mesh(_lampPostGeo, hullMat());
+  lampPost.position.set(4.7, 1.61, 1.9);
+  g.add(lampPost);
+  const lampMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(0x2a1c04),
+    emissive: new THREE.Color(HAZ_YEL),
+    emissiveIntensity: usePbr() ? 2.2 : 1.4,
+    roughness: 0.2,
+  });
+  const from = new THREE.Vector3(2.55, 2.9, -3.0);
+  const to = new THREE.Vector3(4.7, 3.0, 1.85);
+  for (let i = 0; i < 5; i++) {
+    const f = (i + 0.5) / 5;
+    const sag = Math.sin(f * Math.PI) * 0.45;
+    const lamp = new THREE.Mesh(_lampGeo, lampMat);
+    lamp.position.lerpVectors(from, to, f);
+    lamp.position.y -= sag;
+    g.add(lamp);
+    glow.push(lamp);
+  }
+
+  return { g, glow };
 }
 
 export interface SpaceDecorResult {
@@ -841,6 +1017,26 @@ export function buildSpaceDecor(seed: number): SpaceDecorResult {
     irc.traverse((o) => {
       if (o.userData.ircTerminal) ircTargets.push(o);
     });
+
+    // 10. Canteen 59 — the hangout corner, counter facing back toward the hub.
+    const canteen = buildCanteen();
+    const canX = hubX - 11.5;
+    const canZ = hubZ + 9.5;
+    canteen.g.position.set(canX, _gnd(canX, canZ, seed), canZ);
+    canteen.g.rotation.y = Math.atan2(hubX - canX, hubZ - canZ);
+    root.add(shadow(canteen.g));
+    beacons.push(...canteen.glow);
+    // Bartender droid behind the counter (idles with the other droids).
+    const keepLocal = new THREE.Vector3(0.55, 0, -3.0);
+    const keepWorld = keepLocal.applyMatrix4(
+      new THREE.Matrix4().makeRotationY(canteen.g.rotation.y).setPosition(canX, 0, canZ),
+    );
+    const keeper = buildRobot(keepWorld.x, keepWorld.z);
+    keeper.group.position.set(keepWorld.x, _gnd(keepWorld.x, keepWorld.z, seed) + 0.1, keepWorld.z);
+    keeper.group.rotation.y = canteen.g.rotation.y; // droid eyes face +z: toward the seating
+    shadow(keeper.group);
+    root.add(keeper.group);
+    robots.push(keeper);
   }
 
   return { group: root, beacons, robots, arcadeTargets, profileTargets, ircTargets };
