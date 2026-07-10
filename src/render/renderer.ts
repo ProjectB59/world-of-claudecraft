@@ -1283,7 +1283,8 @@ export class Renderer {
       ray.setFromCamera(ndc, this.camera);
       let hits = ray.intersectObjects(decor.arcadeTargets, false);
       if (hits.length > 0 && hits[0].distance < 26) {
-        openArcadeMinigame();
+        // Each cabinet mesh carries the game it runs (see props-space decor).
+        openArcadeMinigame((hits[0].object.userData.gameId as number | undefined) ?? 0);
         return;
       }
       hits = ray.intersectObjects(decor.profileTargets, false);

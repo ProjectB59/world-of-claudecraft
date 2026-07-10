@@ -976,9 +976,31 @@ export function buildSpaceDecor(seed: number): SpaceDecorResult {
       shadow(cab);
       root.add(cab);
       cab.traverse((o) => {
-        if (o.userData.arcade) arcadeTargets.push(o);
+        if (o.userData.arcade) {
+          o.userData.gameId = i; // arc machines run games 0–2
+          arcadeTargets.push(o);
+        }
       });
     }
+
+    // Lone cabinets scattered out in the world (deterministic "random" spots
+    // by the campfires) so players stumble onto games 3 and 4 while exploring.
+    const strayAnchors: [number, number][] = [];
+    if (P.campfires.length > 1) strayAnchors.push([P.campfires[1][0] + 2.4, P.campfires[1][1] - 1.8]);
+    if (P.campfires.length > 3) strayAnchors.push([P.campfires[3][0] - 2.2, P.campfires[3][1] + 2.0]);
+    strayAnchors.forEach(([sx, sz], k) => {
+      const cab = buildArcadeCabinet(k + 3);
+      cab.position.set(sx, _gnd(sx, sz, seed), sz);
+      cab.rotation.y = _propRand(sx, sz, 33) * Math.PI * 2;
+      shadow(cab);
+      root.add(cab);
+      cab.traverse((o) => {
+        if (o.userData.arcade) {
+          o.userData.gameId = k + 3;
+          arcadeTargets.push(o);
+        }
+      });
+    });
 
     // 9. Main colony hub: landing pad, habitat dome, profile kiosks, IRC terminal.
     const hubX = w.x;

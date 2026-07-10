@@ -624,13 +624,16 @@ describe('GET /p/<slug>', () => {
     expect(html).not.toContain('card.png?v=');
   });
 
-  it('links a hosted player card to the character public profile page', async () => {
+  it('never exposes character identity or a profile link on the public card page', async () => {
+    // Privacy: the shared image is what the player chose to publish; their
+    // character name/class/level and a /c/ profile link are not. Even when
+    // character columns exist on the row, the page must not surface them.
     cardRows = [
       {
         character_id: 5,
         account_id: 1,
         png: validCardPng,
-        title: 'Sir Test - Level 12 Mage',
+        title: 'A Fine Card',
         description: 'd',
         locale: 'en',
         character_name: 'Sir Test',
@@ -641,9 +644,9 @@ describe('GET /p/<slug>', () => {
     const res = makeRes();
     await handleCardRoutes(makeGetReq('/p/sir-test'), res);
     const html = String(res.body);
-    expect(html).toContain('href="/c/Sir%20Test"');
-    expect(html).toContain('View public profile</a>');
-    expect(html).toContain('Level 12 Mage');
+    expect(html).not.toContain('/c/Sir%20Test');
+    expect(html).not.toContain('View public profile');
+    expect(html).not.toContain('Sir Test');
   });
 
   it('cache-busts the og:image with the card updated_at so a re-published card is re-fetched', async () => {

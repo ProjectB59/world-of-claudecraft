@@ -85,24 +85,28 @@ function shouldUseLiteHdri(): boolean {
 
 const BIOME_HDRI = shouldUseLiteHdri() ? BIOME_HDRI_1K : BIOME_HDRI_2K;
 
+// Kat's curated space art (Saved Games drop, 2026-07-09) replaces the
+// low-detail generated backdrops that read as flat grey in-world: a
+// violet/cyan nebula for the cool biomes and a planetscape for the ember
+// ones. Same files at both quality tiers (they're ~1600px sources).
 const BIOME_BACKDROP_8K: Record<BiomeId, string> = {
-  vale: '/env/xenon_backdrop.webp',
-  marsh: '/env/xenon_backdrop.webp',
-  peaks: '/env/xenon_backdrop.webp',
-  beach: '/env/xenon_backdrop.webp',
-  desert: '/env/xenon_ember_backdrop.webp',
-  volcano: '/env/xenon_ember_backdrop.webp',
-  cave: '/env/xenon_backdrop.webp',
+  vale: '/env/space_nebula.jpg',
+  marsh: '/env/space_nebula.jpg',
+  peaks: '/env/space_nebula.jpg',
+  beach: '/env/space_nebula.jpg',
+  desert: '/env/space_planets.jpg',
+  volcano: '/env/space_planets.jpg',
+  cave: '/env/space_nebula.jpg',
 };
 
 const BIOME_BACKDROP_4K: Record<BiomeId, string> = {
-  vale: '/env/xenon_backdrop_4k.webp',
-  marsh: '/env/xenon_backdrop_4k.webp',
-  peaks: '/env/xenon_backdrop_4k.webp',
-  beach: '/env/xenon_backdrop_4k.webp',
-  desert: '/env/xenon_ember_backdrop_4k.webp',
-  volcano: '/env/xenon_ember_backdrop_4k.webp',
-  cave: '/env/xenon_backdrop_4k.webp',
+  vale: '/env/space_nebula.jpg',
+  marsh: '/env/space_nebula.jpg',
+  peaks: '/env/space_nebula.jpg',
+  beach: '/env/space_nebula.jpg',
+  desert: '/env/space_planets.jpg',
+  volcano: '/env/space_planets.jpg',
+  cave: '/env/space_nebula.jpg',
 };
 
 const BACKDROP_Y_BIAS: Record<BiomeId, number> = {

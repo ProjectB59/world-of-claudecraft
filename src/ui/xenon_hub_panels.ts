@@ -85,21 +85,32 @@ export function openXenonProfileKiosk(): void {
 
 export function openXenonIrcPanel(): void {
   const panel = openPanelFrame('irc');
-  const lines = [
-    ['katja', t('hudChrome.xenon.ircLineSkin')],
-    ['janitor', t('hudChrome.xenon.ircLineCart')],
-    ['b59bot', t('hudChrome.xenon.ircLineCabinet')],
-    ['operator', t('hudChrome.xenon.ircLineSignal')],
-  ];
-  const log = lines
-    .map(([name, line]) => `<div><span>&lt;${esc(name)}&gt;</span> ${esc(line)}</div>`)
-    .join('');
+  // This terminal patches into the game's REAL comms (the same authoritative
+  // server chat the Comms dock uses) — no scripted fake logs. The button
+  // closes the panel and opens the chat bar pre-filled with /join world,
+  // the same affordance hud.ts uses to pre-fill whispers.
   panel.insertAdjacentHTML(
     'beforeend',
     `
-    <div class="xenon-panel-kicker">irc://nodeb59/#modulo59</div>
+    <div class="xenon-panel-kicker">colony comms relay</div>
     <h2>${esc(t('hudChrome.xenon.ircTitle'))}</h2>
-    <div class="xenon-irc-log">${log}<div><span>*</span> ${esc(t('hudChrome.xenon.ircPrompt'))}</div></div>
+    <div class="xenon-irc-log">
+      <div><span>*</span> Live colony comms. Everyone on this server, one channel.</div>
+      <div><span>*</span> /join world &mdash; global &nbsp;&middot;&nbsp; /join lfg &mdash; find a crew</div>
+    </div>
+    <button type="button" class="xenon-panel-cta" data-open-comms>OPEN COMMS</button>
   `,
   );
+  const btn = panel.querySelector('[data-open-comms]');
+  if (btn)
+    btn.addEventListener('click', () => {
+      closePanel();
+      const input = document.getElementById('chat-input') as HTMLTextAreaElement | null;
+      if (!input) return;
+      input.value = '/join world';
+      input.style.display = 'block';
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new Event('input'));
+    });
 }

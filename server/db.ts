@@ -1502,26 +1502,13 @@ export async function getPlayerCardBySlug(slug: string): Promise<PlayerCardRow |
 // ~4 MB) PNG bytes, keeps getPlayerCardBySlug's heavy SELECT for the image route.
 export async function getPlayerCardMetaBySlug(
   slug: string,
-): Promise<{
-  title: string;
-  description: string;
-  locale: string;
-  updatedAt: number;
-  characterName: string | null;
-  characterClass: string | null;
-  characterLevel: number | null;
-} | null> {
+): Promise<{ title: string; description: string; locale: string; updatedAt: number } | null> {
+  // Deliberately NO character join here: the public card page must not expose
+  // character name/class/level or a profile link. Cards were published before
+  // that data was ever on the page, so surfacing it would leak identity the
+  // player never agreed to share.
   const res = await pool.query(
-    `SELECT pc.title AS title,
-            pc.description AS description,
-            pc.locale AS locale,
-            pc.updated_at,
-            c.name AS character_name,
-            c.class AS character_class,
-            COALESCE((c.state->>'level')::int, c.level) AS character_level
-       FROM player_cards pc
-       LEFT JOIN characters c ON c.id = pc.character_id
-      WHERE pc.slug = $1`,
+    'SELECT title, description, locale, updated_at FROM player_cards WHERE slug = $1',
     [slug],
   );
   const row = res.rows[0];
@@ -1536,9 +1523,6 @@ export async function getPlayerCardMetaBySlug(
     description: row.description ?? '',
     locale: row.locale ?? 'en',
     updatedAt,
-    characterName: row.character_name ?? null,
-    characterClass: row.character_class ?? null,
-    characterLevel: row.character_level != null ? Number(row.character_level) : null,
   };
 }
 

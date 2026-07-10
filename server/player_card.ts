@@ -718,9 +718,6 @@ async function serveCardPage(
       locale: normalizePublicCardLocale(card.locale),
       origin,
       version: card.updatedAt,
-      characterName: card.characterName,
-      characterClass: card.characterClass,
-      characterLevel: card.characterLevel,
     }),
   );
 }
@@ -732,16 +729,12 @@ function cardPageHtml(opts: {
   locale: PublicCardLocale;
   origin: string;
   version: number;
-  characterName?: string | null;
-  characterClass?: string | null;
-  characterLevel?: number | null;
 }): string {
-  const { slug, title, description, locale, origin, version, characterName } = opts;
+  const { slug, title, description, locale, origin, version } = opts;
   const pagePath = `/p/${encodeURIComponent(slug)}`;
   const imageQuery = version > 0 ? `?v=${version}` : '';
   const imagePath = `${pagePath}/card.png${imageQuery}`;
   const playPath = `/?ref=${encodeURIComponent(slug)}`;
-  const profilePath = characterName ? `/c/${encodeURIComponent(characterName)}` : '';
   const pageUrl = `${origin}${pagePath}`;
   const imageUrl = `${origin}${imagePath}`;
   const copy = publicCardCopy(locale);
@@ -749,26 +742,8 @@ function cardPageHtml(opts: {
   const d = escapeHtml(description);
   const gameName = escapeHtml(copy.gameName);
   const cta = escapeHtml(copy.cta);
-  const profileKicker = escapeHtml(copy.profileKicker ?? PUBLIC_CARD_COPY.en.profileKicker ?? '');
-  const profileCta = escapeHtml(copy.profileCta ?? PUBLIC_CARD_COPY.en.profileCta ?? '');
-  const profileName = characterName ? escapeHtml(characterName) : '';
-  const profileLevel =
-    opts.characterLevel != null && opts.characterClass
-      ? escapeHtml(
-          interpolate(copy.levelClass, {
-            level: opts.characterLevel,
-            className: classDisplay(opts.characterClass, locale),
-          }),
-        )
-      : '';
-  const profileBlock = profilePath
-    ? `<section class="profile-panel" aria-label="${profileCta}">
-      <div class="profile-kicker">${profileKicker}</div>
-      <h2>${profileName}</h2>
-      ${profileLevel ? `<p class="profile-meta">${profileLevel}</p>` : ''}
-      <a class="profile-link" href="${escapeHtml(profilePath)}">${profileCta}</a>
-    </section>`
-    : '';
+  // No character/profile block on this page — the card image is what the
+  // player chose to publish; linking their character identity from it is not.
   return `<!doctype html>
 <html lang="${publicCardLanguageTag(locale)}">
 <head>
@@ -811,16 +786,6 @@ function cardPageHtml(opts: {
   img.card { width: 100%; max-width: 720px; height: auto; border-radius: 8px;
     box-shadow: 0 16px 56px rgba(0,0,0,.62), 0 0 34px rgba(138,61,255,.24);
     border: 1px solid rgba(64,255,154,.34); }
-  .profile-panel { width: 100%; max-width: 720px; padding: 16px; border: 1px solid rgba(64,255,154,.44);
-    border-radius: 8px; background: rgba(2,7,6,.78); box-shadow: inset 0 0 18px rgba(64,255,154,.08); }
-  .profile-kicker { color: var(--green); font: 700 12px ui-monospace, Consolas, monospace;
-    letter-spacing: .14em; text-transform: uppercase; }
-  .profile-panel h2 { margin: 6px 0 0; color: #efe2ff; font: 700 24px 'Cinzel', Georgia, serif;
-    overflow-wrap: anywhere; }
-  .profile-meta { color: #79b890; font: 700 15px ui-monospace, Consolas, monospace; }
-  a.profile-link { display: inline-flex; margin-top: 12px; min-height: 36px; align-items: center;
-    padding: 0 14px; border: 1px solid rgba(64,255,154,.58); border-radius: 6px; color: #d8ffe8;
-    background: rgba(64,255,154,.12); text-decoration: none; }
   a.cta { display: inline-block; margin-top: 4px; padding: 13px 30px; border-radius: 8px;
     font-family: 'Cinzel', serif; font-weight: 700; font-size: 17px; text-decoration: none;
     color: #1a0614; background: linear-gradient(#ff9fdf, #ff3db8); box-shadow: 0 0 24px rgba(255,61,184,.36); }
@@ -833,7 +798,6 @@ function cardPageHtml(opts: {
     <h1>${t}</h1>
     <img class="card" src="${escapeHtml(imagePath)}" alt="${t}" width="1200" height="630">
     <p>${d}</p>
-    ${profileBlock}
     <a class="cta" href="${escapeHtml(playPath)}">${cta}</a>
     <footer>${gameName}</footer>
   </main>
